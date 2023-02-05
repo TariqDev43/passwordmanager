@@ -20,7 +20,7 @@ import useSettings from "./Contexts/SettingContext.js";
 const Main = () => {
   const Stack = createNativeStackNavigator();
   const [themeMode, setThemeMode] = useState(null);
-  const { changeColor, changeTheme, selected, themeMode: theme } = useTheme();
+  const { changeColor, themeMode: theme } = useTheme();
   const { changeElevationValue, changeElevation } = useSettings();
 
   useLayoutEffect(() => {

@@ -314,7 +314,7 @@ const DetailsScreen = ({
                   setFocusOff();
                 }}
               >
-                <Text className="font-bold text-xs m-1 text-white">ADD</Text>
+                <Text style={tw`font-bold text-xs m-1 text-white`}>ADD</Text>
               </TouchableOpacity>
             </View>
           </Pressable>
