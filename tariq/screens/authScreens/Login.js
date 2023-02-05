@@ -7,6 +7,7 @@ import {
   Pressable,
   Text,
   TextInput,
+  TouchableHighlight,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -22,6 +23,8 @@ import Animated, {
 } from "react-native-reanimated";
 import useTheme from "../../Contexts/ThemeContext";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import { AntDesign } from "@expo/vector-icons";
 
 const Login = () => {
   /*   ALL States
@@ -71,147 +74,161 @@ const Login = () => {
   };
 
   return (
-    // <ImageBackground
-    //   style={tw` flex-1 justify-center items-center `}
-    //   source={require("../../assets/bg.png")}
-    // >
-    <View
-      style={[
-        tw`flex-1 justify-center items-center `,
-        {
-          backgroundColor: theme.mainBgColor,
-        },
-      ]}
+    <ImageBackground
+      style={tw` flex-1  justify-center  `}
+      source={require("../../assets/bg.png")}
     >
-      {/*  Main Div
-       *********************************************  */}
-
-      <View
-        style={[tw`absolute top-8`, { backgroundColor: theme.mainBgColor }]}
+      <Pressable
+        onPress={() => {
+          Keyboard.dismiss();
+          setFocusOff();
+        }}
+        style={[tw` flex-1 justify-center `, {}]}
       >
-        <LottieView
-          autoPlay="true"
-          style={[
-            {
-              width: 200,
-              height: 200,
-            },
-          ]}
-          source={require("../../assets/key.json")}
-          // source={require("../../assets/boySmiling.json")}
-        />
-      </View>
-      <Animated.View
-        style={[
-          tw`w-5/6 rounded-xl  `,
-          {
-            elevation: 8,
-            backgroundColor: theme.bgColor,
-          },
-          loginDiv,
-        ]}
-      >
-        <Pressable
-          onPress={() => {
-            Keyboard.dismiss();
-            setFocusOff();
-          }}
-          style={[tw`pt-8 pb-7 px-4 `, {}]}
-        >
-          <Text
+        {/*  Main Div  Animated Logo
+         *********************************************  */}
+        <View style={[tw`absolute self-center top-24`]}>
+          <LottieView
+            autoPlay="true"
             style={[
-              tw`text-center font-extrabold text-3xl`,
-              { color: theme.mainColor },
+              {
+                width: 250,
+                height: 250,
+              },
+            ]}
+            source={require("../../assets/key.json")}
+            // source={require("../../assets/boySmiling.json")}
+          />
+        </View>
+
+        {/*  Main Div
+         *********************************************  */}
+        <View style={[tw`flex-1 justify-end`, {}]}>
+          <TouchableOpacity
+            style={[
+              tw` rounded-full absolute bg-red-200 bottom-12 right-11 z-50 self-center`,
+              {
+                backgroundColor: theme.mainColor,
+                elevation: 5,
+              },
             ]}
           >
-            LOGIN
-          </Text>
-          <View style={tw`my-8  mx-2 `}>
-            {/* ******* Email  ******* */}
-            <View style={tw`flex-row items-center justify-between mb-5 mt-2 `}>
-              <MaterialCommunityIcons
-                name="email"
-                color={emailFocus ? theme.mainColor : theme.grey}
-                size={22}
-              />
-              <TextInput
-                placeholder="Enter Email"
-                placeholderTextColor={
-                  theme.themeMode == "dark" ? theme.grey : "darkgray"
-                }
-                style={[
-                  tw`flex-1 mx-3 border-b-2
-                    `,
-                  {
-                    borderBottomColor: emailFocus
-                      ? theme.mainColor
-                      : theme.grey,
-                    color: theme.mainTextColor,
-                  },
-                ]}
-                onFocus={() => setEmailFocus(true)}
-                onBlur={() => setEmailFocus(false)}
-              />
+            <LinearGradient
+              style={[tw`p-4 rounded-full `, {}]}
+              colors={["#4FACFE", "#21ECA0"]}
+              start={{ x: -1, y: 0 }}
+              end={{ x: 2, y: 0 }}
+            >
+              <AntDesign name="arrowright" size={24} color="white" />
+            </LinearGradient>
+          </TouchableOpacity>
+          <Animated.View style={[tw``, loginDiv]}>
+            <View
+              style={[
+                tw` mr-16 rounded-r-full`,
+                {
+                  backgroundColor: theme.bgColor,
+                  elevation: 8,
+                  shadowColor: "grey",
+                },
+              ]}
+            >
+              <View style={tw` ml-4 my-5 mr-12`}>
+                {/* ******* Email  ******* */}
+                <View
+                  style={tw`flex-row  items-center justify-between mt-3 mb-2 `}
+                >
+                  <MaterialCommunityIcons
+                    name="email"
+                    color={emailFocus ? theme.mainColor : theme.grey}
+                    size={22}
+                  />
+                  <TextInput
+                    placeholder="Enter Email"
+                    placeholderTextColor={
+                      theme.themeMode == "dark" ? theme.grey : "darkgray"
+                    }
+                    style={[
+                      tw`flex-1 mx-3 border-b-2
+            `,
+                      {
+                        borderBottomColor: emailFocus
+                          ? theme.mainColor
+                          : theme.grey,
+                        color: theme.mainTextColor,
+                      },
+                    ]}
+                    onFocus={() => setEmailFocus(true)}
+                    onBlur={() => setEmailFocus(false)}
+                  />
+                </View>
+                {/* ******* Password  ******* */}
+                <View
+                  style={tw`flex-row items-center justify-between mt-4 mb-5 `}
+                >
+                  <MaterialCommunityIcons
+                    name="key"
+                    color={passwordFocus ? theme.mainColor : theme.grey}
+                    size={22}
+                  />
+                  <TextInput
+                    placeholder="Enter Password"
+                    placeholderTextColor={
+                      theme.themeMode == "dark" ? theme.grey : "darkgray"
+                    }
+                    style={[
+                      tw`flex-1 mx-3 border-b-2
+            `,
+                      {
+                        borderBottomColor: passwordFocus
+                          ? theme.mainColor
+                          : theme.grey,
+                        color: theme.mainTextColor,
+                      },
+                    ]}
+                    secureTextEntry={passowrd ? true : false}
+                    onFocus={() => setPasswordFocus(true)}
+                    onBlur={() => setPasswordFocus(false)}
+                  />
+                  <MaterialCommunityIcons
+                    onPress={() => {
+                      setPassword(!passowrd);
+                    }}
+                    name={passowrd ? "eye-off" : "eye"}
+                    color={passwordFocus ? theme.mainColor : theme.grey}
+                    size={22}
+                  />
+                </View>
+              </View>
             </View>
-            {/* ******* Password  ******* */}
-            <View style={tw`flex-row items-center justify-between mt-5`}>
-              <MaterialCommunityIcons
-                name="key"
-                color={passwordFocus ? theme.mainColor : theme.grey}
-                size={22}
-              />
-              <TextInput
-                placeholder="Enter Password"
-                placeholderTextColor={
-                  theme.themeMode == "dark" ? theme.grey : "darkgray"
-                }
-                style={[
-                  tw`flex-1 mx-3 border-b-2
-                    `,
-                  {
-                    borderBottomColor: passwordFocus
-                      ? theme.mainColor
-                      : theme.grey,
-                    color: theme.mainTextColor,
-                  },
-                ]}
-                secureTextEntry={passowrd ? true : false}
-                onFocus={() => setPasswordFocus(true)}
-                onBlur={() => setPasswordFocus(false)}
-              />
-              <MaterialCommunityIcons
-                onPress={() => {
-                  setPassword(!passowrd);
-                }}
-                name={passowrd ? "eye-off" : "eye"}
-                color={passwordFocus ? theme.mainColor : theme.grey}
-                size={22}
-              />
-            </View>
-          </View>
-          {/**************** Buttons ***********************/}
-          <View style={tw`flex-row justify-end items-center mt-2`}>
+          </Animated.View>
+        </View>
+        {/*  Buttons
+         *********************************************  */}
+        <View style={[tw`h-1/3 mt-5 `, {}]}>
+          <Animated.View style={[tw`mt-8 mr-16`]}>
             <TouchableOpacity
               style={[
-                tw` py-2 px-3 rounded`,
+                tw`bg-white rounded-r-full p-3 pr-6 w-1/2`,
                 {
                   backgroundColor: theme.mainColor,
-                  elevation: 3,
+                  elevation: 6,
                 },
               ]}
               onPress={() => {
                 loginFunc();
               }}
             >
-              <Text style={[tw`font-semibold text-base text-white`, {}]}>
-                LOGIN
+              <Text
+                style={[tw`font-semibold text-center text-lg text-white`, {}]}
+              >
+                REGISTER
               </Text>
             </TouchableOpacity>
-          </View>
-        </Pressable>
-      </Animated.View>
-      {/* </ImageBackground> */}
-    </View>
+          </Animated.View>
+        </View>
+      </Pressable>
+    </ImageBackground>
   );
 };
 

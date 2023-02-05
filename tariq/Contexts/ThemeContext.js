@@ -2,14 +2,10 @@ import React from "react";
 import { useState } from "react";
 import { useCallback } from "react";
 import { useMemo } from "react";
-import { useEffect } from "react";
 import { memo } from "react";
 import { createContext } from "react";
 import { useContext } from "react";
-import {
-  getDataFromStorage,
-  setDataToStorage,
-} from "../services/storageService";
+import { setDataToStorage } from "../services/storageService";
 
 const ThemeContext = createContext({});
 
