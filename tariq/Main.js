@@ -16,12 +16,14 @@ import { useLayoutEffect } from "react";
 import { Text } from "react-native";
 import useTheme from "./Contexts/ThemeContext.js";
 import useSettings from "./Contexts/SettingContext.js";
+import useUser from "./Contexts/UserContext.js";
 
 const Main = () => {
   const Stack = createNativeStackNavigator();
   const [themeMode, setThemeMode] = useState(null);
   const { changeColor, themeMode: theme } = useTheme();
   const { changeElevationValue, changeElevation } = useSettings();
+  const { userStatus } = useUser();
 
   useLayoutEffect(() => {
     deleteAllStorageKeys();
@@ -52,7 +54,7 @@ const Main = () => {
     };
     keys();
   }, []);
-  const user = false;
+  const user = userStatus;
   return (
     <NavigationContainer>
       {themeMode != null ? (

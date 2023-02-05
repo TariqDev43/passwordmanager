@@ -8,27 +8,31 @@ import BaseNavigation from "../components/BaseNavigation";
 import HomeNav from "./HomeNav";
 import useTheme from "../Contexts/ThemeContext.js";
 import tw from "tailwind-react-native-classnames";
+import useUser from "../Contexts/UserContext.js";
 
 const BottomNav = () => {
   const Tabs = createBottomTabNavigator();
   const { theme, changeTheme, themeMode } = useTheme();
+  const { changeUserStatus } = useUser();
   const UpdateTheme = async () => {
     themeMode == "light" ? changeTheme("dark") : changeTheme("light");
   };
   return (
     <>
       {/* TopBar */}
-      <SafeAreaView style={[tw`px-6 `, { backgroundColor: theme.mainBgColor }]}>
+      <SafeAreaView
+        style={[tw`px-6 mt-4`, { backgroundColor: theme.mainBgColor }]}
+      >
         <View style={tw`flex-row justify-between`}>
-          <TouchableOpacity>
-            <Ionicons name="md-log-out-outline" color={"grey"} size={30} />
-          </TouchableOpacity>
           <TouchableOpacity onPress={UpdateTheme}>
             <Ionicons
               name={themeMode == "light" ? "moon" : "sunny"}
               size={28}
               color="grey"
             />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={changeUserStatus}>
+            <Ionicons name="md-log-out-outline" color={"grey"} size={30} />
           </TouchableOpacity>
         </View>
       </SafeAreaView>
