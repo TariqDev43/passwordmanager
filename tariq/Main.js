@@ -52,7 +52,7 @@ const Main = () => {
     };
     keys();
   }, []);
-  const user = true;
+  const user = false;
   return (
     <NavigationContainer>
       {themeMode != null ? (
