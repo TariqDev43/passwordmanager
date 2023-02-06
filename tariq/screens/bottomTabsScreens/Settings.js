@@ -28,7 +28,7 @@ const Settings = () => {
   const [showColorModal, setShowColorModal] = useState(false);
 
   const colorList = [
-    "#311B92",
+    "#0abdbf",
     "#AA00FF",
 
     "#FF6D00",

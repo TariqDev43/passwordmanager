@@ -26,12 +26,11 @@ const Main = () => {
   const { userStatus } = useUser();
 
   useLayoutEffect(() => {
-    deleteAllStorageKeys();
     const keys = async () => {
       const keys = await getAllStorageKeys();
       if (keys.length == 0) {
         await setDataToStorage("themeMode", "light");
-        await setDataToStorage("mainColor", "#FF6D00");
+        await setDataToStorage("mainColor", "#0abdbf");
         await setDataToStorage("elevation", "true");
         await setDataToStorage("elevationValue", "1");
         setThemeMode("light");
@@ -52,6 +51,7 @@ const Main = () => {
         changeElevationValue(elevationValue);
       }
     };
+
     keys();
   }, []);
   const user = userStatus;

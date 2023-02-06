@@ -12,7 +12,7 @@ const ThemeContext = createContext({});
 export const ThemeProvider = memo(({ children }) => {
   /* *************  States  **************** */
   const [themeMode, setThemeMode] = useState("light");
-  const [mainColor, setMainColor] = useState("#FF6D00");
+  const [mainColor, setMainColor] = useState("#0abdbf");
   const [selected, setSelected] = useState("Home");
   const LightTheme = {
     mainColor: mainColor,

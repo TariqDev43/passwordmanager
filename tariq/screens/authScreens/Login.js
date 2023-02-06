@@ -16,7 +16,15 @@ import tw from "tailwind-react-native-classnames";
 import Animated, {
   BounceInLeft,
   BounceInRight,
+  BounceOutLeft,
+  BounceOutRight,
   FlipInEasyX,
+  FlipOutEasyX,
+  FlipOutEasyY,
+  FlipOutYLeft,
+  FlipOutYRight,
+  SlideOutLeft,
+  SlideOutRight,
   useAnimatedStyle,
   useSharedValue,
   withDelay,
@@ -86,7 +94,10 @@ const Login = () => {
 
   return (
     <ImageBackground
-      style={tw` flex-1  justify-center  `}
+      style={[
+        tw` flex-1  justify-center  `,
+        { backgroundColor: theme.mainBgColor },
+      ]}
       source={require("../../assets/bg.png")}
     >
       <Pressable
@@ -94,7 +105,7 @@ const Login = () => {
           Keyboard.dismiss();
           setFocusOff();
         }}
-        style={[tw` flex-1 justify-center `, {}]}
+        style={[tw` flex-1 justify-center  `, {}]}
       >
         {/*  Main Div  Animated Logo
          *********************************************  */}
@@ -117,11 +128,12 @@ const Login = () => {
         {loginPage && (
           <Animated.View
             entering={BounceInLeft.duration(1000)}
+            exiting={SlideOutLeft.duration(300)}
             style={[tw`flex-1 justify-end`, {}]}
           >
             <TouchableOpacity
               style={[
-                tw` rounded-full absolute bg-red-200 bottom-12 right-11 z-50 self-center`,
+                tw` rounded-full absolute  bottom-12 right-11 z-50 self-center`,
                 {
                   backgroundColor: theme.mainColor,
                   elevation: 5,
@@ -165,8 +177,7 @@ const Login = () => {
                         theme.themeMode == "dark" ? theme.grey : "darkgray"
                       }
                       style={[
-                        tw`flex-1 mx-3 border-b-2
-            `,
+                        tw`flex-1 mx-3 border-b-2 `,
                         {
                           borderBottomColor: emailFocus
                             ? theme.mainColor
@@ -224,26 +235,27 @@ const Login = () => {
          *********************************************  */}
         {loginPage && (
           <Animated.View
-            entering={BounceInLeft.duration(1300)}
-            style={[tw`h-1/3 mt-5 `, {}]}
+            entering={BounceInRight.duration(1300)}
+            exiting={SlideOutRight.duration(300)}
+            style={[tw`h-1/3 mt-5   `, {}]}
           >
-            <Animated.View style={[tw`mt-8 mr-16`]}>
+            <Animated.View style={[tw`mt-8 ml-16 items-end`]}>
               <TouchableOpacity
                 style={[
-                  tw`bg-white rounded-r-full p-3 pr-6 w-4/6`,
+                  tw`bg-white rounded-l-full p-3 pr-6 w-4/6`,
                   {
                     backgroundColor: theme.mainColor,
                     elevation: 6,
                   },
                 ]}
-                onPress={() => {
+                onPressIn={() => {
                   setLoginPage(!loginPage);
                 }}
               >
                 <Text
                   style={[tw`font-semibold text-center text-lg text-white`, {}]}
                 >
-                  Create ACcount
+                  Create Account
                 </Text>
               </TouchableOpacity>
             </Animated.View>
@@ -254,12 +266,13 @@ const Login = () => {
          *********************************************  */}
         {!loginPage && (
           <Animated.View
-            entering={BounceInLeft.duration(1000)}
+            entering={BounceInRight.duration(1000)}
+            exiting={SlideOutRight.duration(300)}
             style={[tw`flex-1 justify-end`, {}]}
           >
             <TouchableOpacity
               style={[
-                tw` rounded-full absolute bg-red-200 bottom-28 right-11 z-50 self-center`,
+                tw` rounded-full absolute bg-red-200 bottom-28 left-11 z-50 self-center`,
                 {
                   backgroundColor: theme.mainColor,
                   elevation: 5,
@@ -279,7 +292,7 @@ const Login = () => {
             <Animated.View>
               <View
                 style={[
-                  tw` mr-16 rounded-r-full`,
+                  tw` ml-16 rounded-l-full`,
                   {
                     backgroundColor: theme.bgColor,
                     elevation: 8,
@@ -287,7 +300,7 @@ const Login = () => {
                   },
                 ]}
               >
-                <View style={tw` ml-4 my-5 mr-12`}>
+                <View style={tw` mr-4 my-5 ml-16`}>
                   {/* ******* UserName  ******* */}
                   <View
                     style={tw`flex-row  items-center justify-between mt-3 mb-2 `}
@@ -428,9 +441,10 @@ const Login = () => {
         {!loginPage && (
           <Animated.View
             entering={BounceInLeft.duration(1300)}
+            exiting={SlideOutLeft.duration(100)}
             style={[tw`h-1/6 mt-5 mb-24`, {}]}
           >
-            <Animated.View style={[tw`mt-8 mr-16`]}>
+            <Animated.View style={[tw`mt-8  mr-16`]}>
               <TouchableOpacity
                 style={[
                   tw`bg-white rounded-r-full p-3 pr-6 w-1/2`,
@@ -439,7 +453,7 @@ const Login = () => {
                     elevation: 6,
                   },
                 ]}
-                onPress={() => {
+                onPressIn={() => {
                   setLoginPage(!loginPage);
                 }}
               >
