@@ -280,7 +280,7 @@ const Home = ({ navigation: { navigate } }) => {
                 <TouchableOpacity
                   onPress={() => navigate("Details", { params: { item } })}
                   style={[
-                    tw`py-6 px-2 rounded-lg flex-1 flex-row items-center`,
+                    tw`py-4 px-2 rounded-lg flex-1 flex-row items-center`,
                     {
                       elevation: elevation ? elevationValue : 0,
                       backgroundColor: theme.bgColor,
