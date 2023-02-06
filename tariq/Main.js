@@ -21,7 +21,7 @@ import useUser from "./Contexts/UserContext.js";
 const Main = () => {
   const Stack = createNativeStackNavigator();
   const [themeMode, setThemeMode] = useState(null);
-  const { changeColor, themeMode: theme } = useTheme();
+  const { changeColor, themeMode: theme, changeTheme } = useTheme();
   const { changeElevationValue, changeElevation } = useSettings();
   const { userStatus } = useUser();
 
@@ -35,14 +35,20 @@ const Main = () => {
         await setDataToStorage("elevationValue", "1");
         setThemeMode("light");
       } else {
-        const theme = await getDataFromStorage("themeMode");
+        const storageTheme = await getDataFromStorage("themeMode");
         const mainColor = await getDataFromStorage("mainColor");
         const elevation = await getDataFromStorage("elevation");
         const elevationValue = await getDataFromStorage("elevationValue");
 
-        setThemeMode(theme);
         try {
-          theme == "light" ? setThemeMode("light") : setThemeMode("dark");
+          storageTheme == "light"
+            ? setThemeMode("light")
+            : setThemeMode("dark");
+        } catch (error) {
+          console.log(error.message);
+        }
+        try {
+          storageTheme == "light" ? changeTheme("light") : changeTheme("dark");
         } catch (error) {
           console.log(error.message);
         }
