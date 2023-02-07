@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import admin from "firebase-admin";
+// import admin from "firebase-admin";
 
 import {
   addDoc,
@@ -15,6 +15,7 @@ import {
   createUserWithEmailAndPassword,
   getAuth,
   signInWithEmailAndPassword,
+  updateCurrentUser,
 } from "firebase/auth";
 
 const firebaseConfig = {
@@ -36,63 +37,90 @@ export const auth = getAuth(app);
  ********************************************* */
 // Admin App
 
-admin.initializeApp({
-  credential: admin.credential.cert(
-    "./passwordmanager-43-firebase-adminsdk-jivnk-bf2268982e.json"
-  ),
-  databaseURL: "https://passwordmanager-43-default-rtdb.firebaseio.com",
-});
-const adminAuth = admin.auth();
-const createUser = (uid, email, password, name) => {
-  admin
-    .auth()
-    .createUser({
-      uid: uid,
-      email: email,
-      password: password,
-    })
-    .then(function (userRecord) {
-      // See the UserRecord reference doc for the contents of userRecord.
-      console.log("Successfully created new user:", userRecord.uid);
-      addUserData(userRecord.uid, email, password, name);
-      addCategory("facebook", "facebook", {
-        icon: "facebook",
-        fav_icon: "heart-outline",
-        account_name: "Example Account",
-        email: "example@example.com",
-        password: "examplePassword",
-      });
-      addCategory("google", "google", {
-        icon: "facebook",
-        fav_icon: "heart-outline",
-        account_name: "Example Account",
-        email: "example@example.com",
-        password: "examplePassword",
-      });
-      addCategory("instagram", "instagram", {
-        icon: "facebook",
-        fav_icon: "heart-outline",
-        account_name: "Example Account",
-        email: "example@example.com",
-        password: "examplePassword",
-      });
-    })
-    .catch(function (error) {
-      console.log("Error creating new user:", error.message);
-    });
-};
-
-const getAllUsers = async () => {
+export const login = async () => {
   try {
-    const listUsersResult = await adminAuth.listUsers();
-
-    listUsersResult.users.forEach((userRecord) => {
-      console.log("user", userRecord.toJSON());
-    });
-  } catch (error) {
-    console.log("Error fetching users:", error);
+    const data = await signInWithEmailAndPassword(auth, "a@b.com", "abc123");
+    return data.user;
+  } catch (err) {
+    console.log(err.message);
   }
 };
+
+// admin.initializeApp({
+//   credential: admin.credential.cert(
+//     "./passwordmanager-43-firebase-adminsdk-jivnk-bf2268982e.json"
+//   ),
+//   databaseURL: "https://passwordmanager-43-default-rtdb.firebaseio.com",
+// });
+// const adminAuth = admin.auth();
+export const createUser = (uid, email, password, name) => {
+  try {
+    createUserWithEmailAndPassword(auth, email, password)
+      .then((res) => {
+        // console.log(res.user);
+      })
+      .catch((err) => console.log(err.message));
+
+    updateCurrentUser(auth.currentUser, { displayName: "Jane Q. User" }).then(
+      (res) => {
+        console.log(res);
+
+        // console.log(res);
+      }
+    );
+  } catch (err) {
+    console.log(err.message);
+  }
+  // admin
+  //   .auth()
+  //   .createUser({
+  //     uid: uid,
+  //     email: email,
+  //     password: password,
+  //   })
+  //   .then(function (userRecord) {
+  //     // See the UserRecord reference doc for the contents of userRecord.
+  //     console.log("Successfully created new user:", userRecord.uid);
+  //     addUserData(userRecord.uid, email, password, name);
+  //     addCategory("facebook", "facebook", {
+  //       icon: "facebook",
+  //       fav_icon: "heart-outline",
+  //       account_name: "Example Account",
+  //       email: "example@example.com",
+  //       password: "examplePassword",
+  //     });
+  //     addCategory("google", "google", {
+  //       icon: "facebook",
+  //       fav_icon: "heart-outline",
+  //       account_name: "Example Account",
+  //       email: "example@example.com",
+  //       password: "examplePassword",
+  //     });
+  //     addCategory("instagram", "instagram", {
+  //       icon: "facebook",
+  //       fav_icon: "heart-outline",
+  //       account_name: "Example Account",
+  //       email: "example@example.com",
+  //       password: "examplePassword",
+  //     });
+  //   })
+  //   .catch(function (error) {
+  //     console.log("Error creating new user:", error.message);
+  //   });
+};
+
+// const getAllUsers = async () => {
+//   try {
+//     const listUsersResult = await adminAuth.listUsers();
+
+//     listUsersResult.users.forEach((userRecord) => {
+//       console.log("user", userRecord.toJSON());
+//     });
+//   } catch (error) {
+//     console.log("Error fetching users:", error);
+//   }
+// };
+
 const uid = "abcTestAccount";
 const email = "a@b.com";
 const password = "abc123";
@@ -128,7 +156,6 @@ const getUserData = async (uid) => {
     .catch((err) => console.log(err.message));
   return data;
 };
-console.log(await getUserData(uid));
 /*
  ********************************************* */
 

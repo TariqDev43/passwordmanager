@@ -37,6 +37,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { AntDesign } from "@expo/vector-icons";
 import useUser from "../../Contexts/UserContext";
+import { createUser, login } from "../../services/firebaseService";
 
 const Login = () => {
   /*   ALL States
@@ -45,7 +46,7 @@ const Login = () => {
   const [confirmPassowrd, setConfirmPassword] = useState(true);
   const [loginPage, setLoginPage] = useState(true);
 
-  const { changeUserStatus } = useUser();
+  const { changeUser } = useUser();
 
   // theme
   const { theme } = useTheme();
@@ -57,11 +58,9 @@ const Login = () => {
   const [emailFocus, setEmailFocus] = useState(false);
   const [passwordFocus, setPasswordFocus] = useState(false);
   const [confirmPasswordFocus, setConfirmPasswordFocus] = useState(false);
-  const [hintFocus, setHintFocus] = useState(false);
 
   // turning focus off
   const setFocusOff = () => {
-    setHintFocus(false);
     setEmailFocus(false);
     setPasswordFocus(false);
   };
@@ -86,10 +85,19 @@ const Login = () => {
   }));
 
   const loginFunc = () => {
-    changeUserStatus();
+    try {
+      login()
+        .then((user) => {
+          changeUser(user);
+        })
+        .catch((err) => console.log(err.message));
+    } catch (err) {
+      console.log(err.message);
+    }
   };
   const registerFunc = () => {
-    changeUserStatus();
+    createUser("test_username", "a@b.com", "abc@123", "test_name");
+    // changeUser(user);
   };
 
   return (
@@ -359,7 +367,7 @@ const Login = () => {
                   </View>
                   {/* ******* Password  ******* */}
                   <View
-                    style={tw`flex-row items-center justify-between mt-4 mb-5 `}
+                    style={tw`flex-row items-center justify-between mt-4 mb-2 `}
                   >
                     <MaterialCommunityIcons
                       name="key"
@@ -427,7 +435,9 @@ const Login = () => {
                         setConfirmPassword(!confirmPassowrd);
                       }}
                       name={confirmPassowrd ? "eye-off" : "eye"}
-                      color={passwordFocus ? theme.mainColor : theme.grey}
+                      color={
+                        confirmPasswordFocus ? theme.mainColor : theme.grey
+                      }
                       size={22}
                     />
                   </View>

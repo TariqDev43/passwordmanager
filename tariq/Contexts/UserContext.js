@@ -10,18 +10,18 @@ const UserContext = createContext({});
 
 export const UserProvider = memo(({ children }) => {
   /* *************  States  **************** */
-  const [userStatus, setUserStatus] = useState(false);
+  const [user, setUser] = useState(null);
 
-  const changeUserStatus = useCallback(() => {
-    setUserStatus(!userStatus);
+  const changeUser = useCallback((val) => {
+    setUser(val);
   });
 
   const userValues = useMemo(
     () => ({
-      userStatus,
-      changeUserStatus,
+      user,
+      changeUser,
     }),
-    [userStatus]
+    [user]
   );
   return (
     <UserContext.Provider value={userValues}>{children}</UserContext.Provider>

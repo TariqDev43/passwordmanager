@@ -1,12 +1,12 @@
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import Login from "./screens/authScreens/Login.js";
+import InitializeScreen from "./screens/authScreens/InitializeScreen";
 import BottomNav from "./Navigators/bottomNav.js";
 import { useState } from "react";
 import { StatusBar } from "expo-status-bar";
 
 import {
-  deleteAllStorageKeys,
   getAllStorageKeys,
   getDataFromStorage,
   setDataToStorage,
@@ -23,7 +23,8 @@ const Main = () => {
   const [themeMode, setThemeMode] = useState(null);
   const { changeColor, themeMode: theme, changeTheme } = useTheme();
   const { changeElevationValue, changeElevation } = useSettings();
-  const { userStatus } = useUser();
+
+  const { user } = useUser();
 
   useLayoutEffect(() => {
     const keys = async () => {
@@ -34,6 +35,7 @@ const Main = () => {
         await setDataToStorage("elevation", "true");
         await setDataToStorage("elevationValue", "1");
         setThemeMode("light");
+        changeTheme("light");
       } else {
         const storageTheme = await getDataFromStorage("themeMode");
         const mainColor = await getDataFromStorage("mainColor");
@@ -60,7 +62,7 @@ const Main = () => {
 
     keys();
   }, []);
-  const user = userStatus;
+  const userExits = user;
   return (
     <NavigationContainer>
       {themeMode != null ? (
@@ -68,10 +70,13 @@ const Main = () => {
           initialRouteName="Login"
           screenOptions={{ headerShown: false }}
         >
-          {!user ? (
+          {!userExits ? (
             <Stack.Screen name="Login" component={Login} />
           ) : (
-            <Stack.Screen name="BottomNav" component={BottomNav} />
+            <>
+              <Stack.Screen name="BottomNav" component={BottomNav} />
+              <Stack.Screen name="Initialize" component={InitializeScreen} />
+            </>
           )}
         </Stack.Navigator>
       ) : (
