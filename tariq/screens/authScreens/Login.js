@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
+  ActivityIndicator,
   Button,
   ImageBackground,
   Keyboard,
@@ -10,19 +11,24 @@ import {
   TouchableHighlight,
   TouchableOpacity,
   View,
-} from "react-native";
-import LottieView from "lottie-react-native";
-import tw from "tailwind-react-native-classnames";
+} from 'react-native';
+import LottieView from 'lottie-react-native';
+import tw from 'tailwind-react-native-classnames';
 import Animated, {
+  BounceIn,
   BounceInLeft,
   BounceInRight,
   BounceOutLeft,
   BounceOutRight,
+  FadeIn,
+  FadeOut,
   FlipInEasyX,
+  FlipInEasyY,
   FlipOutEasyX,
   FlipOutEasyY,
   FlipOutYLeft,
   FlipOutYRight,
+  RollInRight,
   SlideOutLeft,
   SlideOutRight,
   useAnimatedStyle,
@@ -31,13 +37,13 @@ import Animated, {
   withRepeat,
   withSequence,
   withTiming,
-} from "react-native-reanimated";
-import useTheme from "../../Contexts/ThemeContext";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
-import { AntDesign } from "@expo/vector-icons";
-import useUser from "../../Contexts/UserContext";
-import { createUser, login } from "../../services/firebaseService";
+} from 'react-native-reanimated';
+import useTheme from '../../Contexts/ThemeContext';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import { AntDesign } from '@expo/vector-icons';
+import useUser from '../../Contexts/UserContext';
+import { createUser, login } from '../../services/firebaseService';
 
 const Login = () => {
   /*   ALL States
@@ -45,6 +51,8 @@ const Login = () => {
   const [passowrd, setPassword] = useState(true);
   const [confirmPassowrd, setConfirmPassword] = useState(true);
   const [loginPage, setLoginPage] = useState(true);
+  const [loginLoading, setLoginLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   const { changeUser } = useUser();
 
@@ -84,29 +92,33 @@ const Login = () => {
     // ],
   }));
 
-  const loginFunc = () => {
+  const loginFunc = async () => {
     try {
-      login()
-        .then((user) => {
-          changeUser(user);
-        })
-        .catch((err) => console.log(err.message));
+      setLoginLoading(true);
+      const user = await login();
+      setLoginLoading(false);
+      setSuccess(true);
+      setTimeout(() => {
+        changeUser(user);
+      }, 5000);
     } catch (err) {
       console.log(err.message);
     }
   };
-  const registerFunc = () => {
-    createUser("test_username", "a@b.com", "abc@123", "test_name");
-    // changeUser(user);
+  const registerFunc = async () => {
+    try {
+      setLoginLoading(true);
+      const user = await createUser('test_username', 'a@b.com', 'abc123', 'test_name');
+      changeUser(user);
+    } catch (err) {
+      console.log(err.message + 'this');
+    }
   };
 
   return (
     <ImageBackground
-      style={[
-        tw` flex-1  justify-center  `,
-        { backgroundColor: theme.mainBgColor },
-      ]}
-      source={require("../../assets/bg.png")}
+      style={[tw` flex-1  justify-center  `, { backgroundColor: theme.mainBgColor }]}
+      source={require('../../assets/bg.png')}
     >
       <Pressable
         onPress={() => {
@@ -119,15 +131,14 @@ const Login = () => {
          *********************************************  */}
         <View style={[tw`absolute self-center top-24`]}>
           <LottieView
-            autoPlay="true"
+            autoPlay='true'
             style={[
               {
                 width: 250,
                 height: 250,
               },
             ]}
-            source={require("../../assets/key.json")}
-            // source={require("../../assets/boySmiling.json")}
+            source={require('../../assets/key.json')}
           />
         </View>
 
@@ -137,59 +148,123 @@ const Login = () => {
           <Animated.View
             entering={BounceInLeft.duration(1000)}
             exiting={SlideOutLeft.duration(300)}
-            style={[tw`flex-1 justify-end`, {}]}
+            style={[tw`flex-1 justify-end relative`, {}]}
           >
-            <TouchableOpacity
+            {/* {success && (
+              <Pressable
+                style={[
+                  tw` rounded-full absolute  z-10 self-center`,
+                  {
+                    backgroundColor: !success && theme.mainColor,
+                    elevation: success ? 0 : 5,
+                  },
+                ]}
+              >
+                
+              </Pressable>
+            )} */}
+
+            <Pressable
+              // bottom-4 left-48
               style={[
-                tw` rounded-full absolute  bottom-12 right-11 z-50 self-center`,
+                tw` rounded-full absolute  ${
+                  success ? 'bottom-4 left-48' : 'bottom-12 right-11'
+                } z-50 self-center`,
                 {
-                  backgroundColor: theme.mainColor,
-                  elevation: 5,
+                  elevation: success ? 0 : 5,
                 },
               ]}
               onPress={loginFunc}
             >
-              <LinearGradient
-                style={[tw`p-4 rounded-full `, {}]}
-                colors={["#4FACFE", "#21ECA0"]}
-                start={{ x: -1, y: 0 }}
-                end={{ x: 2, y: 0 }}
-              >
-                <AntDesign name="arrowright" size={24} color="white" />
-              </LinearGradient>
-            </TouchableOpacity>
-            <Animated.View>
+              {!success && (
+                <Animated.View exiting={FadeOut.duration(100)}>
+                  <LinearGradient
+                    style={[tw`p-4 rounded-full `, {}]}
+                    colors={['#4FACFE', '#21ECA0']}
+                    start={{ x: -1, y: 0 }}
+                    end={{ x: 2, y: 0 }}
+                  >
+                    {!loginLoading && !success && (
+                      <Animated.View exiting={FadeOut.duration(200)}>
+                        <AntDesign name='arrowright' size={30} color='white' />
+                      </Animated.View>
+                    )}
+
+                    {loginLoading && !success && (
+                      <Animated.View
+                        entering={FadeIn.duration(800)}
+                        exiting={FadeOut.duration(100)}
+                      >
+                        <ActivityIndicator
+                          size='small'
+                          style={[tw`m-2`, { transform: [{ scale: 1.5 }] }]}
+                          color='white'
+                        />
+                      </Animated.View>
+                    )}
+                  </LinearGradient>
+                </Animated.View>
+              )}
+              {success && (
+                <>
+                  {!loginLoading && !success && (
+                    <Animated.View exiting={FadeOut.duration(200)}>
+                      <AntDesign name='arrowright' size={30} color='white' />
+                    </Animated.View>
+                  )}
+                  {success && (
+                    <Animated.View exiting={FadeOut.duration(200)}>
+                      <LottieView
+                        autoPlay
+                        style={[
+                          {
+                            width: 130,
+                            height: 130,
+                          },
+                        ]}
+                        source={require('../../assets/success.json')}
+                      />
+                    </Animated.View>
+                  )}
+                  {loginLoading && !success && (
+                    <Animated.View entering={FadeIn.duration(800)}>
+                      <ActivityIndicator
+                        size='small'
+                        style={[tw`m-2`, { transform: [{ scale: 1.5 }] }]}
+                        color='white'
+                      />
+                    </Animated.View>
+                  )}
+                </>
+              )}
+            </Pressable>
+
+            <Animated.View style={tw`z-10`}>
               <View
                 style={[
                   tw` mr-16 rounded-r-full`,
                   {
                     backgroundColor: theme.bgColor,
                     elevation: 8,
-                    shadowColor: "grey",
+                    shadowColor: 'grey',
                   },
                 ]}
               >
                 <View style={tw` ml-4 my-5 mr-12`}>
                   {/* ******* Email  ******* */}
-                  <View
-                    style={tw`flex-row  items-center justify-between mt-3 mb-2 `}
-                  >
+                  <View style={tw`flex-row  items-center justify-between mt-3 mb-2 `}>
                     <MaterialCommunityIcons
-                      name="email"
+                      name='email'
                       color={emailFocus ? theme.mainColor : theme.grey}
                       size={22}
                     />
                     <TextInput
-                      placeholder="Enter Email"
-                      placeholderTextColor={
-                        theme.themeMode == "dark" ? theme.grey : "darkgray"
-                      }
+                      placeholder='Enter Email'
+                      placeholderTextColor={theme.themeMode == 'dark' ? theme.grey : 'darkgray'}
                       style={[
                         tw`flex-1 mx-3 border-b-2 `,
                         {
-                          borderBottomColor: emailFocus
-                            ? theme.mainColor
-                            : theme.grey,
+                          borderBottomColor: emailFocus ? theme.mainColor : theme.grey,
                           color: theme.mainTextColor,
                         },
                       ]}
@@ -198,26 +273,19 @@ const Login = () => {
                     />
                   </View>
                   {/* ******* Password  ******* */}
-                  <View
-                    style={tw`flex-row items-center justify-between mt-4 mb-5 `}
-                  >
+                  <View style={tw`flex-row items-center justify-between mt-4 mb-5 `}>
                     <MaterialCommunityIcons
-                      name="key"
+                      name='key'
                       color={passwordFocus ? theme.mainColor : theme.grey}
                       size={22}
                     />
                     <TextInput
-                      placeholder="Enter Password"
-                      placeholderTextColor={
-                        theme.themeMode == "dark" ? theme.grey : "darkgray"
-                      }
+                      placeholder='Enter Password'
+                      placeholderTextColor={theme.themeMode == 'dark' ? theme.grey : 'darkgray'}
                       style={[
-                        tw`flex-1 mx-3 border-b-2
-            `,
+                        tw`flex-1 mx-3 border-b-2`,
                         {
-                          borderBottomColor: passwordFocus
-                            ? theme.mainColor
-                            : theme.grey,
+                          borderBottomColor: passwordFocus ? theme.mainColor : theme.grey,
                           color: theme.mainTextColor,
                         },
                       ]}
@@ -229,7 +297,7 @@ const Login = () => {
                       onPress={() => {
                         setPassword(!passowrd);
                       }}
-                      name={passowrd ? "eye-off" : "eye"}
+                      name={passowrd ? 'eye-off' : 'eye'}
                       color={passwordFocus ? theme.mainColor : theme.grey}
                       size={22}
                     />
@@ -260,9 +328,7 @@ const Login = () => {
                   setLoginPage(!loginPage);
                 }}
               >
-                <Text
-                  style={[tw`font-semibold text-center text-lg text-white`, {}]}
-                >
+                <Text style={[tw`font-semibold text-center text-lg text-white`, {}]}>
                   Create Account
                 </Text>
               </TouchableOpacity>
@@ -290,11 +356,24 @@ const Login = () => {
             >
               <LinearGradient
                 style={[tw`p-4 rounded-full `, {}]}
-                colors={["#4FACFE", "#21ECA0"]}
+                colors={['#4FACFE', '#21ECA0']}
                 start={{ x: -1, y: 0 }}
                 end={{ x: 2, y: 0 }}
               >
-                <AntDesign name="check" size={24} color="white" />
+                {!loginLoading && (
+                  <Animated.View exiting={FadeOut.duration(200)}>
+                    <AntDesign name='check' size={30} color='white' />
+                  </Animated.View>
+                )}
+                {loginLoading && (
+                  <Animated.View entering={FadeIn.duration(800)}>
+                    <ActivityIndicator
+                      size='small'
+                      style={[tw`m-2`, { transform: [{ scale: 1.5 }] }]}
+                      color='white'
+                    />
+                  </Animated.View>
+                )}
               </LinearGradient>
             </TouchableOpacity>
             <Animated.View>
@@ -304,32 +383,26 @@ const Login = () => {
                   {
                     backgroundColor: theme.bgColor,
                     elevation: 8,
-                    shadowColor: "grey",
+                    shadowColor: 'grey',
                   },
                 ]}
               >
                 <View style={tw` mr-4 my-5 ml-16`}>
                   {/* ******* UserName  ******* */}
-                  <View
-                    style={tw`flex-row  items-center justify-between mt-3 mb-2 `}
-                  >
+                  <View style={tw`flex-row  items-center justify-between mt-3 mb-2 `}>
                     <MaterialCommunityIcons
-                      name="account"
+                      name='account'
                       color={emailFocus ? theme.mainColor : theme.grey}
                       size={22}
                     />
                     <TextInput
-                      placeholder="Enter Username"
-                      placeholderTextColor={
-                        theme.themeMode == "dark" ? theme.grey : "darkgray"
-                      }
+                      placeholder='Enter Username'
+                      placeholderTextColor={theme.themeMode == 'dark' ? theme.grey : 'darkgray'}
                       style={[
                         tw`flex-1 mx-3 border-b-2
             `,
                         {
-                          borderBottomColor: emailFocus
-                            ? theme.mainColor
-                            : theme.grey,
+                          borderBottomColor: emailFocus ? theme.mainColor : theme.grey,
                           color: theme.mainTextColor,
                         },
                       ]}
@@ -338,26 +411,20 @@ const Login = () => {
                     />
                   </View>
                   {/* ******* Email  ******* */}
-                  <View
-                    style={tw`flex-row  items-center justify-between mt-3 mb-2 `}
-                  >
+                  <View style={tw`flex-row  items-center justify-between mt-3 mb-2 `}>
                     <MaterialCommunityIcons
-                      name="email"
+                      name='email'
                       color={emailFocus ? theme.mainColor : theme.grey}
                       size={22}
                     />
                     <TextInput
-                      placeholder="Enter Email"
-                      placeholderTextColor={
-                        theme.themeMode == "dark" ? theme.grey : "darkgray"
-                      }
+                      placeholder='Enter Email'
+                      placeholderTextColor={theme.themeMode == 'dark' ? theme.grey : 'darkgray'}
                       style={[
                         tw`flex-1 mx-3 border-b-2
             `,
                         {
-                          borderBottomColor: emailFocus
-                            ? theme.mainColor
-                            : theme.grey,
+                          borderBottomColor: emailFocus ? theme.mainColor : theme.grey,
                           color: theme.mainTextColor,
                         },
                       ]}
@@ -366,25 +433,19 @@ const Login = () => {
                     />
                   </View>
                   {/* ******* Password  ******* */}
-                  <View
-                    style={tw`flex-row items-center justify-between mt-4 mb-2 `}
-                  >
+                  <View style={tw`flex-row items-center justify-between mt-4 mb-2 `}>
                     <MaterialCommunityIcons
-                      name="key"
+                      name='key'
                       color={passwordFocus ? theme.mainColor : theme.grey}
                       size={22}
                     />
                     <TextInput
-                      placeholder="Enter Password"
-                      placeholderTextColor={
-                        theme.themeMode == "dark" ? theme.grey : "darkgray"
-                      }
+                      placeholder='Enter Password'
+                      placeholderTextColor={theme.themeMode == 'dark' ? theme.grey : 'darkgray'}
                       style={[
                         tw`flex-1 mx-3 border-b-2 `,
                         {
-                          borderBottomColor: passwordFocus
-                            ? theme.mainColor
-                            : theme.grey,
+                          borderBottomColor: passwordFocus ? theme.mainColor : theme.grey,
                           color: theme.mainTextColor,
                         },
                       ]}
@@ -396,33 +457,25 @@ const Login = () => {
                       onPress={() => {
                         setPassword(!passowrd);
                       }}
-                      name={passowrd ? "eye-off" : "eye"}
+                      name={passowrd ? 'eye-off' : 'eye'}
                       color={passwordFocus ? theme.mainColor : theme.grey}
                       size={22}
                     />
                   </View>
                   {/* ******* Confirm Password  ******* */}
-                  <View
-                    style={tw`flex-row items-center justify-between mt-4 mb-5 `}
-                  >
+                  <View style={tw`flex-row items-center justify-between mt-4 mb-5 `}>
                     <MaterialCommunityIcons
-                      name="key"
-                      color={
-                        confirmPasswordFocus ? theme.mainColor : theme.grey
-                      }
+                      name='key'
+                      color={confirmPasswordFocus ? theme.mainColor : theme.grey}
                       size={22}
                     />
                     <TextInput
-                      placeholder="Enter Password"
-                      placeholderTextColor={
-                        theme.themeMode == "dark" ? theme.grey : "darkgray"
-                      }
+                      placeholder='Enter Password'
+                      placeholderTextColor={theme.themeMode == 'dark' ? theme.grey : 'darkgray'}
                       style={[
                         tw`flex-1 mx-3 border-b-2 `,
                         {
-                          borderBottomColor: confirmPasswordFocus
-                            ? theme.mainColor
-                            : theme.grey,
+                          borderBottomColor: confirmPasswordFocus ? theme.mainColor : theme.grey,
                           color: theme.mainTextColor,
                         },
                       ]}
@@ -434,10 +487,8 @@ const Login = () => {
                       onPress={() => {
                         setConfirmPassword(!confirmPassowrd);
                       }}
-                      name={confirmPassowrd ? "eye-off" : "eye"}
-                      color={
-                        confirmPasswordFocus ? theme.mainColor : theme.grey
-                      }
+                      name={confirmPassowrd ? 'eye-off' : 'eye'}
+                      color={confirmPasswordFocus ? theme.mainColor : theme.grey}
                       size={22}
                     />
                   </View>
@@ -467,9 +518,7 @@ const Login = () => {
                   setLoginPage(!loginPage);
                 }}
               >
-                <Text
-                  style={[tw`font-semibold text-center text-lg text-white`, {}]}
-                >
+                <Text style={[tw`font-semibold text-center text-lg text-white`, {}]}>
                   Login Page
                 </Text>
               </TouchableOpacity>
