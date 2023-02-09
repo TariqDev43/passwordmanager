@@ -99,8 +99,9 @@ const Login = () => {
       setLoginLoading(false);
       setSuccess(true);
       setTimeout(() => {
-        changeUser(user);
-      }, 5000);
+        setSuccess(false);
+      }, 3000);
+      // changeUser(user);
     } catch (err) {
       console.log(err.message);
     }
@@ -148,85 +149,52 @@ const Login = () => {
           <Animated.View
             entering={BounceInLeft.duration(1000)}
             exiting={SlideOutLeft.duration(300)}
-            style={[tw`flex-1 justify-end relative`, {}]}
+            style={[tw`flex-1 justify-end z-0 `, {}]}
           >
-            {/* {success && (
-              <Pressable
-                style={[
-                  tw` rounded-full absolute  z-10 self-center`,
-                  {
-                    backgroundColor: !success && theme.mainColor,
-                    elevation: success ? 0 : 5,
-                  },
-                ]}
-              >
-                
-              </Pressable>
-            )} */}
-
             <Pressable
-              // bottom-4 left-48
               style={[
                 tw` rounded-full absolute  ${
-                  success ? 'bottom-4 left-48' : 'bottom-12 right-11'
+                  success ? 'bottom-12 left-72' : 'bottom-12 right-11'
                 } z-50 self-center`,
                 {
+                  // left: success && 280,
                   elevation: success ? 0 : 5,
                 },
               ]}
               onPress={loginFunc}
             >
-              {!success && (
-                <Animated.View exiting={FadeOut.duration(100)}>
-                  <LinearGradient
-                    style={[tw`p-4 rounded-full `, {}]}
-                    colors={['#4FACFE', '#21ECA0']}
-                    start={{ x: -1, y: 0 }}
-                    end={{ x: 2, y: 0 }}
-                  >
-                    {!loginLoading && !success && (
-                      <Animated.View exiting={FadeOut.duration(200)}>
-                        <AntDesign name='arrowright' size={30} color='white' />
-                      </Animated.View>
-                    )}
-
-                    {loginLoading && !success && (
-                      <Animated.View
-                        entering={FadeIn.duration(800)}
-                        exiting={FadeOut.duration(100)}
-                      >
-                        <ActivityIndicator
-                          size='small'
-                          style={[tw`m-2`, { transform: [{ scale: 1.5 }] }]}
-                          color='white'
-                        />
-                      </Animated.View>
-                    )}
-                  </LinearGradient>
-                </Animated.View>
-              )}
-              {success && (
-                <>
+              <LinearGradient
+                style={[tw`${success ? 'p-0' : 'p-4'} rounded-full `, {}]}
+                colors={['#4FACFE', '#21ECA0']}
+                start={{ x: -1, y: 0 }}
+                end={{ x: 2, y: 0 }}
+              >
+                <Animated.View>
                   {!loginLoading && !success && (
-                    <Animated.View exiting={FadeOut.duration(200)}>
-                      <AntDesign name='arrowright' size={30} color='white' />
-                    </Animated.View>
-                  )}
-                  {success && (
-                    <Animated.View exiting={FadeOut.duration(200)}>
-                      <LottieView
-                        autoPlay
-                        style={[
-                          {
-                            width: 130,
-                            height: 130,
-                          },
-                        ]}
-                        source={require('../../assets/success.json')}
-                      />
-                    </Animated.View>
+                    <AntDesign name='arrowright' size={30} color='white' />
                   )}
                   {loginLoading && !success && (
+                    <ActivityIndicator
+                      size='small'
+                      style={[tw`m-2`, { transform: [{ scale: 1.5 }] }]}
+                      color='white'
+                    />
+                  )}
+                  {success && (
+                    <LottieView
+                      autoPlay
+                      style={[
+                        {
+                          width: 60,
+                          height: 60,
+                        },
+                      ]}
+                      source={require('../../assets/success.json')}
+                    />
+                  )}
+                </Animated.View>
+
+                {/* {loginLoading && (
                     <Animated.View entering={FadeIn.duration(800)}>
                       <ActivityIndicator
                         size='small'
@@ -234,12 +202,10 @@ const Login = () => {
                         color='white'
                       />
                     </Animated.View>
-                  )}
-                </>
-              )}
+                  )} */}
+              </LinearGradient>
             </Pressable>
-
-            <Animated.View style={tw`z-10`}>
+            <Animated.View>
               <View
                 style={[
                   tw` mr-16 rounded-r-full`,
@@ -252,7 +218,7 @@ const Login = () => {
               >
                 <View style={tw` ml-4 my-5 mr-12`}>
                   {/* ******* Email  ******* */}
-                  <View style={tw`flex-row  items-center justify-between mt-3 mb-2 `}>
+                  <View style={tw`flex-row items-center justify-between mt-3 mb-2 `}>
                     <MaterialCommunityIcons
                       name='email'
                       color={emailFocus ? theme.mainColor : theme.grey}
