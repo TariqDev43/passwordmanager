@@ -100,7 +100,7 @@ const Login = () => {
       setSuccess(true);
       setTimeout(() => {
         setSuccess(false);
-      }, 3000);
+      }, 2100);
       // changeUser(user);
     } catch (err) {
       console.log(err.message);
@@ -154,7 +154,7 @@ const Login = () => {
             <Pressable
               style={[
                 tw` rounded-full absolute  ${
-                  success ? 'bottom-12 left-72' : 'bottom-12 right-11'
+                  success ? 'bottom-12 right-12' : 'bottom-12 right-11'
                 } z-50 self-center`,
                 {
                   // left: success && 280,
