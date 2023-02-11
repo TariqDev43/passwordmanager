@@ -7,6 +7,7 @@ import { useState } from "react";
 import { StatusBar } from "expo-status-bar";
 
 import {
+  deleteAllStorageKeys,
   getAllStorageKeys,
   getDataFromStorage,
   setDataToStorage,
@@ -28,16 +29,21 @@ const Main = () => {
 
   useLayoutEffect(() => {
     const keys = async () => {
+      // await deleteAllStorageKeys();
       const keys = await getAllStorageKeys();
       if (keys.length == 0) {
         await setDataToStorage("themeMode", "light");
         await setDataToStorage("mainColor", "#0abdbf");
         await setDataToStorage("elevation", "true");
         await setDataToStorage("elevationValue", "1");
+        changeColor("#0abdbf");
+        changeElevation(true);
+        changeElevationValue(1);
         setThemeMode("light");
         changeTheme("light");
       } else {
         const storageTheme = await getDataFromStorage("themeMode");
+
         const mainColor = await getDataFromStorage("mainColor");
         const elevation = await getDataFromStorage("elevation");
         const elevationValue = await getDataFromStorage("elevationValue");

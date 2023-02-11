@@ -1,126 +1,242 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from "react";
 import {
   ActivityIndicator,
-  Button,
   ImageBackground,
   Keyboard,
-  KeyboardAvoidingView,
+  Modal,
   Pressable,
   Text,
   TextInput,
-  TouchableHighlight,
   TouchableOpacity,
   View,
-} from 'react-native';
-import LottieView from 'lottie-react-native';
-import tw from 'tailwind-react-native-classnames';
+} from "react-native";
+import LottieView from "lottie-react-native";
+import tw from "tailwind-react-native-classnames";
 import Animated, {
-  BounceIn,
   BounceInLeft,
   BounceInRight,
-  BounceOutLeft,
-  BounceOutRight,
   FadeIn,
   FadeOut,
-  FlipInEasyX,
-  FlipInEasyY,
-  FlipOutEasyX,
-  FlipOutEasyY,
-  FlipOutYLeft,
-  FlipOutYRight,
-  RollInRight,
   SlideOutLeft,
   SlideOutRight,
-  useAnimatedStyle,
   useSharedValue,
-  withDelay,
-  withRepeat,
-  withSequence,
-  withTiming,
-} from 'react-native-reanimated';
-import useTheme from '../../Contexts/ThemeContext';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
-import { AntDesign } from '@expo/vector-icons';
-import useUser from '../../Contexts/UserContext';
-import { createUser, login } from '../../services/firebaseService';
+} from "react-native-reanimated";
+import useTheme from "../../Contexts/ThemeContext";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import { AntDesign } from "@expo/vector-icons";
+import useUser from "../../Contexts/UserContext";
+import { createUser, login } from "../../services/firebaseService";
 
 const Login = () => {
   /*   ALL States
    ********************************************* */
-  const [passowrd, setPassword] = useState(true);
-  const [confirmPassowrd, setConfirmPassword] = useState(true);
+  const [passowrdShow, setPasswordShow] = useState(true);
+
+  const [registerPasswordShow, setRegisterPasswordShow] = useState(true);
+  const [registerConfirmPasswordShow, setRegisterConfirmPasswordShow] =
+    useState(true);
+
   const [loginPage, setLoginPage] = useState(true);
   const [loginLoading, setLoginLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-
+  const loginSuccess = useRef(null);
+  const registerSuccess = useRef(null);
   const { changeUser } = useUser();
+  const [userInfo, setUserInfo] = useState(null);
+  const [modalTitle, setModalTitle] = useState(null);
+  const [modalBody, setModalBody] = useState(null);
+
+  // Login Fiels
+  const [loginEmail, setLoginEmail] = useState(null);
+  const [loginPassword, setLoginPassword] = useState(null);
+
+  // Register Fiels
+  const [username, setUsername] = useState(null);
+  const [registerEmail, setRegisterEmail] = useState(null);
+  const [registerPassword, setRegisterPassword] = useState(null);
+  const [registerConfirmPassword, setRegisterConfirmPassword] = useState(null);
 
   // theme
   const { theme } = useTheme();
 
-  // Animated Values
-  const opacity = useSharedValue(true);
-
-  // Focus States
+  // login States
   const [emailFocus, setEmailFocus] = useState(false);
   const [passwordFocus, setPasswordFocus] = useState(false);
+
+  // register States
+  const [registerEmailFocus, setRegisterEmailFocus] = useState(false);
+  const [registerPasswordFocus, setRegisterPasswordFocus] = useState(false);
   const [confirmPasswordFocus, setConfirmPasswordFocus] = useState(false);
+  const [usernameFocus, setUsernameFocus] = useState(false);
 
   // turning focus off
   const setFocusOff = () => {
     setEmailFocus(false);
     setPasswordFocus(false);
+    setUsernameFocus(false);
+    setRegisterEmailFocus(false);
+    setRegisterPasswordFocus(false);
+    setConfirmPasswordFocus(false);
   };
+
+  // Error Modal
+  const [showModal, setShowModal] = useState(false);
 
   /*   All Function
    ********************************************* */
-  const loginDiv = useAnimatedStyle(() => ({
-    opacity: withTiming(opacity.value ? 1 : 0, { duration: 1000 }),
-
-    // transform: [
-    //   {
-    //     translateY: withRepeat(
-    //       withSequence(
-    //         withTiming(-15),
-    //         withDelay(1500, withTiming(0)),
-    //         withTiming(-15)
-    //       ),
-    //       -1
-    //     ),
-    //   },
-    // ],
-  }));
 
   const loginFunc = async () => {
+    if (loginEmail == null) {
+      setShowModal(true);
+      setModalTitle("Login Error");
+      setModalBody("Email Is Required");
+      return;
+    }
+    if (loginPassword == null) {
+      setShowModal(true);
+      setModalTitle("Login Error");
+      setModalBody("Password Is Required");
+      return;
+    }
+    setFocusOff();
     try {
       setLoginLoading(true);
-      const user = await login();
-      setLoginLoading(false);
-      setSuccess(true);
-      setTimeout(() => {
-        setSuccess(false);
-      }, 2100);
-      // changeUser(user);
+      const user = await login(loginEmail, loginPassword);
+      if (user.uid) {
+        setLoginLoading(false);
+        setSuccess(true);
+        loginSuccess.current?.play();
+        setUserInfo(user);
+      } else {
+        console.log(user);
+        setLoginLoading(false);
+        setModalTitle("Login Error");
+        setModalBody("user not returned");
+      }
     } catch (err) {
+      setLoginLoading(false);
       console.log(err.message);
+      setShowModal(true);
+      setModalTitle("Login Error");
+      let loginErrMsg;
+      if (err.message.includes("wrong-password")) {
+        loginErrMsg = "Wrong Password";
+      } else if (err.message.includes("invalid-email")) {
+        loginErrMsg = "Invalid Email";
+      } else {
+        loginErrMsg = err.message;
+      }
+      setModalBody(loginErrMsg);
     }
   };
   const registerFunc = async () => {
+    setFocusOff();
+    if (username == null) {
+      setShowModal(true);
+      setModalTitle("Login Error");
+      setModalBody("Username Is Required");
+      return;
+    }
+    if (registerEmail == null) {
+      setShowModal(true);
+      setModalTitle("Login Error");
+      setModalBody("Email Is Required");
+      return;
+    }
+    if (registerPassword == null) {
+      setShowModal(true);
+      setModalTitle("Login Error");
+      setModalBody("Password Is Required");
+      return;
+    }
+    if (registerConfirmPassword == null) {
+      setShowModal(true);
+      setModalTitle("Login Error");
+      setModalBody("Confirm Password Is Required");
+      return;
+    }
+    if (registerPassword != registerConfirmPassword) {
+      setShowModal(true);
+      setModalTitle("Login Error");
+      setModalBody("Passwords Do Not Match");
+      return;
+    }
     try {
       setLoginLoading(true);
-      const user = await createUser('test_username', 'a@b.com', 'abc123', 'test_name');
-      changeUser(user);
+      const user = await createUser(registerEmail, registerPassword, username);
+      if (user.uid) {
+        setLoginLoading(false);
+        setSuccess(true);
+        registerSuccess.current?.play();
+      } else {
+        setModalTitle("Login Error");
+        setModalBody("user not returned");
+      }
     } catch (err) {
-      console.log(err.message + 'this');
+      setSuccess(false);
+      setLoginLoading(false);
+      setShowModal(true);
+      setModalTitle("Register Error");
+      let registerErrMsg;
+      if (err.message.includes("email-already-in-use")) {
+        registerErrMsg = "Email Already In Use";
+      } else if (err.message.includes("invalid-email")) {
+        registerErrMsg = "Invalid Email";
+      } else {
+        registerErrMsg = err.message;
+      }
+      setModalBody(registerErrMsg);
+      // showAlert("Register Error", err.message);
+      console.log(err.message);
     }
   };
 
   return (
     <ImageBackground
-      style={[tw` flex-1  justify-center  `, { backgroundColor: theme.mainBgColor }]}
-      source={require('../../assets/bg.png')}
+      style={[
+        tw` flex-1  justify-center  `,
+        { backgroundColor: theme.mainBgColor },
+      ]}
+      source={require("../../assets/bg.png")}
     >
+      <Modal animationType="fade" transparent={true} visible={showModal}>
+        <View style={[tw`flex-1 justify-center items-center`]}>
+          <Pressable
+            style={[
+              tw`p-5 rounded-2xl w-64`,
+              { backgroundColor: theme.modalBg, elevation: 100 },
+            ]}
+            onPress={() => {
+              setShowModal(false);
+            }}
+          >
+            <View>
+              <View style={[tw` px-2 `, {}]}>
+                <Text style={[tw`font-semibold text-lg`, {}]}>
+                  {modalTitle}
+                </Text>
+              </View>
+              <View style={[tw` p-2`, {}]}>
+                <Text style={[tw`text-base`, {}]}>{modalBody}</Text>
+              </View>
+            </View>
+            {/**************** Buttons ***********************/}
+            <View style={tw`flex-row justify-end  mx-1  items-center `}>
+              <TouchableOpacity
+                onPress={() => setShowModal(false)}
+                style={tw`p-1`}
+              >
+                <Text
+                  style={[tw`font-bold text-xs`, { color: theme.mainColor }]}
+                >
+                  Okay
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </Pressable>
+        </View>
+      </Modal>
       <Pressable
         onPress={() => {
           Keyboard.dismiss();
@@ -132,14 +248,13 @@ const Login = () => {
          *********************************************  */}
         <View style={[tw`absolute self-center top-24`]}>
           <LottieView
-            autoPlay='true'
             style={[
               {
                 width: 250,
                 height: 250,
               },
             ]}
-            source={require('../../assets/key.json')}
+            source={require("../../assets/key.json")}
           />
         </View>
 
@@ -153,56 +268,49 @@ const Login = () => {
           >
             <Pressable
               style={[
-                tw` rounded-full absolute  ${
-                  success ? 'bottom-12 right-12' : 'bottom-12 right-11'
-                } z-50 self-center`,
+                tw` rounded-full absolute  bottom-12 right-10 z-50 self-center`,
                 {
-                  // left: success && 280,
                   elevation: success ? 0 : 5,
                 },
               ]}
               onPress={loginFunc}
             >
               <LinearGradient
-                style={[tw`${success ? 'p-0' : 'p-4'} rounded-full `, {}]}
-                colors={['#4FACFE', '#21ECA0']}
+                style={[tw`${success ? "p-0" : "p-4"} rounded-full `, {}]}
+                colors={["#4FACFE", "#21ECA0"]}
                 start={{ x: -1, y: 0 }}
                 end={{ x: 2, y: 0 }}
               >
                 <Animated.View>
                   {!loginLoading && !success && (
-                    <AntDesign name='arrowright' size={30} color='white' />
+                    <AntDesign name="arrowright" size={30} color="white" />
                   )}
                   {loginLoading && !success && (
                     <ActivityIndicator
-                      size='small'
+                      size="small"
                       style={[tw`m-2`, { transform: [{ scale: 1.5 }] }]}
-                      color='white'
+                      color="white"
                     />
                   )}
                   {success && (
                     <LottieView
-                      autoPlay
+                      autoPlay={false}
+                      loop={false}
+                      ref={loginSuccess}
+                      onAnimationFinish={async () => {
+                        setSuccess(false);
+                        // changeUser(userInfo);
+                      }}
                       style={[
                         {
                           width: 60,
                           height: 60,
                         },
                       ]}
-                      source={require('../../assets/success.json')}
+                      source={require("../../assets/success.json")}
                     />
                   )}
                 </Animated.View>
-
-                {/* {loginLoading && (
-                    <Animated.View entering={FadeIn.duration(800)}>
-                      <ActivityIndicator
-                        size='small'
-                        style={[tw`m-2`, { transform: [{ scale: 1.5 }] }]}
-                        color='white'
-                      />
-                    </Animated.View>
-                  )} */}
               </LinearGradient>
             </Pressable>
             <Animated.View>
@@ -212,25 +320,33 @@ const Login = () => {
                   {
                     backgroundColor: theme.bgColor,
                     elevation: 8,
-                    shadowColor: 'grey',
+                    shadowColor: "grey",
                   },
                 ]}
               >
                 <View style={tw` ml-4 my-5 mr-12`}>
                   {/* ******* Email  ******* */}
-                  <View style={tw`flex-row items-center justify-between mt-3 mb-2 `}>
+                  <View
+                    style={tw`flex-row items-center justify-between mt-3 mb-2 `}
+                  >
                     <MaterialCommunityIcons
-                      name='email'
+                      name="email"
                       color={emailFocus ? theme.mainColor : theme.grey}
                       size={22}
                     />
                     <TextInput
-                      placeholder='Enter Email'
-                      placeholderTextColor={theme.themeMode == 'dark' ? theme.grey : 'darkgray'}
+                      placeholder="Enter Email"
+                      value={loginEmail}
+                      onChangeText={setLoginEmail}
+                      placeholderTextColor={
+                        theme.themeMode == "dark" ? theme.grey : "darkgray"
+                      }
                       style={[
                         tw`flex-1 mx-3 border-b-2 `,
                         {
-                          borderBottomColor: emailFocus ? theme.mainColor : theme.grey,
+                          borderBottomColor: emailFocus
+                            ? theme.mainColor
+                            : theme.grey,
                           color: theme.mainTextColor,
                         },
                       ]}
@@ -239,31 +355,39 @@ const Login = () => {
                     />
                   </View>
                   {/* ******* Password  ******* */}
-                  <View style={tw`flex-row items-center justify-between mt-4 mb-5 `}>
+                  <View
+                    style={tw`flex-row items-center justify-between mt-4 mb-5 `}
+                  >
                     <MaterialCommunityIcons
-                      name='key'
+                      name="key"
                       color={passwordFocus ? theme.mainColor : theme.grey}
                       size={22}
                     />
                     <TextInput
-                      placeholder='Enter Password'
-                      placeholderTextColor={theme.themeMode == 'dark' ? theme.grey : 'darkgray'}
+                      value={loginPassword}
+                      onChangeText={setLoginPassword}
+                      placeholder="Enter Password"
+                      placeholderTextColor={
+                        theme.themeMode == "dark" ? theme.grey : "darkgray"
+                      }
                       style={[
                         tw`flex-1 mx-3 border-b-2`,
                         {
-                          borderBottomColor: passwordFocus ? theme.mainColor : theme.grey,
+                          borderBottomColor: passwordFocus
+                            ? theme.mainColor
+                            : theme.grey,
                           color: theme.mainTextColor,
                         },
                       ]}
-                      secureTextEntry={passowrd ? true : false}
+                      secureTextEntry={passowrdShow ? true : false}
                       onFocus={() => setPasswordFocus(true)}
                       onBlur={() => setPasswordFocus(false)}
                     />
                     <MaterialCommunityIcons
                       onPress={() => {
-                        setPassword(!passowrd);
+                        setPasswordShow(!passowrdShow);
                       }}
-                      name={passowrd ? 'eye-off' : 'eye'}
+                      name={passowrdShow ? "eye-off" : "eye"}
                       color={passwordFocus ? theme.mainColor : theme.grey}
                       size={22}
                     />
@@ -292,9 +416,12 @@ const Login = () => {
                 ]}
                 onPressIn={() => {
                   setLoginPage(!loginPage);
+                  setFocusOff();
                 }}
               >
-                <Text style={[tw`font-semibold text-center text-lg text-white`, {}]}>
+                <Text
+                  style={[tw`font-semibold text-center text-lg text-white`, {}]}
+                >
                   Create Account
                 </Text>
               </TouchableOpacity>
@@ -310,38 +437,56 @@ const Login = () => {
             exiting={SlideOutRight.duration(300)}
             style={[tw`flex-1 justify-end`, {}]}
           >
-            <TouchableOpacity
+            <Pressable
               style={[
-                tw` rounded-full absolute bg-red-200 bottom-28 left-11 z-50 self-center`,
+                tw` rounded-full absolute  left-10 z-50 self-center`,
                 {
-                  backgroundColor: theme.mainColor,
-                  elevation: 5,
+                  bottom: 94,
+                  elevation: success ? 0 : 5,
                 },
               ]}
               onPress={registerFunc}
             >
               <LinearGradient
-                style={[tw`p-4 rounded-full `, {}]}
-                colors={['#4FACFE', '#21ECA0']}
+                style={[tw`${success ? "p-0" : "p-4"}  rounded-full `, {}]}
+                colors={["#4FACFE", "#21ECA0"]}
                 start={{ x: -1, y: 0 }}
                 end={{ x: 2, y: 0 }}
               >
-                {!loginLoading && (
+                {!loginLoading && !success && (
                   <Animated.View exiting={FadeOut.duration(200)}>
-                    <AntDesign name='check' size={30} color='white' />
+                    <AntDesign name="check" size={30} color="white" />
                   </Animated.View>
                 )}
-                {loginLoading && (
+                {loginLoading && !success && (
                   <Animated.View entering={FadeIn.duration(800)}>
                     <ActivityIndicator
-                      size='small'
+                      size="small"
                       style={[tw`m-2`, { transform: [{ scale: 1.5 }] }]}
-                      color='white'
+                      color="white"
                     />
                   </Animated.View>
                 )}
+                {success && (
+                  <LottieView
+                    autoPlay={false}
+                    loop={false}
+                    ref={registerSuccess}
+                    onAnimationFinish={async () => {
+                      setSuccess(false);
+                      // changeUser(userInfo);
+                    }}
+                    style={[
+                      {
+                        width: 60,
+                        height: 60,
+                      },
+                    ]}
+                    source={require("../../assets/success.json")}
+                  />
+                )}
               </LinearGradient>
-            </TouchableOpacity>
+            </Pressable>
             <Animated.View>
               <View
                 style={[
@@ -349,112 +494,152 @@ const Login = () => {
                   {
                     backgroundColor: theme.bgColor,
                     elevation: 8,
-                    shadowColor: 'grey',
+                    shadowColor: "grey",
                   },
                 ]}
               >
                 <View style={tw` mr-4 my-5 ml-16`}>
-                  {/* ******* UserName  ******* */}
-                  <View style={tw`flex-row  items-center justify-between mt-3 mb-2 `}>
+                  {/* ******* Username  ******* */}
+                  <View
+                    style={tw`flex-row  items-center justify-between mt-3 mb-2 `}
+                  >
                     <MaterialCommunityIcons
-                      name='account'
-                      color={emailFocus ? theme.mainColor : theme.grey}
+                      name="account"
+                      color={usernameFocus ? theme.mainColor : theme.grey}
                       size={22}
                     />
                     <TextInput
-                      placeholder='Enter Username'
-                      placeholderTextColor={theme.themeMode == 'dark' ? theme.grey : 'darkgray'}
-                      style={[
-                        tw`flex-1 mx-3 border-b-2
-            `,
-                        {
-                          borderBottomColor: emailFocus ? theme.mainColor : theme.grey,
-                          color: theme.mainTextColor,
-                        },
-                      ]}
-                      onFocus={() => setEmailFocus(true)}
-                      onBlur={() => setEmailFocus(false)}
-                    />
-                  </View>
-                  {/* ******* Email  ******* */}
-                  <View style={tw`flex-row  items-center justify-between mt-3 mb-2 `}>
-                    <MaterialCommunityIcons
-                      name='email'
-                      color={emailFocus ? theme.mainColor : theme.grey}
-                      size={22}
-                    />
-                    <TextInput
-                      placeholder='Enter Email'
-                      placeholderTextColor={theme.themeMode == 'dark' ? theme.grey : 'darkgray'}
-                      style={[
-                        tw`flex-1 mx-3 border-b-2
-            `,
-                        {
-                          borderBottomColor: emailFocus ? theme.mainColor : theme.grey,
-                          color: theme.mainTextColor,
-                        },
-                      ]}
-                      onFocus={() => setEmailFocus(true)}
-                      onBlur={() => setEmailFocus(false)}
-                    />
-                  </View>
-                  {/* ******* Password  ******* */}
-                  <View style={tw`flex-row items-center justify-between mt-4 mb-2 `}>
-                    <MaterialCommunityIcons
-                      name='key'
-                      color={passwordFocus ? theme.mainColor : theme.grey}
-                      size={22}
-                    />
-                    <TextInput
-                      placeholder='Enter Password'
-                      placeholderTextColor={theme.themeMode == 'dark' ? theme.grey : 'darkgray'}
+                      value={username}
+                      onChangeText={setUsername}
+                      placeholder="Enter Username"
+                      placeholderTextColor={
+                        theme.themeMode == "dark" ? theme.grey : "darkgray"
+                      }
                       style={[
                         tw`flex-1 mx-3 border-b-2 `,
                         {
-                          borderBottomColor: passwordFocus ? theme.mainColor : theme.grey,
+                          borderBottomColor: usernameFocus
+                            ? theme.mainColor
+                            : theme.grey,
                           color: theme.mainTextColor,
                         },
                       ]}
-                      secureTextEntry={passowrd ? true : false}
-                      onFocus={() => setPasswordFocus(true)}
-                      onBlur={() => setPasswordFocus(false)}
+                      onFocus={() => setUsernameFocus(true)}
+                      onBlur={() => setUsernameFocus(false)}
+                    />
+                  </View>
+                  {/* ******* Email  ******* */}
+                  <View
+                    style={tw`flex-row  items-center justify-between mt-3 mb-2 `}
+                  >
+                    <MaterialCommunityIcons
+                      name="email"
+                      color={registerEmailFocus ? theme.mainColor : theme.grey}
+                      size={22}
+                    />
+                    <TextInput
+                      value={registerEmail}
+                      onChangeText={setRegisterEmail}
+                      placeholder="Enter Email"
+                      placeholderTextColor={
+                        theme.themeMode == "dark" ? theme.grey : "darkgray"
+                      }
+                      style={[
+                        tw`flex-1 mx-3 border-b-2 `,
+                        {
+                          borderBottomColor: registerEmailFocus
+                            ? theme.mainColor
+                            : theme.grey,
+                          color: theme.mainTextColor,
+                        },
+                      ]}
+                      onFocus={() => setRegisterEmailFocus(true)}
+                      onBlur={() => setRegisterEmailFocus(false)}
+                    />
+                  </View>
+                  {/* ******* Password  ******* */}
+                  <View
+                    style={tw`flex-row items-center justify-between mt-3 mb-2 `}
+                  >
+                    <MaterialCommunityIcons
+                      name="key"
+                      color={
+                        registerPasswordFocus ? theme.mainColor : theme.grey
+                      }
+                      size={22}
+                    />
+                    <TextInput
+                      value={registerPassword}
+                      onChangeText={setRegisterPassword}
+                      placeholder="Enter Password"
+                      placeholderTextColor={
+                        theme.themeMode == "dark" ? theme.grey : "darkgray"
+                      }
+                      style={[
+                        tw`flex-1 mx-3 border-b-2 `,
+                        {
+                          borderBottomColor: registerPasswordFocus
+                            ? theme.mainColor
+                            : theme.grey,
+                          color: theme.mainTextColor,
+                        },
+                      ]}
+                      secureTextEntry={registerPasswordShow ? true : false}
+                      onFocus={() => setRegisterPasswordFocus(true)}
+                      onBlur={() => setRegisterPasswordFocus(false)}
                     />
                     <MaterialCommunityIcons
                       onPress={() => {
-                        setPassword(!passowrd);
+                        setRegisterPasswordShow(!registerPasswordShow);
                       }}
-                      name={passowrd ? 'eye-off' : 'eye'}
+                      name={registerPasswordShow ? "eye-off" : "eye"}
                       color={passwordFocus ? theme.mainColor : theme.grey}
                       size={22}
                     />
                   </View>
                   {/* ******* Confirm Password  ******* */}
-                  <View style={tw`flex-row items-center justify-between mt-4 mb-5 `}>
+                  <View
+                    style={tw`flex-row items-center justify-between mt-3 mb-5 `}
+                  >
                     <MaterialCommunityIcons
-                      name='key'
-                      color={confirmPasswordFocus ? theme.mainColor : theme.grey}
+                      name="key"
+                      color={
+                        confirmPasswordFocus ? theme.mainColor : theme.grey
+                      }
                       size={22}
                     />
                     <TextInput
-                      placeholder='Enter Password'
-                      placeholderTextColor={theme.themeMode == 'dark' ? theme.grey : 'darkgray'}
+                      value={registerConfirmPassword}
+                      onChangeText={setRegisterConfirmPassword}
+                      placeholder="Enter Confirm Password"
+                      placeholderTextColor={
+                        theme.themeMode == "dark" ? theme.grey : "darkgray"
+                      }
                       style={[
                         tw`flex-1 mx-3 border-b-2 `,
                         {
-                          borderBottomColor: confirmPasswordFocus ? theme.mainColor : theme.grey,
+                          borderBottomColor: confirmPasswordFocus
+                            ? theme.mainColor
+                            : theme.grey,
                           color: theme.mainTextColor,
                         },
                       ]}
-                      secureTextEntry={confirmPassowrd ? true : false}
+                      secureTextEntry={
+                        registerConfirmPasswordShow ? true : false
+                      }
                       onFocus={() => setConfirmPasswordFocus(true)}
                       onBlur={() => setConfirmPasswordFocus(false)}
                     />
                     <MaterialCommunityIcons
                       onPress={() => {
-                        setConfirmPassword(!confirmPassowrd);
+                        setRegisterConfirmPasswordShow(
+                          !registerConfirmPasswordShow
+                        );
                       }}
-                      name={confirmPassowrd ? 'eye-off' : 'eye'}
-                      color={confirmPasswordFocus ? theme.mainColor : theme.grey}
+                      name={registerConfirmPasswordShow ? "eye-off" : "eye"}
+                      color={
+                        confirmPasswordFocus ? theme.mainColor : theme.grey
+                      }
                       size={22}
                     />
                   </View>
@@ -482,9 +667,12 @@ const Login = () => {
                 ]}
                 onPressIn={() => {
                   setLoginPage(!loginPage);
+                  setFocusOff();
                 }}
               >
-                <Text style={[tw`font-semibold text-center text-lg text-white`, {}]}>
+                <Text
+                  style={[tw`font-semibold text-center text-lg text-white`, {}]}
+                >
                   Login Page
                 </Text>
               </TouchableOpacity>

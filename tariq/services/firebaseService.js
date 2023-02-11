@@ -1,4 +1,4 @@
-import { initializeApp } from 'firebase/app';
+import { initializeApp } from "firebase/app";
 // import admin from "firebase-admin";
 
 import {
@@ -10,22 +10,22 @@ import {
   getDocs,
   getFirestore,
   setDoc,
-} from 'firebase/firestore';
+} from "firebase/firestore";
 import {
   createUserWithEmailAndPassword,
   getAuth,
   signInWithEmailAndPassword,
   updateCurrentUser,
-} from 'firebase/auth';
+} from "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: 'AIzaSyCsbcjhdQw31OQeg5KrC7qXQuuvqk7VzWw',
-  authDomain: 'passwordmanager-43.firebaseapp.com',
-  databaseURL: 'https://passwordmanager-43-default-rtdb.firebaseio.com',
-  projectId: 'passwordmanager-43',
-  storageBucket: 'passwordmanager-43.appspot.com',
-  messagingSenderId: '419467193948',
-  appId: '1:419467193948:web:04cbbaea7c74e5dfe80099',
+  apiKey: "AIzaSyCsbcjhdQw31OQeg5KrC7qXQuuvqk7VzWw",
+  authDomain: "passwordmanager-43.firebaseapp.com",
+  databaseURL: "https://passwordmanager-43-default-rtdb.firebaseio.com",
+  projectId: "passwordmanager-43",
+  storageBucket: "passwordmanager-43.appspot.com",
+  messagingSenderId: "419467193948",
+  appId: "1:419467193948:web:04cbbaea7c74e5dfe80099",
 };
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
@@ -37,12 +37,12 @@ export const auth = getAuth(app);
  ********************************************* */
 // Admin App
 
-export const login = async () => {
+export const login = async (username, password) => {
   try {
-    const data = await signInWithEmailAndPassword(auth, 'a@b.com', 'abc123');
+    const data = await signInWithEmailAndPassword(auth, username, password);
     return data.user;
   } catch (err) {
-    console.log(err.message);
+    throw err;
   }
 };
 
@@ -53,13 +53,16 @@ export const login = async () => {
 //   databaseURL: "https://passwordmanager-43-default-rtdb.firebaseio.com",
 // });
 // const adminAuth = admin.auth();
-export const createUser = async (uid, email, password, name) => {
+export const createUser = async (email, password, name) => {
   try {
-    const { user } = await createUserWithEmailAndPassword(auth, email, password);
+    const { user } = await createUserWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
     return user;
   } catch (err) {
-    console.log(err.message);
-    return err.message;
+    throw err;
   }
   // admin
   //   .auth()
@@ -111,15 +114,15 @@ export const createUser = async (uid, email, password, name) => {
 //   }
 // };
 
-const uid = 'abcTestAccount';
-const email = 'a@b.com';
-const password = 'abc123';
-const name = 'tariq';
+const uid = "abcTestAccount";
+const email = "a@b.com";
+const password = "abc123";
+const name = "tariq";
 // createUser(uid, email, password, name);
 // getAllUsers();
 
 const addUserData = async (uid, email, password, name) => {
-  const userRef = collection(db, 'Users');
+  const userRef = collection(db, "Users");
 
   try {
     await setDoc(doc(userRef, uid), {
@@ -128,7 +131,7 @@ const addUserData = async (uid, email, password, name) => {
       password,
       name,
     });
-    console.log('Successfully Added');
+    console.log("Successfully Added");
   } catch (error) {
     console.log(error.message);
   }
@@ -156,10 +159,13 @@ const addCategory = (categoryName, icon_rec, categoryData) => {
   let icon = icon_rec.toLowerCase();
 
   // Category Items
-  const category_ref = collection(db, `Users/${uid}/Categories/${category}/Items`);
+  const category_ref = collection(
+    db,
+    `Users/${uid}/Categories/${category}/Items`
+  );
   addDoc(category_ref, categoryData)
     .then((data) => {
-      console.log('Doc Added');
+      console.log("Doc Added");
     })
     .catch((err) => console.log(err.message));
 
@@ -181,7 +187,10 @@ const getAllCategories = async () => {
   return data;
 };
 const getCategoryByName = async (name) => {
-  const categories = collection(db, `Users/${uid}/Categories/${name.toLowerCase()}/Items`);
+  const categories = collection(
+    db,
+    `Users/${uid}/Categories/${name.toLowerCase()}/Items`
+  );
   let data = [];
   await getDocs(categories)
     .then((res) => {
