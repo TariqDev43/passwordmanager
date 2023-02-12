@@ -38,7 +38,8 @@ const Login = () => {
 
   const [loginPage, setLoginPage] = useState(true);
   const [loginLoading, setLoginLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
+  const [successLogin, setSuccessLogin] = useState(false);
+  const [successRegister, setSuccessRegister] = useState(false);
   const loginSuccess = useRef(null);
   const registerSuccess = useRef(null);
   const { changeUser } = useUser();
@@ -86,37 +87,35 @@ const Login = () => {
    ********************************************* */
 
   const loginFunc = async () => {
-    // if (loginEmail == null) {
-    //   setShowModal(true);
-    //   setModalTitle("Login Error");
-    //   setModalBody("Email Is Required");
-    //   return;
-    // }
-    // if (loginPassword == null) {
-    //   setShowModal(true);
-    //   setModalTitle("Login Error");
-    //   setModalBody("Password Is Required");
-    //   return;
-    // }
+    if (loginEmail == null) {
+      setShowModal(true);
+      setModalTitle("Login Error");
+      setModalBody("Email Is Required");
+      return;
+    }
+    if (loginPassword == null) {
+      setShowModal(true);
+      setModalTitle("Login Error");
+      setModalBody("Password Is Required");
+      return;
+    }
     setFocusOff();
     try {
       setLoginLoading(true);
-      const user = await login("a@b.com", "abc123");
-      // const user = await login(loginEmail, loginPassword);
+      // const user = await login("a@b.com", "abc123");
+      const user = await login(loginEmail, loginPassword);
       if (user.uid) {
         setLoginLoading(false);
-        setSuccess(true);
+        setSuccessLogin(true);
         loginSuccess.current?.play();
         setUserInfo(user);
       } else {
-        console.log(user);
         setLoginLoading(false);
         setModalTitle("Login Error");
         setModalBody("user not returned");
       }
     } catch (err) {
       setLoginLoading(false);
-      console.log(err.message);
       setShowModal(true);
       setModalTitle("Login Error");
       let loginErrMsg;
@@ -124,6 +123,8 @@ const Login = () => {
         loginErrMsg = "Wrong Password";
       } else if (err.message.includes("invalid-email")) {
         loginErrMsg = "Invalid Email";
+      } else if (err.message.includes("user-not-found")) {
+        loginErrMsg = "User not found.\nPlease create an account first";
       } else {
         loginErrMsg = err.message;
       }
@@ -167,14 +168,16 @@ const Login = () => {
       const user = await createUser(registerEmail, registerPassword, username);
       if (user.uid) {
         setLoginLoading(false);
-        setSuccess(true);
+        setSuccessRegister(true);
         registerSuccess.current?.play();
+        setUserInfo(user);
+        console.log(user);
       } else {
         setModalTitle("Login Error");
         setModalBody("user not returned");
       }
     } catch (err) {
-      setSuccess(false);
+      setSuccessRegister(false);
       setLoginLoading(false);
       setShowModal(true);
       setModalTitle("Register Error");
@@ -270,35 +273,35 @@ const Login = () => {
               style={[
                 tw` rounded-full absolute  bottom-12 right-10 z-50 self-center`,
                 {
-                  elevation: success ? 0 : 5,
+                  elevation: successLogin ? 0 : 5,
                 },
               ]}
               onPress={loginFunc}
             >
               <LinearGradient
-                style={[tw`${success ? "p-0" : "p-4"} rounded-full `, {}]}
+                style={[tw`${successLogin ? "p-0" : "p-4"} rounded-full `, {}]}
                 colors={["#4FACFE", "#21ECA0"]}
                 start={{ x: -1, y: 0 }}
                 end={{ x: 2, y: 0 }}
               >
                 <Animated.View>
-                  {!loginLoading && !success && (
+                  {!loginLoading && !successLogin && (
                     <AntDesign name="arrowright" size={30} color="white" />
                   )}
-                  {loginLoading && !success && (
+                  {loginLoading && !successLogin && (
                     <ActivityIndicator
                       size="small"
                       style={[tw`m-2`, { transform: [{ scale: 1.5 }] }]}
                       color="white"
                     />
                   )}
-                  {success && (
+                  {successLogin && (
                     <LottieView
                       autoPlay={false}
                       loop={false}
                       ref={loginSuccess}
                       onAnimationFinish={async () => {
-                        setSuccess(false);
+                        setSuccessLogin(false);
                         changeUser(userInfo);
                       }}
                       style={[
@@ -442,23 +445,26 @@ const Login = () => {
                 tw` rounded-full absolute  left-10 z-50 self-center`,
                 {
                   bottom: 94,
-                  elevation: success ? 0 : 5,
+                  elevation: successRegister ? 0 : 5,
                 },
               ]}
               onPress={registerFunc}
             >
               <LinearGradient
-                style={[tw`${success ? "p-0" : "p-4"}  rounded-full `, {}]}
+                style={[
+                  tw`${successRegister ? "p-0" : "p-4"}  rounded-full `,
+                  {},
+                ]}
                 colors={["#4FACFE", "#21ECA0"]}
                 start={{ x: -1, y: 0 }}
                 end={{ x: 2, y: 0 }}
               >
-                {!loginLoading && !success && (
+                {!loginLoading && !successRegister && (
                   <Animated.View exiting={FadeOut.duration(200)}>
                     <AntDesign name="check" size={30} color="white" />
                   </Animated.View>
                 )}
-                {loginLoading && !success && (
+                {loginLoading && !successRegister && (
                   <Animated.View entering={FadeIn.duration(800)}>
                     <ActivityIndicator
                       size="small"
@@ -467,13 +473,13 @@ const Login = () => {
                     />
                   </Animated.View>
                 )}
-                {success && (
+                {successRegister && (
                   <LottieView
                     autoPlay={false}
                     loop={false}
                     ref={registerSuccess}
                     onAnimationFinish={async () => {
-                      setSuccess(false);
+                      setSuccessRegister(false);
                       changeUser(userInfo);
                     }}
                     style={[

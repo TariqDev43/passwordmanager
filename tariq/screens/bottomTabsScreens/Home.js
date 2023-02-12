@@ -10,26 +10,31 @@ import {
   SafeAreaView,
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { memo, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import { useMemo } from "react";
 import useTheme from "../../Contexts/ThemeContext";
+import useUser from "../../Contexts/UserContext";
 import useSettings from "../../Contexts/SettingContext";
 import tw from "tailwind-react-native-classnames";
 import Animated, { BounceInDown } from "react-native-reanimated";
 
-// import { MotiView } from "moti";
-
 const Home = ({ navigation: { navigate } }) => {
+  /*   All States
+   ********************************************* */
+  //  all contexts
   const { theme } = useTheme();
+  const { allCategories, allCategoryInfo } = useUser();
   const { elevation, elevationValue } = useSettings();
 
+  // All Modal
   const [showModal, setShowModal] = useState(false);
   const [showIconModal, setShowIconModal] = useState(false);
   const [showCategorySettingsModal, setShowCategorySettingsModal] =
     useState(false);
+
+  // All Others
   const [isFocused, setIsFocused] = useState(false);
   const [icon, setIcon] = useState("heart");
-
   const iconList = useMemo(
     () => [
       { name: "facebook", icon: "facebook" },
@@ -46,26 +51,30 @@ const Home = ({ navigation: { navigate } }) => {
     [setIcon]
   );
 
-  const my_data = [
-    { id: 1, icon: "facebook", CategoryName: "Facebook", delete: "delete" },
-    { id: 22, icon: "facebook", CategoryName: "facebook", delete: "delete" },
-    { id: 23, icon: "facebook", CategoryName: "facebook", delete: "delete" },
-    { id: 2, icon: "facebook", CategoryName: "facebook", delete: "delete" },
-    { id: 3, icon: "instagram", CategoryName: "instagram", delete: "delete" },
-    { id: 4, icon: "twitter", CategoryName: "twitter", delete: "delete" },
-    { id: 5, icon: "netflix", CategoryName: "netflix", delete: "delete" },
-    { id: 6, icon: "linkedin", CategoryName: "linkedin", delete: "delete" },
-    { id: 7, icon: "google", CategoryName: "google", delete: "delete" },
-    { id: 8, icon: "yahoo", CategoryName: "yahoo", delete: "delete" },
-    { id: 9, icon: "git", CategoryName: "git", delete: "delete" },
-    {
-      id: 10,
-      icon: "gamepad-variant",
-      CategoryName: "Game",
-      delete: "delete",
-    },
-    { id: 11, icon: "heart", CategoryName: "heart", delete: "delete" },
-  ];
+  // const my_data = [
+  //   { id: 1, icon: "facebook", category: "Facebook", delete: "delete" },
+  //   { id: 22, icon: "facebook", category: "facebook", delete: "delete" },
+  //   { id: 23, icon: "facebook", category: "facebook", delete: "delete" },
+  //   { id: 2, icon: "facebook", category: "facebook", delete: "delete" },
+  //   { id: 3, icon: "instagram", category: "instagram", delete: "delete" },
+  //   { id: 4, icon: "twitter", category: "twitter", delete: "delete" },
+  //   { id: 5, icon: "netflix", category: "netflix", delete: "delete" },
+  //   { id: 6, icon: "linkedin", category: "linkedin", delete: "delete" },
+  //   { id: 7, icon: "google", category: "google", delete: "delete" },
+  //   { id: 8, icon: "yahoo", category: "yahoo", delete: "delete" },
+  //   { id: 9, icon: "git", category: "git", delete: "delete" },
+  //   {
+  //     id: 10,
+  //     icon: "gamepad-variant",
+  //     category: "Game",
+  //     delete: "delete",
+  //   },
+  //   { id: 11, icon: "heart", category: "heart", delete: "delete" },
+  // ];
+
+  useEffect(() => {
+    // console.log(allCategoryInfo["instagram"]);
+  }, []);
 
   return (
     <SafeAreaView
@@ -265,7 +274,7 @@ const Home = ({ navigation: { navigate } }) => {
       <View style={tw`pb-16 px-5 py-2`}>
         <FlatList
           contentContainerStyle={{ paddingBottom: 160 }}
-          data={my_data}
+          data={allCategories}
           showsVerticalScrollIndicator={false}
           eyExtractor={(item) => item.id}
           numColumns={2}
@@ -278,7 +287,12 @@ const Home = ({ navigation: { navigate } }) => {
                 style={tw`flex-1 mx-1 my-1 `}
               >
                 <TouchableOpacity
-                  onPress={() => navigate("Details", { params: { item } })}
+                  onPress={() =>
+                    navigate("Details", {
+                      item: allCategoryInfo[item.category],
+                      category: item.category,
+                    })
+                  }
                   style={[
                     tw`py-4 px-2 rounded-lg flex-1 flex-row items-center`,
                     {
@@ -301,7 +315,7 @@ const Home = ({ navigation: { navigate } }) => {
                       { color: theme.mainTextColor },
                     ]}
                   >
-                    {item.CategoryName.toUpperCase()}
+                    {item.category.toUpperCase()}
                   </Text>
                   {/* ******  3-Dots menu  ******* */}
                   <MaterialCommunityIcons

@@ -1,5 +1,5 @@
 import { View, Text, ActivityIndicator, Button } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { memo, useCallback, useEffect, useState } from "react";
 import tw from "tailwind-react-native-classnames";
 import useTheme from "../../Contexts/ThemeContext";
 import LottieView from "lottie-react-native";
@@ -8,8 +8,9 @@ import {
   getUserData,
   getAllCategories,
   getCategoryByName,
+  getAllFav,
 } from "../../services/firebaseService";
-import { async } from "@firebase/util";
+import { useNavigation } from "@react-navigation/native";
 
 const InitializeScreen = () => {
   /*   All states
@@ -20,7 +21,14 @@ const InitializeScreen = () => {
   const [categoryInfo, setCategoriesInfo] = useState(null);
   const [favorites, setFavorites] = useState(null);
   const { changeUser } = useUser();
-  const { user } = useUser();
+  const {
+    user,
+    changeUserInfo,
+    changeAllCategories,
+    changeAllCategoryInfo,
+    changeAllFav,
+  } = useUser();
+  const navigation = useNavigation();
 
   const uid = user.uid;
   /*   All functions
@@ -30,6 +38,7 @@ const InitializeScreen = () => {
     try {
       const userData = await getUserData(uid);
       setUserInfo(userData.data());
+      changeUserInfo(userData.data());
     } catch (err) {
       console.log(err.message);
     }
@@ -40,10 +49,10 @@ const InitializeScreen = () => {
     try {
       const allCategories = await getAllCategories(uid);
       setCategories(allCategories);
+      changeAllCategories(allCategories);
       return allCategories;
     } catch (err) {
       console.log(err.message);
-      throw err;
     }
   };
 
@@ -62,24 +71,45 @@ const InitializeScreen = () => {
     );
 
     setCategoriesInfo(allCategoryInfoList);
+    changeAllCategoryInfo(allCategoryInfoList);
     return allCategoryInfoList;
   };
 
-  //   const allCategoryInfo = {};
-  //   allCategories.map(async (item) => {
-  //     let category = item.category;
-  //     let i = await getCategoryByName(uid, category);
-  //     allCategoryInfo[category] = i;
-  //     console.log(allCategoryInfo);
-  //   });
-  //   console.log(allCategoryInfo);
-  // };
-  // getData();
+  //allCategories
+  const getFav = async () => {
+    try {
+      const data = await getAllFav(uid);
+      setFavorites(data);
+      changeAllFav(data);
+    } catch (err) {
+      console.log(err.message);
+    }
+  };
+
+  //  {
+  //  icon: "facebook",
+  //   fav_icon: "heart-outline",
+  //   account_name: "Example Account",
+  //   email: "example@example.com",
+  //   password: "examplePassword",
+  // }
 
   useEffect(() => {
     getUserInfo();
     allCategoryInfo();
+    getFav();
   }, []);
+
+  useEffect(() => {
+    if (
+      userInfo != null &&
+      categories != null &&
+      categoryInfo != null &&
+      favorites != null
+    ) {
+      navigation.navigate("BottomNav");
+    }
+  }, [userInfo, categories, categoryInfo, favorites]);
 
   return (
     <View
@@ -96,7 +126,6 @@ const InitializeScreen = () => {
             <LottieView
               loop={false}
               style={{ width: 30, height: 30 }}
-              onAnimationFinish={() => console.log("UserInfo Done")}
               autoPlay
               source={require("../../assets/success.json")}
             />
@@ -111,7 +140,6 @@ const InitializeScreen = () => {
             <LottieView
               loop={false}
               style={{ width: 30, height: 30 }}
-              onAnimationFinish={() => console.log("Categories Done")}
               autoPlay
               source={require("../../assets/success.json")}
             />
@@ -128,7 +156,6 @@ const InitializeScreen = () => {
             <LottieView
               loop={false}
               style={{ width: 30, height: 30 }}
-              onAnimationFinish={() => console.log("Categories info Done")}
               autoPlay
               source={require("../../assets/success.json")}
             />
@@ -142,15 +169,14 @@ const InitializeScreen = () => {
           <LottieView
             loop={false}
             style={{ width: 30, height: 30 }}
-            onAnimationFinish={() => console.log("Favorites Done")}
             autoPlay
             source={require("../../assets/success.json")}
           />
         )}
       </View>
-      <Button title="Go Back" onPress={() => changeUser(null)} />
+      {/* <Button title="Go Back" onPress={() => changeUser(null)} /> */}
     </View>
   );
 };
 
-export default InitializeScreen;
+export default memo(InitializeScreen);

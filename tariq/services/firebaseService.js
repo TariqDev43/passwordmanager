@@ -197,6 +197,18 @@ const addCategory = (uid, categoryName, icon_rec, categoryData) => {
   addDoc(totalCategories, { category, icon });
 };
 
+export const addFav = async (uid, categoryData) => {
+  try {
+    // Category Items
+    const favRef = collection(db, `Users/${uid}/Fav`);
+    // Icon
+    const data = await addDoc(favRef, categoryData);
+    return data;
+  } catch (err) {
+    throw err;
+  }
+};
+
 /*   Get Category By Name
  ********************************************* */
 export const getAllCategories = async (uid) => {
@@ -208,6 +220,17 @@ export const getAllCategories = async (uid) => {
       allCategories.push({ ...doc.data(), id: doc.id })
     );
     return allCategories;
+  } catch (err) {
+    throw err;
+  }
+};
+export const getAllFav = async (uid) => {
+  const favsRef = collection(db, `Users/${uid}/Fav`);
+  let allFav = [];
+  try {
+    const res = await getDocs(favsRef);
+    res.docs.forEach((doc) => allFav.push({ ...doc.data(), id: doc.id }));
+    return allFav;
   } catch (err) {
     throw err;
   }
