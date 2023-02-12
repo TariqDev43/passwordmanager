@@ -19,7 +19,6 @@ import Animated, {
   FadeOut,
   SlideOutLeft,
   SlideOutRight,
-  useSharedValue,
 } from "react-native-reanimated";
 import useTheme from "../../Contexts/ThemeContext";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -87,22 +86,23 @@ const Login = () => {
    ********************************************* */
 
   const loginFunc = async () => {
-    if (loginEmail == null) {
-      setShowModal(true);
-      setModalTitle("Login Error");
-      setModalBody("Email Is Required");
-      return;
-    }
-    if (loginPassword == null) {
-      setShowModal(true);
-      setModalTitle("Login Error");
-      setModalBody("Password Is Required");
-      return;
-    }
+    // if (loginEmail == null) {
+    //   setShowModal(true);
+    //   setModalTitle("Login Error");
+    //   setModalBody("Email Is Required");
+    //   return;
+    // }
+    // if (loginPassword == null) {
+    //   setShowModal(true);
+    //   setModalTitle("Login Error");
+    //   setModalBody("Password Is Required");
+    //   return;
+    // }
     setFocusOff();
     try {
       setLoginLoading(true);
-      const user = await login(loginEmail, loginPassword);
+      const user = await login("a@b.com", "abc123");
+      // const user = await login(loginEmail, loginPassword);
       if (user.uid) {
         setLoginLoading(false);
         setSuccess(true);
@@ -187,8 +187,6 @@ const Login = () => {
         registerErrMsg = err.message;
       }
       setModalBody(registerErrMsg);
-      // showAlert("Register Error", err.message);
-      console.log(err.message);
     }
   };
 
@@ -248,6 +246,8 @@ const Login = () => {
          *********************************************  */}
         <View style={[tw`absolute self-center top-24`]}>
           <LottieView
+            autoPlay
+            loop
             style={[
               {
                 width: 250,
@@ -299,7 +299,7 @@ const Login = () => {
                       ref={loginSuccess}
                       onAnimationFinish={async () => {
                         setSuccess(false);
-                        // changeUser(userInfo);
+                        changeUser(userInfo);
                       }}
                       style={[
                         {
@@ -474,7 +474,7 @@ const Login = () => {
                     ref={registerSuccess}
                     onAnimationFinish={async () => {
                       setSuccess(false);
-                      // changeUser(userInfo);
+                      changeUser(userInfo);
                     }}
                     style={[
                       {

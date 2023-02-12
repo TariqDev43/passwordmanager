@@ -60,6 +60,28 @@ export const createUser = async (email, password, name) => {
       email,
       password
     );
+    addUserData(user.uid, email, password, name);
+    addCategory(user.uid, "facebook", "facebook", {
+      icon: "facebook",
+      fav_icon: "heart-outline",
+      account_name: "Example Account",
+      email: "example@example.com",
+      password: "examplePassword",
+    });
+    addCategory(user.uid, "google", "google", {
+      icon: "facebook",
+      fav_icon: "heart-outline",
+      account_name: "Example Account",
+      email: "example@example.com",
+      password: "examplePassword",
+    });
+    addCategory(user.uid, "instagram", "instagram", {
+      icon: "facebook",
+      fav_icon: "heart-outline",
+      account_name: "Example Account",
+      email: "example@example.com",
+      password: "examplePassword",
+    });
     return user;
   } catch (err) {
     throw err;
@@ -132,30 +154,31 @@ const addUserData = async (uid, email, password, name) => {
       name,
     });
     console.log("Successfully Added");
+    return "Successfully Added";
   } catch (error) {
-    console.log(error.message);
+    throw error;
   }
 };
 // addUserData(uid, email, password, name);
 // createUser(uid, email, password, name);
 
-const getUserData = async (uid) => {
+export const getUserData = async (uid) => {
   let userRef = doc(db, `Users/${uid}`);
-  let data;
-  await getDoc(userRef)
-    .then((res) => {
-      data = res.data();
-    })
-    .catch((err) => console.log(err.message));
-  return data;
+  try {
+    const data = await getDoc(userRef);
+
+    return data;
+  } catch (err) {
+    throw err;
+  }
 };
 /*
  ********************************************* */
 
 /*  add category
  ********************************************* */
-const addCategory = (categoryName, icon_rec, categoryData) => {
-  let category = categoryName.toLowerCase();
+const addCategory = (uid, categoryName, icon_rec, categoryData) => {
+  let category = categoryName;
   let icon = icon_rec.toLowerCase();
 
   // Category Items
@@ -176,31 +199,36 @@ const addCategory = (categoryName, icon_rec, categoryData) => {
 
 /*   Get Category By Name
  ********************************************* */
-const getAllCategories = async () => {
+export const getAllCategories = async (uid) => {
   const categories = collection(db, `Users/${uid}/ToalCategories`);
-  let data = [];
-  await getDocs(categories)
-    .then((res) => {
-      res.docs.forEach((doc) => data.push({ ...doc.data(), id: doc.id }));
-    })
-    .catch((err) => console.log(err.message));
-  return data;
+  let allCategories = [];
+  try {
+    const res = await getDocs(categories);
+    res.docs.forEach((doc) =>
+      allCategories.push({ ...doc.data(), id: doc.id })
+    );
+    return allCategories;
+  } catch (err) {
+    throw err;
+  }
 };
-const getCategoryByName = async (name) => {
-  const categories = collection(
-    db,
-    `Users/${uid}/Categories/${name.toLowerCase()}/Items`
-  );
-  let data = [];
-  await getDocs(categories)
-    .then((res) => {
-      res.docs.forEach((doc) => {
-        data.push({ ...doc.data(), id: doc.id });
-      });
-    })
-    .catch((err) => console.log(err.message));
 
-  return data;
+export const getCategoryByName = async (uid, name) => {
+  try {
+    const categories = collection(
+      db,
+      `Users/${uid}/Categories/${name.toLowerCase()}/Items`
+    );
+    let data = [];
+    const res = await getDocs(categories);
+    res.docs.forEach((doc) => {
+      data.push({ ...doc.data(), id: doc.id });
+    });
+
+    return data;
+  } catch (err) {
+    throw err;
+  }
 };
 
 // console.log(await getCategoryByName("facebook"));

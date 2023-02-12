@@ -80,8 +80,8 @@ const Main = () => {
             <Stack.Screen name="Login" component={Login} />
           ) : (
             <>
-              <Stack.Screen name="BottomNav" component={BottomNav} />
               <Stack.Screen name="Initialize" component={InitializeScreen} />
+              <Stack.Screen name="BottomNav" component={BottomNav} />
             </>
           )}
         </Stack.Navigator>
