@@ -1,125 +1,59 @@
-import { View, Text, ActivityIndicator, Button } from "react-native";
-import React, { memo, useCallback, useEffect, useState } from "react";
-import tw from "tailwind-react-native-classnames";
-import useTheme from "../../Contexts/ThemeContext";
-import LottieView from "lottie-react-native";
-import useUser from "../../Contexts/UserContext";
-import {
-  getUserData,
-  getAllCategories,
-  getCategoryByName,
-  getAllFav,
-} from "../../services/firebaseService";
-import { useNavigation } from "@react-navigation/native";
+import { View, Text, ActivityIndicator, Button } from 'react-native';
+import React, { memo, useEffect } from 'react';
+import tw from 'tailwind-react-native-classnames';
+import useTheme from '../../Contexts/ThemeContext';
+import LottieView from 'lottie-react-native';
+import useUser from '../../Contexts/UserContext';
+import { useNavigation } from '@react-navigation/native';
 
 const InitializeScreen = () => {
   /*   All states
    ********************************************* */
   const { theme } = useTheme();
-  const [userInfo, setUserInfo] = useState(null);
-  const [categories, setCategories] = useState(null);
-  const [categoryInfo, setCategoriesInfo] = useState(null);
-  const [favorites, setFavorites] = useState(null);
-  const { changeUser } = useUser();
+  // const [userInfo, setUserInfo] = useState(null);
+  // const [categories, setCategories] = useState(null);
+  // const [categoryInfo, setCategoriesInfo] = useState(null);
+  // const [favorites, setFavorites] = useState(null);
   const {
-    user,
-    changeUserInfo,
-    changeAllCategories,
-    changeAllCategoryInfo,
-    changeAllFav,
+    changeUser,
+    userInfo,
+    allCategories,
+    allCategoryInfo,
+    allFav,
+    getUserInfo,
+    refreshAllCategoryInfo,
+    refreshAllFav,
   } = useUser();
   const navigation = useNavigation();
-
-  const uid = user.uid;
   /*   All functions
    ********************************************* */
-  //userInfo
-  const getUserInfo = async () => {
-    try {
-      const userData = await getUserData(uid);
-      setUserInfo(userData.data());
-      changeUserInfo(userData.data());
-    } catch (err) {
-      console.log(err.message);
-    }
-  };
-
-  //allCategories
-  const getallCategories = async () => {
-    try {
-      const allCategories = await getAllCategories(uid);
-      setCategories(allCategories);
-      changeAllCategories(allCategories);
-      return allCategories;
-    } catch (err) {
-      console.log(err.message);
-    }
-  };
-
-  // categoriesInfo
-  const allCategoryInfo = async () => {
-    const categgories = await getallCategories();
-    const allCategoryInfoList = await categgories.reduce(
-      async (promisedValue, item) => {
-        const newItem = await promisedValue;
-        const { category } = item;
-
-        newItem[category] = await getCategoryByName(uid, category);
-        return newItem;
-      },
-      {}
-    );
-
-    setCategoriesInfo(allCategoryInfoList);
-    changeAllCategoryInfo(allCategoryInfoList);
-    return allCategoryInfoList;
-  };
-
-  //allCategories
-  const getFav = async () => {
-    try {
-      const data = await getAllFav(uid);
-      setFavorites(data);
-      changeAllFav(data);
-    } catch (err) {
-      console.log(err.message);
-    }
-  };
-
-  //  {
-  //  icon: "facebook",
-  //   fav_icon: "heart-outline",
-  //   account_name: "Example Account",
-  //   email: "example@example.com",
-  //   password: "examplePassword",
-  // }
 
   useEffect(() => {
-    getUserInfo();
-    allCategoryInfo();
-    getFav();
+    const getData = async () => {
+      try {
+        const userInfo = await getUserInfo();
+        console.log(userInfo);
+        await refreshAllCategoryInfo();
+        await refreshAllFav();
+      } catch (err) {
+        console.log(err.message);
+      }
+    };
+    getData();
   }, []);
 
   useEffect(() => {
-    if (
-      userInfo != null &&
-      categories != null &&
-      categoryInfo != null &&
-      favorites != null
-    ) {
-      navigation.navigate("BottomNav");
+    if (userInfo != null && allCategories != null && allCategoryInfo != null && allFav != null) {
+      navigation.navigate('BottomNav');
     }
-  }, [userInfo, categories, categoryInfo, favorites]);
+  }, [userInfo, allCategories, allCategoryInfo, allFav]);
 
   return (
-    <View
-      style={[
-        tw`flex-1 justify-center items-center`,
-        { backgroundColor: theme.mainBgColor },
-      ]}
-    >
+    <View style={[tw`flex-1 justify-center items-center`, { backgroundColor: theme.mainBgColor }]}>
       <View style={[tw`flex-row justify-between my-3 w-3/4`, {}]}>
-        <Text style={[tw`text-xl font-semibold`, {}]}>Getting User Info</Text>
+        <Text style={[tw`text-xl font-semibold`, { color: theme.mainTextColor }]}>
+          Getting User Info
+        </Text>
         <View style={[tw``, {}]}>
           {!userInfo && <ActivityIndicator color={theme.mainColor} />}
           {userInfo && (
@@ -127,54 +61,58 @@ const InitializeScreen = () => {
               loop={false}
               style={{ width: 30, height: 30 }}
               autoPlay
-              source={require("../../assets/success.json")}
+              source={require('../../assets/success.json')}
             />
           )}
         </View>
       </View>
       <View style={[tw`flex-row justify-between my-3 w-3/4`, {}]}>
-        <Text style={[tw`text-xl font-semibold`, {}]}>Getting Categories</Text>
+        <Text style={[tw`text-xl font-semibold`, { color: theme.mainTextColor }]}>
+          Getting Categories
+        </Text>
         <View style={[tw``, {}]}>
-          {!categories && <ActivityIndicator color={theme.mainColor} />}
-          {categories && (
+          {!allCategories && <ActivityIndicator color={theme.mainColor} />}
+          {allCategories && (
             <LottieView
               loop={false}
               style={{ width: 30, height: 30 }}
               autoPlay
-              source={require("../../assets/success.json")}
+              source={require('../../assets/success.json')}
             />
           )}
         </View>
       </View>
       <View style={[tw`flex-row justify-between my-3 w-3/4`, {}]}>
-        <Text style={[tw`text-xl font-semibold`, {}]}>
+        <Text style={[tw`text-xl font-semibold`, { color: theme.mainTextColor }]}>
           Getting Category Info
         </Text>
         <View>
-          {!categoryInfo && <ActivityIndicator color={theme.mainColor} />}
-          {categoryInfo && (
+          {!allCategoryInfo && <ActivityIndicator color={theme.mainColor} />}
+          {allCategoryInfo && (
             <LottieView
               loop={false}
               style={{ width: 30, height: 30 }}
               autoPlay
-              source={require("../../assets/success.json")}
+              source={require('../../assets/success.json')}
             />
           )}
         </View>
       </View>
       <View style={[tw`flex-row justify-between my-3 w-3/4`, {}]}>
-        <Text style={[tw`text-xl font-semibold`, {}]}>Getting Favorites</Text>
-        {!favorites && <ActivityIndicator color={theme.mainColor} />}
-        {favorites && (
+        <Text style={[tw`text-xl font-semibold`, { color: theme.mainTextColor }]}>
+          Getting Favorites
+        </Text>
+        {!allFav && <ActivityIndicator color={theme.mainColor} />}
+        {allFav && (
           <LottieView
             loop={false}
             style={{ width: 30, height: 30 }}
             autoPlay
-            source={require("../../assets/success.json")}
+            source={require('../../assets/success.json')}
           />
         )}
       </View>
-      {/* <Button title="Go Back" onPress={() => changeUser(null)} /> */}
+      <Button title='Go Back' onPress={() => changeUser(null)} />
     </View>
   );
 };

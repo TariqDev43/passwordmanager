@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState } from 'react';
 import {
   ActivityIndicator,
   ImageBackground,
@@ -9,9 +9,9 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-} from "react-native";
-import LottieView from "lottie-react-native";
-import tw from "tailwind-react-native-classnames";
+} from 'react-native';
+import LottieView from 'lottie-react-native';
+import tw from 'tailwind-react-native-classnames';
 import Animated, {
   BounceInLeft,
   BounceInRight,
@@ -19,13 +19,13 @@ import Animated, {
   FadeOut,
   SlideOutLeft,
   SlideOutRight,
-} from "react-native-reanimated";
-import useTheme from "../../Contexts/ThemeContext";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
-import { AntDesign } from "@expo/vector-icons";
-import useUser from "../../Contexts/UserContext";
-import { createUser, login } from "../../services/firebaseService";
+} from 'react-native-reanimated';
+import useTheme from '../../Contexts/ThemeContext';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import { AntDesign } from '@expo/vector-icons';
+import useUser from '../../Contexts/UserContext';
+import { createUser, login } from '../../services/firebaseService';
 
 const Login = () => {
   /*   ALL States
@@ -33,8 +33,7 @@ const Login = () => {
   const [passowrdShow, setPasswordShow] = useState(true);
 
   const [registerPasswordShow, setRegisterPasswordShow] = useState(true);
-  const [registerConfirmPasswordShow, setRegisterConfirmPasswordShow] =
-    useState(true);
+  const [registerConfirmPasswordShow, setRegisterConfirmPasswordShow] = useState(true);
 
   const [loginPage, setLoginPage] = useState(true);
   const [loginLoading, setLoginLoading] = useState(false);
@@ -87,23 +86,23 @@ const Login = () => {
    ********************************************* */
 
   const loginFunc = async () => {
-    if (loginEmail == null) {
-      setShowModal(true);
-      setModalTitle("Login Error");
-      setModalBody("Email Is Required");
-      return;
-    }
-    if (loginPassword == null) {
-      setShowModal(true);
-      setModalTitle("Login Error");
-      setModalBody("Password Is Required");
-      return;
-    }
+    // if (loginEmail == null) {
+    //   setShowModal(true);
+    //   setModalTitle("Login Error");
+    //   setModalBody("Email Is Required");
+    //   return;
+    // }
+    // if (loginPassword == null) {
+    //   setShowModal(true);
+    //   setModalTitle("Login Error");
+    //   setModalBody("Password Is Required");
+    //   return;
+    // }
     setFocusOff();
     try {
       setLoginLoading(true);
-      // const user = await login("a@b.com", "abc123");
-      const user = await login(loginEmail, loginPassword);
+      const user = await login('a@b.com', 'abc123');
+      // const user = await login(loginEmail, loginPassword);
       if (user.uid) {
         setLoginLoading(false);
         setSuccessLogin(true);
@@ -111,20 +110,20 @@ const Login = () => {
         setUserInfo(user);
       } else {
         setLoginLoading(false);
-        setModalTitle("Login Error");
-        setModalBody("user not returned");
+        setModalTitle('Login Error');
+        setModalBody('user not returned');
       }
     } catch (err) {
       setLoginLoading(false);
       setShowModal(true);
-      setModalTitle("Login Error");
+      setModalTitle('Login Error');
       let loginErrMsg;
-      if (err.message.includes("wrong-password")) {
-        loginErrMsg = "Wrong Password";
-      } else if (err.message.includes("invalid-email")) {
-        loginErrMsg = "Invalid Email";
-      } else if (err.message.includes("user-not-found")) {
-        loginErrMsg = "User not found.\nPlease create an account first";
+      if (err.message.includes('wrong-password')) {
+        loginErrMsg = 'Wrong Password';
+      } else if (err.message.includes('invalid-email')) {
+        loginErrMsg = 'Invalid Email';
+      } else if (err.message.includes('user-not-found')) {
+        loginErrMsg = 'User not found.\nPlease create an account first';
       } else {
         loginErrMsg = err.message;
       }
@@ -135,32 +134,32 @@ const Login = () => {
     setFocusOff();
     if (username == null) {
       setShowModal(true);
-      setModalTitle("Login Error");
-      setModalBody("Username Is Required");
+      setModalTitle('Login Error');
+      setModalBody('Username Is Required');
       return;
     }
     if (registerEmail == null) {
       setShowModal(true);
-      setModalTitle("Login Error");
-      setModalBody("Email Is Required");
+      setModalTitle('Login Error');
+      setModalBody('Email Is Required');
       return;
     }
     if (registerPassword == null) {
       setShowModal(true);
-      setModalTitle("Login Error");
-      setModalBody("Password Is Required");
+      setModalTitle('Login Error');
+      setModalBody('Password Is Required');
       return;
     }
     if (registerConfirmPassword == null) {
       setShowModal(true);
-      setModalTitle("Login Error");
-      setModalBody("Confirm Password Is Required");
+      setModalTitle('Login Error');
+      setModalBody('Confirm Password Is Required');
       return;
     }
     if (registerPassword != registerConfirmPassword) {
       setShowModal(true);
-      setModalTitle("Login Error");
-      setModalBody("Passwords Do Not Match");
+      setModalTitle('Login Error');
+      setModalBody('Passwords Do Not Match');
       return;
     }
     try {
@@ -173,19 +172,19 @@ const Login = () => {
         setUserInfo(user);
         console.log(user);
       } else {
-        setModalTitle("Login Error");
-        setModalBody("user not returned");
+        setModalTitle('Login Error');
+        setModalBody('user not returned');
       }
     } catch (err) {
       setSuccessRegister(false);
       setLoginLoading(false);
       setShowModal(true);
-      setModalTitle("Register Error");
+      setModalTitle('Register Error');
       let registerErrMsg;
-      if (err.message.includes("email-already-in-use")) {
-        registerErrMsg = "Email Already In Use";
-      } else if (err.message.includes("invalid-email")) {
-        registerErrMsg = "Invalid Email";
+      if (err.message.includes('email-already-in-use')) {
+        registerErrMsg = 'Email Already In Use';
+      } else if (err.message.includes('invalid-email')) {
+        registerErrMsg = 'Invalid Email';
       } else {
         registerErrMsg = err.message;
       }
@@ -195,28 +194,20 @@ const Login = () => {
 
   return (
     <ImageBackground
-      style={[
-        tw` flex-1  justify-center  `,
-        { backgroundColor: theme.mainBgColor },
-      ]}
-      source={require("../../assets/bg.png")}
+      style={[tw` flex-1  justify-center  `, { backgroundColor: theme.mainBgColor }]}
+      source={require('../../assets/bg.png')}
     >
-      <Modal animationType="fade" transparent={true} visible={showModal}>
+      <Modal animationType='fade' transparent={true} visible={showModal}>
         <View style={[tw`flex-1 justify-center items-center`]}>
           <Pressable
-            style={[
-              tw`p-5 rounded-2xl w-64`,
-              { backgroundColor: theme.modalBg, elevation: 100 },
-            ]}
+            style={[tw`p-5 rounded-2xl w-64`, { backgroundColor: theme.modalBg, elevation: 100 }]}
             onPress={() => {
               setShowModal(false);
             }}
           >
             <View>
               <View style={[tw` px-2 `, {}]}>
-                <Text style={[tw`font-semibold text-lg`, {}]}>
-                  {modalTitle}
-                </Text>
+                <Text style={[tw`font-semibold text-lg`, {}]}>{modalTitle}</Text>
               </View>
               <View style={[tw` p-2`, {}]}>
                 <Text style={[tw`text-base`, {}]}>{modalBody}</Text>
@@ -224,15 +215,8 @@ const Login = () => {
             </View>
             {/**************** Buttons ***********************/}
             <View style={tw`flex-row justify-end  mx-1  items-center `}>
-              <TouchableOpacity
-                onPress={() => setShowModal(false)}
-                style={tw`p-1`}
-              >
-                <Text
-                  style={[tw`font-bold text-xs`, { color: theme.mainColor }]}
-                >
-                  Okay
-                </Text>
+              <TouchableOpacity onPress={() => setShowModal(false)} style={tw`p-1`}>
+                <Text style={[tw`font-bold text-xs`, { color: theme.mainColor }]}>Okay</Text>
               </TouchableOpacity>
             </View>
           </Pressable>
@@ -257,7 +241,7 @@ const Login = () => {
                 height: 250,
               },
             ]}
-            source={require("../../assets/key.json")}
+            source={require('../../assets/key.json')}
           />
         </View>
 
@@ -279,20 +263,20 @@ const Login = () => {
               onPress={loginFunc}
             >
               <LinearGradient
-                style={[tw`${successLogin ? "p-0" : "p-4"} rounded-full `, {}]}
-                colors={["#4FACFE", "#21ECA0"]}
+                style={[tw`${successLogin ? 'p-0' : 'p-4'} rounded-full `, {}]}
+                colors={['#4FACFE', '#21ECA0']}
                 start={{ x: -1, y: 0 }}
                 end={{ x: 2, y: 0 }}
               >
                 <Animated.View>
                   {!loginLoading && !successLogin && (
-                    <AntDesign name="arrowright" size={30} color="white" />
+                    <AntDesign name='arrowright' size={30} color='white' />
                   )}
                   {loginLoading && !successLogin && (
                     <ActivityIndicator
-                      size="small"
+                      size='small'
                       style={[tw`m-2`, { transform: [{ scale: 1.5 }] }]}
-                      color="white"
+                      color='white'
                     />
                   )}
                   {successLogin && (
@@ -310,7 +294,7 @@ const Login = () => {
                           height: 60,
                         },
                       ]}
-                      source={require("../../assets/success.json")}
+                      source={require('../../assets/success.json')}
                     />
                   )}
                 </Animated.View>
@@ -323,33 +307,27 @@ const Login = () => {
                   {
                     backgroundColor: theme.bgColor,
                     elevation: 8,
-                    shadowColor: "grey",
+                    shadowColor: 'grey',
                   },
                 ]}
               >
                 <View style={tw` ml-4 my-5 mr-12`}>
                   {/* ******* Email  ******* */}
-                  <View
-                    style={tw`flex-row items-center justify-between mt-3 mb-2 `}
-                  >
+                  <View style={tw`flex-row items-center justify-between mt-3 mb-2 `}>
                     <MaterialCommunityIcons
-                      name="email"
+                      name='email'
                       color={emailFocus ? theme.mainColor : theme.grey}
                       size={22}
                     />
                     <TextInput
-                      placeholder="Enter Email"
+                      placeholder='Enter Email'
                       value={loginEmail}
                       onChangeText={setLoginEmail}
-                      placeholderTextColor={
-                        theme.themeMode == "dark" ? theme.grey : "darkgray"
-                      }
+                      placeholderTextColor={theme.themeMode == 'dark' ? theme.grey : 'darkgray'}
                       style={[
                         tw`flex-1 mx-3 border-b-2 `,
                         {
-                          borderBottomColor: emailFocus
-                            ? theme.mainColor
-                            : theme.grey,
+                          borderBottomColor: emailFocus ? theme.mainColor : theme.grey,
                           color: theme.mainTextColor,
                         },
                       ]}
@@ -358,27 +336,21 @@ const Login = () => {
                     />
                   </View>
                   {/* ******* Password  ******* */}
-                  <View
-                    style={tw`flex-row items-center justify-between mt-4 mb-5 `}
-                  >
+                  <View style={tw`flex-row items-center justify-between mt-4 mb-5 `}>
                     <MaterialCommunityIcons
-                      name="key"
+                      name='key'
                       color={passwordFocus ? theme.mainColor : theme.grey}
                       size={22}
                     />
                     <TextInput
                       value={loginPassword}
                       onChangeText={setLoginPassword}
-                      placeholder="Enter Password"
-                      placeholderTextColor={
-                        theme.themeMode == "dark" ? theme.grey : "darkgray"
-                      }
+                      placeholder='Enter Password'
+                      placeholderTextColor={theme.themeMode == 'dark' ? theme.grey : 'darkgray'}
                       style={[
                         tw`flex-1 mx-3 border-b-2`,
                         {
-                          borderBottomColor: passwordFocus
-                            ? theme.mainColor
-                            : theme.grey,
+                          borderBottomColor: passwordFocus ? theme.mainColor : theme.grey,
                           color: theme.mainTextColor,
                         },
                       ]}
@@ -390,7 +362,7 @@ const Login = () => {
                       onPress={() => {
                         setPasswordShow(!passowrdShow);
                       }}
-                      name={passowrdShow ? "eye-off" : "eye"}
+                      name={passowrdShow ? 'eye-off' : 'eye'}
                       color={passwordFocus ? theme.mainColor : theme.grey}
                       size={22}
                     />
@@ -422,9 +394,7 @@ const Login = () => {
                   setFocusOff();
                 }}
               >
-                <Text
-                  style={[tw`font-semibold text-center text-lg text-white`, {}]}
-                >
+                <Text style={[tw`font-semibold text-center text-lg text-white`, {}]}>
                   Create Account
                 </Text>
               </TouchableOpacity>
@@ -451,25 +421,22 @@ const Login = () => {
               onPress={registerFunc}
             >
               <LinearGradient
-                style={[
-                  tw`${successRegister ? "p-0" : "p-4"}  rounded-full `,
-                  {},
-                ]}
-                colors={["#4FACFE", "#21ECA0"]}
+                style={[tw`${successRegister ? 'p-0' : 'p-4'}  rounded-full `, {}]}
+                colors={['#4FACFE', '#21ECA0']}
                 start={{ x: -1, y: 0 }}
                 end={{ x: 2, y: 0 }}
               >
                 {!loginLoading && !successRegister && (
                   <Animated.View exiting={FadeOut.duration(200)}>
-                    <AntDesign name="check" size={30} color="white" />
+                    <AntDesign name='check' size={30} color='white' />
                   </Animated.View>
                 )}
                 {loginLoading && !successRegister && (
                   <Animated.View entering={FadeIn.duration(800)}>
                     <ActivityIndicator
-                      size="small"
+                      size='small'
                       style={[tw`m-2`, { transform: [{ scale: 1.5 }] }]}
-                      color="white"
+                      color='white'
                     />
                   </Animated.View>
                 )}
@@ -488,7 +455,7 @@ const Login = () => {
                         height: 60,
                       },
                     ]}
-                    source={require("../../assets/success.json")}
+                    source={require('../../assets/success.json')}
                   />
                 )}
               </LinearGradient>
@@ -500,33 +467,27 @@ const Login = () => {
                   {
                     backgroundColor: theme.bgColor,
                     elevation: 8,
-                    shadowColor: "grey",
+                    shadowColor: 'grey',
                   },
                 ]}
               >
                 <View style={tw` mr-4 my-5 ml-16`}>
                   {/* ******* Username  ******* */}
-                  <View
-                    style={tw`flex-row  items-center justify-between mt-3 mb-2 `}
-                  >
+                  <View style={tw`flex-row  items-center justify-between mt-3 mb-2 `}>
                     <MaterialCommunityIcons
-                      name="account"
+                      name='account'
                       color={usernameFocus ? theme.mainColor : theme.grey}
                       size={22}
                     />
                     <TextInput
                       value={username}
                       onChangeText={setUsername}
-                      placeholder="Enter Username"
-                      placeholderTextColor={
-                        theme.themeMode == "dark" ? theme.grey : "darkgray"
-                      }
+                      placeholder='Enter Username'
+                      placeholderTextColor={theme.themeMode == 'dark' ? theme.grey : 'darkgray'}
                       style={[
                         tw`flex-1 mx-3 border-b-2 `,
                         {
-                          borderBottomColor: usernameFocus
-                            ? theme.mainColor
-                            : theme.grey,
+                          borderBottomColor: usernameFocus ? theme.mainColor : theme.grey,
                           color: theme.mainTextColor,
                         },
                       ]}
@@ -535,27 +496,21 @@ const Login = () => {
                     />
                   </View>
                   {/* ******* Email  ******* */}
-                  <View
-                    style={tw`flex-row  items-center justify-between mt-3 mb-2 `}
-                  >
+                  <View style={tw`flex-row  items-center justify-between mt-3 mb-2 `}>
                     <MaterialCommunityIcons
-                      name="email"
+                      name='email'
                       color={registerEmailFocus ? theme.mainColor : theme.grey}
                       size={22}
                     />
                     <TextInput
                       value={registerEmail}
                       onChangeText={setRegisterEmail}
-                      placeholder="Enter Email"
-                      placeholderTextColor={
-                        theme.themeMode == "dark" ? theme.grey : "darkgray"
-                      }
+                      placeholder='Enter Email'
+                      placeholderTextColor={theme.themeMode == 'dark' ? theme.grey : 'darkgray'}
                       style={[
                         tw`flex-1 mx-3 border-b-2 `,
                         {
-                          borderBottomColor: registerEmailFocus
-                            ? theme.mainColor
-                            : theme.grey,
+                          borderBottomColor: registerEmailFocus ? theme.mainColor : theme.grey,
                           color: theme.mainTextColor,
                         },
                       ]}
@@ -564,29 +519,21 @@ const Login = () => {
                     />
                   </View>
                   {/* ******* Password  ******* */}
-                  <View
-                    style={tw`flex-row items-center justify-between mt-3 mb-2 `}
-                  >
+                  <View style={tw`flex-row items-center justify-between mt-3 mb-2 `}>
                     <MaterialCommunityIcons
-                      name="key"
-                      color={
-                        registerPasswordFocus ? theme.mainColor : theme.grey
-                      }
+                      name='key'
+                      color={registerPasswordFocus ? theme.mainColor : theme.grey}
                       size={22}
                     />
                     <TextInput
                       value={registerPassword}
                       onChangeText={setRegisterPassword}
-                      placeholder="Enter Password"
-                      placeholderTextColor={
-                        theme.themeMode == "dark" ? theme.grey : "darkgray"
-                      }
+                      placeholder='Enter Password'
+                      placeholderTextColor={theme.themeMode == 'dark' ? theme.grey : 'darkgray'}
                       style={[
                         tw`flex-1 mx-3 border-b-2 `,
                         {
-                          borderBottomColor: registerPasswordFocus
-                            ? theme.mainColor
-                            : theme.grey,
+                          borderBottomColor: registerPasswordFocus ? theme.mainColor : theme.grey,
                           color: theme.mainTextColor,
                         },
                       ]}
@@ -598,54 +545,40 @@ const Login = () => {
                       onPress={() => {
                         setRegisterPasswordShow(!registerPasswordShow);
                       }}
-                      name={registerPasswordShow ? "eye-off" : "eye"}
+                      name={registerPasswordShow ? 'eye-off' : 'eye'}
                       color={passwordFocus ? theme.mainColor : theme.grey}
                       size={22}
                     />
                   </View>
                   {/* ******* Confirm Password  ******* */}
-                  <View
-                    style={tw`flex-row items-center justify-between mt-3 mb-5 `}
-                  >
+                  <View style={tw`flex-row items-center justify-between mt-3 mb-5 `}>
                     <MaterialCommunityIcons
-                      name="key"
-                      color={
-                        confirmPasswordFocus ? theme.mainColor : theme.grey
-                      }
+                      name='key'
+                      color={confirmPasswordFocus ? theme.mainColor : theme.grey}
                       size={22}
                     />
                     <TextInput
                       value={registerConfirmPassword}
                       onChangeText={setRegisterConfirmPassword}
-                      placeholder="Enter Confirm Password"
-                      placeholderTextColor={
-                        theme.themeMode == "dark" ? theme.grey : "darkgray"
-                      }
+                      placeholder='Enter Confirm Password'
+                      placeholderTextColor={theme.themeMode == 'dark' ? theme.grey : 'darkgray'}
                       style={[
                         tw`flex-1 mx-3 border-b-2 `,
                         {
-                          borderBottomColor: confirmPasswordFocus
-                            ? theme.mainColor
-                            : theme.grey,
+                          borderBottomColor: confirmPasswordFocus ? theme.mainColor : theme.grey,
                           color: theme.mainTextColor,
                         },
                       ]}
-                      secureTextEntry={
-                        registerConfirmPasswordShow ? true : false
-                      }
+                      secureTextEntry={registerConfirmPasswordShow ? true : false}
                       onFocus={() => setConfirmPasswordFocus(true)}
                       onBlur={() => setConfirmPasswordFocus(false)}
                     />
                     <MaterialCommunityIcons
                       onPress={() => {
-                        setRegisterConfirmPasswordShow(
-                          !registerConfirmPasswordShow
-                        );
+                        setRegisterConfirmPasswordShow(!registerConfirmPasswordShow);
                       }}
-                      name={registerConfirmPasswordShow ? "eye-off" : "eye"}
-                      color={
-                        confirmPasswordFocus ? theme.mainColor : theme.grey
-                      }
+                      name={registerConfirmPasswordShow ? 'eye-off' : 'eye'}
+                      color={confirmPasswordFocus ? theme.mainColor : theme.grey}
                       size={22}
                     />
                   </View>
@@ -676,9 +609,7 @@ const Login = () => {
                   setFocusOff();
                 }}
               >
-                <Text
-                  style={[tw`font-semibold text-center text-lg text-white`, {}]}
-                >
+                <Text style={[tw`font-semibold text-center text-lg text-white`, {}]}>
                   Login Page
                 </Text>
               </TouchableOpacity>

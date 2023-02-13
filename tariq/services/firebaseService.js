@@ -1,4 +1,4 @@
-import { initializeApp } from "firebase/app";
+import { initializeApp } from 'firebase/app';
 // import admin from "firebase-admin";
 
 import {
@@ -10,22 +10,22 @@ import {
   getDocs,
   getFirestore,
   setDoc,
-} from "firebase/firestore";
+} from 'firebase/firestore';
 import {
   createUserWithEmailAndPassword,
   getAuth,
   signInWithEmailAndPassword,
   updateCurrentUser,
-} from "firebase/auth";
+} from 'firebase/auth';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCsbcjhdQw31OQeg5KrC7qXQuuvqk7VzWw",
-  authDomain: "passwordmanager-43.firebaseapp.com",
-  databaseURL: "https://passwordmanager-43-default-rtdb.firebaseio.com",
-  projectId: "passwordmanager-43",
-  storageBucket: "passwordmanager-43.appspot.com",
-  messagingSenderId: "419467193948",
-  appId: "1:419467193948:web:04cbbaea7c74e5dfe80099",
+  apiKey: 'AIzaSyCsbcjhdQw31OQeg5KrC7qXQuuvqk7VzWw',
+  authDomain: 'passwordmanager-43.firebaseapp.com',
+  databaseURL: 'https://passwordmanager-43-default-rtdb.firebaseio.com',
+  projectId: 'passwordmanager-43',
+  storageBucket: 'passwordmanager-43.appspot.com',
+  messagingSenderId: '419467193948',
+  appId: '1:419467193948:web:04cbbaea7c74e5dfe80099',
 };
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
@@ -46,41 +46,30 @@ export const login = async (username, password) => {
   }
 };
 
-// admin.initializeApp({
-//   credential: admin.credential.cert(
-//     "./passwordmanager-43-firebase-adminsdk-jivnk-bf2268982e.json"
-//   ),
-//   databaseURL: "https://passwordmanager-43-default-rtdb.firebaseio.com",
-// });
-// const adminAuth = admin.auth();
 export const createUser = async (email, password, name) => {
   try {
-    const { user } = await createUserWithEmailAndPassword(
-      auth,
-      email,
-      password
-    );
+    const { user } = await createUserWithEmailAndPassword(auth, email, password);
     addUserData(user.uid, email, password, name);
-    addCategory(user.uid, "facebook", "facebook", {
-      icon: "facebook",
-      fav_icon: "heart-outline",
-      account_name: "Example Account",
-      email: "example@example.com",
-      password: "examplePassword",
+    addCategory(user.uid, 'facebook', 'facebook', {
+      icon: 'facebook',
+      fav_icon: 'heart-outline',
+      account_name: 'Example Account',
+      email: 'example@example.com',
+      password: 'examplePassword',
     });
-    addCategory(user.uid, "google", "google", {
-      icon: "facebook",
-      fav_icon: "heart-outline",
-      account_name: "Example Account",
-      email: "example@example.com",
-      password: "examplePassword",
+    addCategory(user.uid, 'google', 'google', {
+      icon: 'facebook',
+      fav_icon: 'heart-outline',
+      account_name: 'Example Account',
+      email: 'example@example.com',
+      password: 'examplePassword',
     });
-    addCategory(user.uid, "instagram", "instagram", {
-      icon: "facebook",
-      fav_icon: "heart-outline",
-      account_name: "Example Account",
-      email: "example@example.com",
-      password: "examplePassword",
+    addCategory(user.uid, 'instagram', 'instagram', {
+      icon: 'facebook',
+      fav_icon: 'heart-outline',
+      account_name: 'Example Account',
+      email: 'example@example.com',
+      password: 'examplePassword',
     });
     return user;
   } catch (err) {
@@ -124,27 +113,15 @@ export const createUser = async (email, password, name) => {
   //   });
 };
 
-// const getAllUsers = async () => {
-//   try {
-//     const listUsersResult = await adminAuth.listUsers();
-
-//     listUsersResult.users.forEach((userRecord) => {
-//       console.log("user", userRecord.toJSON());
-//     });
-//   } catch (error) {
-//     console.log("Error fetching users:", error);
-//   }
-// };
-
-const uid = "abcTestAccount";
-const email = "a@b.com";
-const password = "abc123";
-const name = "tariq";
-// createUser(uid, email, password, name);
-// getAllUsers();
+// const uid = 'abcTestAccount';
+// const email = 'a@b.com';
+// const password = 'abc123';
+// const name = 'tariq';
+// // createUser(uid, email, password, name);
+// // getAllUsers();
 
 const addUserData = async (uid, email, password, name) => {
-  const userRef = collection(db, "Users");
+  const userRef = collection(db, 'Users');
 
   try {
     await setDoc(doc(userRef, uid), {
@@ -153,14 +130,12 @@ const addUserData = async (uid, email, password, name) => {
       password,
       name,
     });
-    console.log("Successfully Added");
-    return "Successfully Added";
+    console.log('Successfully Added');
+    return 'Successfully Added';
   } catch (error) {
     throw error;
   }
 };
-// addUserData(uid, email, password, name);
-// createUser(uid, email, password, name);
 
 export const getUserData = async (uid) => {
   let userRef = doc(db, `Users/${uid}`);
@@ -177,24 +152,25 @@ export const getUserData = async (uid) => {
 
 /*  add category
  ********************************************* */
-const addCategory = (uid, categoryName, icon_rec, categoryData) => {
+export const addCategory = async (uid, categoryName, selectedIcon, categoryData) => {
   let category = categoryName;
-  let icon = icon_rec.toLowerCase();
+  let icon = selectedIcon.toLowerCase();
 
   // Category Items
-  const category_ref = collection(
-    db,
-    `Users/${uid}/Categories/${category}/Items`
-  );
-  addDoc(category_ref, categoryData)
-    .then((data) => {
-      console.log("Doc Added");
-    })
-    .catch((err) => console.log(err.message));
 
-  // Icon
-  const totalCategories = collection(db, `Users/${uid}/ToalCategories`);
-  addDoc(totalCategories, { category, icon });
+  try {
+    const category_ref = collection(db, `Users/${uid}/Categories/${category}/Items`);
+    const data = await addDoc(category_ref, categoryData);
+    const totalCategories = collection(db, `Users/${uid}/ToalCategories`);
+
+    // Adding Category in icon List
+    addDoc(totalCategories, { category, icon });
+
+    return data;
+  } catch (err) {
+    console.log(err.messsage);
+    throw err;
+  }
 };
 
 export const addFav = async (uid, categoryData) => {
@@ -216,9 +192,7 @@ export const getAllCategories = async (uid) => {
   let allCategories = [];
   try {
     const res = await getDocs(categories);
-    res.docs.forEach((doc) =>
-      allCategories.push({ ...doc.data(), id: doc.id })
-    );
+    res.docs.forEach((doc) => allCategories.push({ ...doc.data(), id: doc.id }));
     return allCategories;
   } catch (err) {
     throw err;
@@ -238,10 +212,7 @@ export const getAllFav = async (uid) => {
 
 export const getCategoryByName = async (uid, name) => {
   try {
-    const categories = collection(
-      db,
-      `Users/${uid}/Categories/${name.toLowerCase()}/Items`
-    );
+    const categories = collection(db, `Users/${uid}/Categories/${name.toLowerCase()}/Items`);
     let data = [];
     const res = await getDocs(categories);
     res.docs.forEach((doc) => {

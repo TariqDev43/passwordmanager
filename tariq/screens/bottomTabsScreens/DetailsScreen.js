@@ -1,22 +1,15 @@
-import {
-  View,
-  Text,
-  SafeAreaView,
-  TouchableOpacity,
-  Pressable,
-  Keyboard,
-} from "react-native";
-import React, { useEffect } from "react";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { Modal } from "react-native";
-import { useState } from "react";
-import { TextInput } from "react-native-gesture-handler";
-import { memo } from "react";
-import useTheme from "../../Contexts/ThemeContext";
-import useSettings from "../../Contexts/SettingContext";
-import tw from "tailwind-react-native-classnames";
-import * as Clipboard from "expo-clipboard";
-
+import { View, Text, SafeAreaView, TouchableOpacity, Pressable, Keyboard } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Modal } from 'react-native';
+import { useState } from 'react';
+import { TextInput } from 'react-native-gesture-handler';
+import { memo } from 'react';
+import useTheme from '../../Contexts/ThemeContext';
+import useSettings from '../../Contexts/SettingContext';
+import useUser from '../../Contexts/UserContext';
+import tw from 'tailwind-react-native-classnames';
+import * as Clipboard from 'expo-clipboard';
+0;
 const DetailsScreen = ({
   route: {
     params: { item, category },
@@ -25,6 +18,7 @@ const DetailsScreen = ({
   // ********** All states are shown here
   const { theme } = useTheme();
   const { elevation, elevationValue } = useSettings();
+  const { changeUser } = useUser();
 
   // Focus States
   const [emailFocus, setEmailFocus] = useState(false);
@@ -44,20 +38,14 @@ const DetailsScreen = ({
   };
 
   return (
-    <SafeAreaView
-      style={[tw`flex-1 px-6`, { backgroundColor: theme.mainBgColor }]}
-    >
+    <SafeAreaView style={[tw`flex-1 px-6`, { backgroundColor: theme.mainBgColor }]}>
       {/* ************ Top Heading ************ */}
       <View style={tw`my-5 flex-row justify-between items-center`}>
         <Text style={[tw`text-2xl font-extrabold`, { color: theme.mainColor }]}>
           {category.toUpperCase()}
         </Text>
         <TouchableOpacity onPress={() => setShowAddModal(!showAddModal)}>
-          <MaterialCommunityIcons
-            name="plus-box-outline"
-            color={theme.mainColor}
-            size={35}
-          />
+          <MaterialCommunityIcons name='plus-box-outline' color={theme.mainColor} size={35} />
         </TouchableOpacity>
       </View>
 
@@ -78,35 +66,24 @@ const DetailsScreen = ({
               {/* ******* Account Section ******* */}
               <View style={tw`flex-row items-center`}>
                 <Text
-                  style={[
-                    tw`flex-1 text-lg font-semibold`,
-                    { color: theme.mainColor },
-                  ]}
+                  style={[tw`flex-1 text-lg font-semibold`, { color: theme.mainColor }]}
                   numberOfLines={1}
                 >
                   {data.account_name}
                 </Text>
                 <TouchableOpacity>
-                  <MaterialCommunityIcons
-                    name={data.fav_icon}
-                    color={theme.mainColor}
-                    size={23}
-                  />
+                  <MaterialCommunityIcons name={data.fav_icon} color={theme.mainColor} size={23} />
                 </TouchableOpacity>
                 <TouchableOpacity>
                   <MaterialCommunityIcons
-                    name="square-edit-outline"
+                    name='square-edit-outline'
                     color={theme.mainColor}
                     size={23}
                     style={tw`mx-2`}
                   />
                 </TouchableOpacity>
                 <TouchableOpacity>
-                  <MaterialCommunityIcons
-                    name="delete-outline"
-                    color={theme.mainColor}
-                    size={23}
-                  />
+                  <MaterialCommunityIcons name='delete-outline' color={theme.mainColor} size={23} />
                 </TouchableOpacity>
               </View>
 
@@ -117,22 +94,15 @@ const DetailsScreen = ({
               <View style={tw`my-4 mt-4 `}>
                 {/* ******* Email  ******* */}
                 <View style={tw`flex-row items-center justify-between my-2`}>
-                  <MaterialCommunityIcons
-                    name="email"
-                    color={theme.mainColor}
-                    size={22}
-                  />
-                  <Text
-                    style={[tw`flex-1 mx-3`, { color: theme.mainTextColor }]}
-                    numberOfLines={1}
-                  >
+                  <MaterialCommunityIcons name='email' color={theme.mainColor} size={22} />
+                  <Text style={[tw`flex-1 mx-3`, { color: theme.mainTextColor }]} numberOfLines={1}>
                     {data.email}
                   </Text>
                   <TouchableOpacity>
                     <MaterialCommunityIcons
                       style={tw`mx-1`}
                       onPress={() => Clipboard.setStringAsync(`${data.email}`)}
-                      name="content-copy"
+                      name='content-copy'
                       color={theme.mainColor}
                       size={22}
                     />
@@ -142,20 +112,17 @@ const DetailsScreen = ({
                 <View style={tw`flex-row items-center justify-between my-2`}>
                   <MaterialCommunityIcons
                     onPress={() => Clipboard.setStringAsync(`${data.password}`)}
-                    name="key"
+                    name='key'
                     color={theme.mainColor}
                     size={22}
                   />
-                  <Text
-                    style={[tw`flex-1 mx-3`, { color: theme.mainTextColor }]}
-                    numberOfLines={1}
-                  >
+                  <Text style={[tw`flex-1 mx-3`, { color: theme.mainTextColor }]} numberOfLines={1}>
                     {data.password}
                   </Text>
                   <TouchableOpacity>
                     <MaterialCommunityIcons
                       style={tw`mx-1`}
-                      name="content-copy"
+                      name='content-copy'
                       color={theme.mainColor}
                       size={22}
                     />
@@ -176,10 +143,7 @@ const DetailsScreen = ({
         <View style={tw`justify-center items-center flex-1`}>
           {/* ************  Modal main Container  */}
           <Pressable
-            style={[
-              tw`p-5 rounded-xl w-4/5 `,
-              { backgroundColor: theme.modalBg, elevation: 15 },
-            ]}
+            style={[tw`p-5 rounded-xl w-4/5 `, { backgroundColor: theme.modalBg, elevation: 15 }]}
             onPress={() => {
               Keyboard.dismiss();
               setFocusOff();
@@ -189,10 +153,7 @@ const DetailsScreen = ({
             <View>
               <View style={tw`flex-row `}>
                 <Text
-                  style={[
-                    tw`flex-1 text-xl font-semibold`,
-                    { color: theme.mainColor },
-                  ]}
+                  style={[tw`flex-1 text-xl font-semibold`, { color: theme.mainColor }]}
                   numberOfLines={1}
                 >
                   ADD INFO
@@ -204,22 +165,18 @@ const DetailsScreen = ({
                 {/* ******* Account Section  ******* */}
                 <View style={tw`flex-row items-center justify-between mb-2 `}>
                   <MaterialCommunityIcons
-                    name="account"
+                    name='account'
                     color={hintFocus ? theme.mainColor : theme.grey}
                     size={22}
                   />
                   <TextInput
-                    placeholder="Account Name"
-                    placeholderTextColor={
-                      theme.themeMode == "dark" ? theme.grey : "darkgray"
-                    }
+                    placeholder='Account Name'
+                    placeholderTextColor={theme.themeMode == 'dark' ? theme.grey : 'darkgray'}
                     style={[
                       tw`flex-1 mx-3 border-b-2
                   `,
                       {
-                        borderBottomColor: hintFocus
-                          ? theme.mainColor
-                          : theme.grey,
+                        borderBottomColor: hintFocus ? theme.mainColor : theme.grey,
                         color: theme.mainTextColor,
                       },
                     ]}
@@ -230,23 +187,19 @@ const DetailsScreen = ({
                 {/* ******* Email  ******* */}
                 <View style={tw`flex-row items-center justify-between my-3 `}>
                   <MaterialCommunityIcons
-                    name="email"
+                    name='email'
                     color={emailFocus ? theme.mainColor : theme.grey}
                     size={22}
                   />
                   <TextInput
-                    className=""
-                    placeholder="Enter Email"
-                    placeholderTextColor={
-                      theme.themeMode == "dark" ? theme.grey : "darkgray"
-                    }
+                    className=''
+                    placeholder='Enter Email'
+                    placeholderTextColor={theme.themeMode == 'dark' ? theme.grey : 'darkgray'}
                     style={[
                       tw`flex-1 mx-3 border-b-2
                   `,
                       {
-                        borderBottomColor: emailFocus
-                          ? theme.mainColor
-                          : theme.grey,
+                        borderBottomColor: emailFocus ? theme.mainColor : theme.grey,
                         color: theme.mainTextColor,
                       },
                     ]}
@@ -255,26 +208,20 @@ const DetailsScreen = ({
                   />
                 </View>
                 {/* ******* Password  ******* */}
-                <View
-                  style={tw`flex-row items-center justify-between my-3 mb-2 `}
-                >
+                <View style={tw`flex-row items-center justify-between my-3 mb-2 `}>
                   <MaterialCommunityIcons
-                    name="key"
+                    name='key'
                     color={passwordFocus ? theme.mainColor : theme.grey}
                     size={22}
                   />
                   <TextInput
-                    placeholder="Enter Password"
-                    placeholderTextColor={
-                      theme.themeMode == "dark" ? theme.grey : "darkgray"
-                    }
+                    placeholder='Enter Password'
+                    placeholderTextColor={theme.themeMode == 'dark' ? theme.grey : 'darkgray'}
                     style={[
                       tw`flex-1 mx-3 border-b-2
                   `,
                       {
-                        borderBottomColor: passwordFocus
-                          ? theme.mainColor
-                          : theme.grey,
+                        borderBottomColor: passwordFocus ? theme.mainColor : theme.grey,
                         color: theme.mainTextColor,
                       },
                     ]}
@@ -296,12 +243,7 @@ const DetailsScreen = ({
                   setFocusOff();
                 }}
               >
-                <Text
-                  style={[
-                    tw`font-bold text-xs m-1`,
-                    { color: theme.mainTextColor },
-                  ]}
-                >
+                <Text style={[tw`font-bold text-xs m-1`, { color: theme.mainTextColor }]}>
                   Close
                 </Text>
               </TouchableOpacity>
