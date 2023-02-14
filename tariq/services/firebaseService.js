@@ -218,14 +218,20 @@ export const getCategoryByName = async (uid, name) => {
     throw err;
   }
 };
-export const deleteSelectedDoc = async (uid, name, deleteId) => {
+
+export const deleteSelectedDoc = async (uid, name) => {
   try {
-    // const categories = (db, 'Users', uid, name, deleteId);
-    const allCategories = doc(db, `Users/${uid}/TotalCategories`, name);
-    const categories = doc(db, `Users/${uid}/Categories/${name.toLowerCase()}/Items`, deleteId);
-    const res = await deleteDoc(categories);
-    const res1 = await deleteDoc(allCategories);
-    return { res, res1 };
+    // const categories = doc(db, `Users/${uid}/Categories/${name.toLowerCase()}/Items`, deleteId);
+    // const res = await deleteDoc(categories);
+
+    const allItems = collection(db, `Users/${uid}/Categories/${name.toLowerCase()}/Items`);
+    const test = await getDocs(allItems);
+    test.forEach((doc) => deleteDoc(doc.ref, doc.id));
+    const docRef = doc(db, `Users/${uid}/Categories`, name.toLowerCase());
+    await deleteDoc(docRef);
+
+    const allCategoriesNames = doc(db, `Users/${uid}/TotalCategories`, name);
+    deleteDoc(allCategoriesNames);
   } catch (err) {
     throw err;
   }

@@ -18,11 +18,10 @@ import useUser from '../../Contexts/UserContext';
 import useSettings from '../../Contexts/SettingContext';
 import tw from 'tailwind-react-native-classnames';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import Animated from 'react-native-reanimated';
 import { addCategory } from '../../services/firebaseService';
 import { RefreshControl } from 'react-native-gesture-handler';
-import LottieView from 'lottie-react-native';
 import CategoriesList from '../../components/CategoriesList';
+import ErrorModal from '../../components/ErrorModal';
 
 const Home = ({ navigation: { navigate } }) => {
   /*   All States
@@ -50,7 +49,6 @@ const Home = ({ navigation: { navigate } }) => {
   const [refreshing, setRefreshing] = useState(false);
 
   const [loading, setLoading] = useState(false);
-  const addSuccess = useRef(null);
 
   const iconList = useMemo(
     () => [
@@ -76,6 +74,7 @@ const Home = ({ navigation: { navigate } }) => {
       setShowErrorModal(true);
       setModalTitle('Error');
       setModalBody('Please Enter Category Name');
+      setLoading(false);
       return;
     }
     const categoryData = {
@@ -86,13 +85,21 @@ const Home = ({ navigation: { navigate } }) => {
       password: 'examplePassword',
     };
 
-    const data = await addCategory(uid, categoryText, icon, categoryData);
-    if (data) {
-      const done = await onRefresh();
-      if (done) {
-        setLoading(false);
-        setShowModal(false);
+    try {
+      const data = await addCategory(uid, categoryText, icon, categoryData);
+      if (data) {
+        const done = await onRefresh();
+        if (done) {
+          setLoading(false);
+          setShowModal(false);
+          setCategoryText('');
+          setIcon('heart');
+        }
       }
+    } catch (err) {
+      setShowErrorModal(true);
+      setModalTitle('Error');
+      setModalBody(err.message);
     }
   };
 
@@ -103,7 +110,9 @@ const Home = ({ navigation: { navigate } }) => {
       setRefreshing(false);
       return true;
     } catch (err) {
-      console.log(err.message);
+      setShowErrorModal(true);
+      setModalTitle('Error');
+      setModalBody(err.message.toString());
     }
   };
 
@@ -114,31 +123,12 @@ const Home = ({ navigation: { navigate } }) => {
     >
       {/* Error Modal */}
 
-      <Modal animationType='fade' transparent={true} visible={showErrorModal}>
-        <View style={[tw`flex-1 justify-center items-center`]}>
-          <Pressable
-            style={[tw`p-5 rounded-2xl w-64`, { backgroundColor: theme.modalBg, elevation: 100 }]}
-            onPress={() => {
-              setShowErrorModal(false);
-            }}
-          >
-            <View>
-              <View style={[tw` px-2 `, {}]}>
-                <Text style={[tw`font-semibold text-lg`, {}]}>{modalTitle}</Text>
-              </View>
-              <View style={[tw` p-2`, {}]}>
-                <Text style={[tw`text-base`, {}]}>{modalBody}</Text>
-              </View>
-            </View>
-            {/**************** Buttons ***********************/}
-            <View style={tw`flex-row justify-end  mx-1  items-center `}>
-              <TouchableOpacity onPress={() => setShowErrorModal(false)} style={tw`p-1`}>
-                <Text style={[tw`font-bold text-xs`, { color: theme.mainColor }]}>Okay</Text>
-              </TouchableOpacity>
-            </View>
-          </Pressable>
-        </View>
-      </Modal>
+      <ErrorModal
+        show={showErrorModal}
+        setShow={setShowErrorModal}
+        modalTitle={modalTitle}
+        modalBody={modalBody}
+      />
 
       {/* Heading */}
       <View style={tw`flex-row px-6 mt-6 justify-between items-center mb-2`}>

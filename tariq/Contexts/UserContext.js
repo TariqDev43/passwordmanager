@@ -50,7 +50,6 @@ export const UserProvider = memo(({ children }) => {
   });
   const refreshAllCategoryInfo = useCallback(async () => {
     const categgories = await refreshAllCategories();
-    setAllCategoryInfo(null);
 
     const allCategoryInfoList = await categgories.reduce(async (promisedValue, item) => {
       const newItem = await promisedValue;
@@ -59,6 +58,9 @@ export const UserProvider = memo(({ children }) => {
       newItem[category] = await getCategoryByName(uid, category);
       return newItem;
     }, {});
+    // console.log(allCategoryInfoList);
+
+    setAllCategoryInfo(null);
     setAllCategoryInfo(allCategoryInfoList);
     return allCategoryInfoList;
   });

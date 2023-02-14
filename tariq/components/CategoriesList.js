@@ -1,30 +1,46 @@
-import React, { memo } from 'react';
+import React, { memo, useState } from 'react';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Animated, { BounceInDown } from 'react-native-reanimated';
 import tw from 'tailwind-react-native-classnames';
-import { View, Text, TouchableOpacity } from 'react-native';
+import { Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import useSettings from '../Contexts/SettingContext';
 import useTheme from '../Contexts/ThemeContext';
 import { deleteSelectedDoc } from '../services/firebaseService';
+import ErrorModal from './ErrorModal';
 
 const CategoriesList = ({ uid, index, item, navigate, allCategoryInfo, onRefresh }) => {
   const { theme } = useTheme();
   const { elevation, elevationValue } = useSettings();
+  const [loading, setLoading] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [modalTitle, setModalTitle] = useState('');
+  const [modalBody, setModalBody] = useState('');
 
-  const deleteCategory = async (uid, category, id) => {
+  const deleteCategory = async (uid, category) => {
     try {
-      const data = await deleteSelectedDoc(uid, category, id);
+      setLoading(true);
+      await deleteSelectedDoc(uid, category);
+      setLoading(false);
       await onRefresh();
     } catch (err) {
-      console.log(err.message);
+      setShowErrorModal(true);
+      setModalTitle('Error');
+      setModalBody(err.message);
+      setLoading(false);
     }
   };
 
   return (
     <Animated.View
-      entering={BounceInDown.delay((index + 1) * 200)}
+      entering={BounceInDown.delay((index + 1) * 100)}
       style={[tw`flex-1 mx-1 `, { marginVertical: 5 }]}
     >
+      <ErrorModal
+        show={showErrorModal}
+        setShow={setShowErrorModal}
+        modalTitle={modalTitle}
+        modalBody={modalBody}
+      />
       {allCategoryInfo && (
         <TouchableOpacity
           onPress={() =>
@@ -50,10 +66,13 @@ const CategoriesList = ({ uid, index, item, navigate, allCategoryInfo, onRefresh
           {/* ******  3-Dots menu  ******* */}
           <TouchableOpacity
             onPress={() => {
-              deleteCategory(uid, item.category, item.id);
+              deleteCategory(uid, item.category);
             }}
           >
-            <MaterialCommunityIcons name={'delete'} color={theme.mainColor} size={25} />
+            {!loading && (
+              <MaterialCommunityIcons name={'delete'} color={theme.mainColor} size={25} />
+            )}
+            {loading && <ActivityIndicator />}
           </TouchableOpacity>
         </TouchableOpacity>
       )}

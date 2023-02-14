@@ -3,7 +3,6 @@ import {
   ActivityIndicator,
   ImageBackground,
   Keyboard,
-  Modal,
   Pressable,
   Text,
   TextInput,
@@ -26,6 +25,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { AntDesign } from '@expo/vector-icons';
 import useUser from '../../Contexts/UserContext';
 import { createUser, login } from '../../services/firebaseService';
+import ErrorModal from '../../components/ErrorModal';
 
 const Login = () => {
   /*   ALL States
@@ -134,31 +134,31 @@ const Login = () => {
     setFocusOff();
     if (username == null) {
       setShowModal(true);
-      setModalTitle('Login Error');
+      setModalTitle('Register Error');
       setModalBody('Username Is Required');
       return;
     }
     if (registerEmail == null) {
       setShowModal(true);
-      setModalTitle('Login Error');
+      setModalTitle('Register Error');
       setModalBody('Email Is Required');
       return;
     }
     if (registerPassword == null) {
       setShowModal(true);
-      setModalTitle('Login Error');
+      setModalTitle('Register Error');
       setModalBody('Password Is Required');
       return;
     }
     if (registerConfirmPassword == null) {
       setShowModal(true);
-      setModalTitle('Login Error');
+      setModalTitle('Register Error');
       setModalBody('Confirm Password Is Required');
       return;
     }
     if (registerPassword != registerConfirmPassword) {
       setShowModal(true);
-      setModalTitle('Login Error');
+      setModalTitle('Register Error');
       setModalBody('Passwords Do Not Match');
       return;
     }
@@ -197,31 +197,13 @@ const Login = () => {
       style={[tw` flex-1  justify-center  `, { backgroundColor: theme.mainBgColor }]}
       source={require('../../assets/bg.png')}
     >
-      <Modal animationType='fade' transparent={true} visible={showModal}>
-        <View style={[tw`flex-1 justify-center items-center`]}>
-          <Pressable
-            style={[tw`p-5 rounded-2xl w-64`, { backgroundColor: theme.modalBg, elevation: 100 }]}
-            onPress={() => {
-              setShowModal(false);
-            }}
-          >
-            <View>
-              <View style={[tw` px-2 `, {}]}>
-                <Text style={[tw`font-semibold text-lg`, {}]}>{modalTitle}</Text>
-              </View>
-              <View style={[tw` p-2`, {}]}>
-                <Text style={[tw`text-base`, {}]}>{modalBody}</Text>
-              </View>
-            </View>
-            {/**************** Buttons ***********************/}
-            <View style={tw`flex-row justify-end  mx-1  items-center `}>
-              <TouchableOpacity onPress={() => setShowModal(false)} style={tw`p-1`}>
-                <Text style={[tw`font-bold text-xs`, { color: theme.mainColor }]}>Okay</Text>
-              </TouchableOpacity>
-            </View>
-          </Pressable>
-        </View>
-      </Modal>
+      <ErrorModal
+        show={showModal}
+        setShow={setShowModal}
+        modalTitle={modalTitle}
+        modalBody={modalBody}
+      />
+
       <Pressable
         onPress={() => {
           Keyboard.dismiss();

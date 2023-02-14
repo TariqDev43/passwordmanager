@@ -31,10 +31,9 @@ const InitializeScreen = () => {
   useEffect(() => {
     const getData = async () => {
       try {
-        const userInfo = await getUserInfo();
-        console.log(userInfo);
-        await refreshAllCategoryInfo();
-        await refreshAllFav();
+        getUserInfo();
+        refreshAllCategoryInfo();
+        refreshAllFav();
       } catch (err) {
         console.log(err.message);
       }
