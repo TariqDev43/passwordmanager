@@ -3,20 +3,15 @@ import { initializeApp } from 'firebase/app';
 
 import {
   addDoc,
+  deleteDoc,
   collection,
-  collectionGroup,
   doc,
   getDoc,
   getDocs,
   getFirestore,
   setDoc,
 } from 'firebase/firestore';
-import {
-  createUserWithEmailAndPassword,
-  getAuth,
-  signInWithEmailAndPassword,
-  updateCurrentUser,
-} from 'firebase/auth';
+import { createUserWithEmailAndPassword, getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyCsbcjhdQw31OQeg5KrC7qXQuuvqk7VzWw',
@@ -161,10 +156,9 @@ export const addCategory = async (uid, categoryName, selectedIcon, categoryData)
   try {
     const category_ref = collection(db, `Users/${uid}/Categories/${category}/Items`);
     const data = await addDoc(category_ref, categoryData);
-    const totalCategories = collection(db, `Users/${uid}/ToalCategories`);
-
+    const totalCategories = doc(db, `Users/${uid}/TotalCategories`, category.toLowerCase());
     // Adding Category in icon List
-    addDoc(totalCategories, { category, icon });
+    await setDoc(totalCategories, { category, icon });
 
     return data;
   } catch (err) {
@@ -188,7 +182,7 @@ export const addFav = async (uid, categoryData) => {
 /*   Get Category By Name
  ********************************************* */
 export const getAllCategories = async (uid) => {
-  const categories = collection(db, `Users/${uid}/ToalCategories`);
+  const categories = collection(db, `Users/${uid}/TotalCategories`);
   let allCategories = [];
   try {
     const res = await getDocs(categories);
@@ -220,6 +214,18 @@ export const getCategoryByName = async (uid, name) => {
     });
 
     return data;
+  } catch (err) {
+    throw err;
+  }
+};
+export const deleteSelectedDoc = async (uid, name, deleteId) => {
+  try {
+    // const categories = (db, 'Users', uid, name, deleteId);
+    const allCategories = doc(db, `Users/${uid}/TotalCategories`, name);
+    const categories = doc(db, `Users/${uid}/Categories/${name.toLowerCase()}/Items`, deleteId);
+    const res = await deleteDoc(categories);
+    const res1 = await deleteDoc(allCategories);
+    return { res, res1 };
   } catch (err) {
     throw err;
   }

@@ -10,26 +10,26 @@ import {
   SafeAreaView,
   ActivityIndicator,
 } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { memo, useEffect, useRef, useState } from 'react';
+
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { useMemo } from 'react';
 import useTheme from '../../Contexts/ThemeContext';
 import useUser from '../../Contexts/UserContext';
 import useSettings from '../../Contexts/SettingContext';
 import tw from 'tailwind-react-native-classnames';
-import Animated, { BounceInDown } from 'react-native-reanimated';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import Animated from 'react-native-reanimated';
 import { addCategory } from '../../services/firebaseService';
 import { RefreshControl } from 'react-native-gesture-handler';
 import LottieView from 'lottie-react-native';
-import { async } from '@firebase/util';
+import CategoriesList from '../../components/CategoriesList';
 
 const Home = ({ navigation: { navigate } }) => {
   /*   All States
    ********************************************* */
   //  all contexts
   const { theme } = useTheme();
-  const { user, allCategories, allCategoryInfo, refreshAllCategories, refreshAllCategoryInfo } =
-    useUser();
+  const { user, allCategories, allCategoryInfo, refreshAllCategoryInfo } = useUser();
   const { elevation, elevationValue } = useSettings();
   const uid = user.uid;
 
@@ -48,7 +48,7 @@ const Home = ({ navigation: { navigate } }) => {
   const [icon, setIcon] = useState('heart');
   const [categoryText, setCategoryText] = useState('');
   const [refreshing, setRefreshing] = useState(false);
-  const [showAddAnimation, setShowAddAnimation] = useState(false);
+
   const [loading, setLoading] = useState(false);
   const addSuccess = useRef(null);
 
@@ -91,8 +91,7 @@ const Home = ({ navigation: { navigate } }) => {
       const done = await onRefresh();
       if (done) {
         setLoading(false);
-        setShowAddAnimation(true);
-        addSuccess.current.play();
+        setShowModal(false);
       }
     }
   };
@@ -220,27 +219,10 @@ const Home = ({ navigation: { navigate } }) => {
                 ]}
                 onPress={() => addNewCategory()}
               >
-                {!showAddAnimation && !loading && (
-                  <Text style={tw`font-bold text-xs m-1 text-white`}>ADD</Text>
-                )}
-                {!showAddAnimation && loading && (
+                {!loading && <Text style={tw`font-bold text-xs m-1 text-white`}>ADD</Text>}
+                {loading && (
                   <View style={tw`m-1`}>
                     <ActivityIndicator color={'white'} />
-                  </View>
-                )}
-                {showAddAnimation && (
-                  <View style={tw`m-1`}>
-                    <LottieView
-                      loop={false}
-                      style={{ width: 30, height: 30 }}
-                      ref={addSuccess}
-                      autoPlay={false}
-                      onAnimationFinish={() => {
-                        setShowAddAnimation(false);
-                        setShowModal(false);
-                      }}
-                      source={require('../../assets/success.json')}
-                    />
                   </View>
                 )}
               </TouchableOpacity>
@@ -320,67 +302,34 @@ const Home = ({ navigation: { navigate } }) => {
         </Pressable>
       </Modal>
       {/**************** Main Scrollable Content ******************************/}
-      {!loading && (
-        <View style={tw`pb-16 px-5 py-2`}>
-          <FlatList
-            contentContainerStyle={{ paddingBottom: 160 }}
-            data={allCategories}
-            showsVerticalScrollIndicator={false}
-            eyExtractor={(item) => item.id}
-            numColumns={2}
-            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-            renderItem={({ item, index }) => {
-              return (
-                // *******************  Main Div  *********************************
+      <View style={tw`pb-16 px-5 py-2`}>
+        <FlatList
+          contentContainerStyle={{ paddingBottom: 160 }}
+          data={allCategories}
+          showsVerticalScrollIndicator={false}
+          numColumns={2}
+          keyExtractor={(item) => item.id}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+          renderItem={({ item, index }) => {
+            return (
+              // *******************  Main Div  *********************************
 
-                <Animated.View
-                  entering={BounceInDown.delay(index + 1 * 200)}
-                  style={tw`flex-1 mx-1 my-1 `}
-                >
-                  <TouchableOpacity
-                    onPress={() =>
-                      navigate('Details', {
-                        item: allCategoryInfo[item.category],
-                        category: item.category,
-                      })
-                    }
-                    style={[
-                      tw`py-4 px-2 rounded-lg flex-1 flex-row items-center`,
-                      {
-                        elevation: elevation ? elevationValue : 0,
-                        backgroundColor: theme.bgColor,
-                      },
-                    ]}
-                  >
-                    {/* ****** Icon  ******* */}
-                    <MaterialCommunityIcons name={item.icon} color={theme.mainColor} size={33} />
-                    {/* ******  Name  ******* */}
-                    <Text
-                      numberOfLines={1}
-                      style={[tw`flex-1 text-xs mx-2`, { color: theme.mainTextColor }]}
-                    >
-                      {item.category.toUpperCase()}
-                    </Text>
-                    {/* ******  3-Dots menu  ******* */}
-                    <MaterialCommunityIcons
-                      name={'dots-vertical'}
-                      color={theme.mainColor}
-                      size={25}
-                      onPress={() => {
-                        setShowCategorySettingsModal(true);
-                      }}
-                    />
-                  </TouchableOpacity>
-                </Animated.View>
-              );
-            }}
-            k
-          />
-        </View>
-      )}
+              <CategoriesList
+                uid={uid}
+                index={index}
+                item={item}
+                onRefresh={onRefresh}
+                allCategoryInfo={allCategoryInfo}
+                allCategories={allCategories}
+                navigate={navigate}
+              />
+            );
+          }}
+        />
+      </View>
       {/**************** Category Settings Modal ******************************/}
     </SafeAreaView>
   );
 };
 
-export default Home;
+export default memo(Home);
