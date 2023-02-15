@@ -54,7 +54,6 @@ export const UserProvider = memo(({ children }) => {
     const allCategoryInfoList = await categgories.reduce(async (promisedValue, item) => {
       const newItem = await promisedValue;
       const { category } = item;
-
       newItem[category] = await getCategoryByName(uid, category);
       return newItem;
     }, {});

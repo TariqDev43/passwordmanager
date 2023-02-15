@@ -43,12 +43,12 @@ const CategoriesList = ({ uid, index, item, navigate, allCategoryInfo, onRefresh
       />
       {allCategoryInfo && (
         <TouchableOpacity
-          onPress={() =>
+          onPress={() => {
             navigate('Details', {
               item: allCategoryInfo[item.category],
               category: item.category,
-            })
-          }
+            });
+          }}
           style={[
             tw`py-4 px-2 rounded-lg flex-1 flex-row items-center`,
             {

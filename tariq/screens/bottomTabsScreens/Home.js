@@ -11,7 +11,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 
-import { memo, useCallback, useEffect, useRef, useState } from 'react';
+import { memo, useState } from 'react';
 import { useMemo } from 'react';
 import useTheme from '../../Contexts/ThemeContext';
 import useUser from '../../Contexts/UserContext';
@@ -35,7 +35,7 @@ const Home = ({ navigation: { navigate } }) => {
   // All Modal
   const [showModal, setShowModal] = useState(false);
   const [showIconModal, setShowIconModal] = useState(false);
-  const [showCategorySettingsModal, setShowCategorySettingsModal] = useState(false);
+  // const [showCategorySettingsModal, setShowCategorySettingsModal] = useState(false);
 
   //  Error Modal
   const [showErrorModal, setShowErrorModal] = useState(false);
@@ -78,6 +78,7 @@ const Home = ({ navigation: { navigate } }) => {
       return;
     }
     const categoryData = {
+      category: categoryText,
       icon: icon,
       fav_icon: 'heart-outline',
       account_name: 'Example Account',
@@ -87,11 +88,11 @@ const Home = ({ navigation: { navigate } }) => {
 
     try {
       const data = await addCategory(uid, categoryText, icon, categoryData);
+      setShowModal(false);
       if (data) {
         const done = await onRefresh();
         if (done) {
           setLoading(false);
-          setShowModal(false);
           setCategoryText('');
           setIcon('heart');
         }
@@ -115,7 +116,6 @@ const Home = ({ navigation: { navigate } }) => {
       setModalBody(err.message.toString());
     }
   };
-
   return (
     <SafeAreaView
       className={`flex-1 `}

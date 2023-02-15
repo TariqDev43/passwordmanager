@@ -46,6 +46,7 @@ export const createUser = async (email, password, name) => {
     const { user } = await createUserWithEmailAndPassword(auth, email, password);
     addUserData(user.uid, email, password, name);
     addCategory(user.uid, 'facebook', 'facebook', {
+      category: 'facebook',
       icon: 'facebook',
       fav_icon: 'heart-outline',
       account_name: 'Example Account',
@@ -53,6 +54,7 @@ export const createUser = async (email, password, name) => {
       password: 'examplePassword',
     });
     addCategory(user.uid, 'google', 'google', {
+      category: 'google',
       icon: 'facebook',
       fav_icon: 'heart-outline',
       account_name: 'Example Account',
@@ -60,6 +62,7 @@ export const createUser = async (email, password, name) => {
       password: 'examplePassword',
     });
     addCategory(user.uid, 'instagram', 'instagram', {
+      category: 'facebook',
       icon: 'facebook',
       fav_icon: 'heart-outline',
       account_name: 'Example Account',
@@ -221,16 +224,12 @@ export const getCategoryByName = async (uid, name) => {
 
 export const deleteSelectedDoc = async (uid, name) => {
   try {
-    // const categories = doc(db, `Users/${uid}/Categories/${name.toLowerCase()}/Items`, deleteId);
-    // const res = await deleteDoc(categories);
-
-    const allItems = collection(db, `Users/${uid}/Categories/${name.toLowerCase()}/Items`);
+    const allItems = collection(db, `Users/${uid}/Categories/${name}/Items`);
     const test = await getDocs(allItems);
     test.forEach((doc) => deleteDoc(doc.ref, doc.id));
-    const docRef = doc(db, `Users/${uid}/Categories`, name.toLowerCase());
+    const docRef = doc(db, `Users/${uid}/Categories`, name);
     await deleteDoc(docRef);
-
-    const allCategoriesNames = doc(db, `Users/${uid}/TotalCategories`, name);
+    const allCategoriesNames = doc(db, `Users/${uid}/TotalCategories`, name.toLowerCase());
     deleteDoc(allCategoriesNames);
   } catch (err) {
     throw err;
