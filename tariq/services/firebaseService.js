@@ -1,22 +1,31 @@
 // import admin from "firebase-admin";
 
 const firebaseConfig = {
-  apiKey: 'AIzaSyCsbcjhdQw31OQeg5KrC7qXQuuvqk7VzWw',
-  authDomain: 'passwordmanager-43.firebaseapp.com',
-  databaseURL: 'https://passwordmanager-43-default-rtdb.firebaseio.com',
-  projectId: 'passwordmanager-43',
-  storageBucket: 'passwordmanager-43.appspot.com',
-  messagingSenderId: '419467193948',
-  appId: '1:419467193948:web:04cbbaea7c74e5dfe80099',
+  apiKey: "AIzaSyCsbcjhdQw31OQeg5KrC7qXQuuvqk7VzWw",
+  authDomain: "passwordmanager-43.firebaseapp.com",
+  databaseURL: "https://passwordmanager-43-default-rtdb.firebaseio.com",
+  projectId: "passwordmanager-43",
+  storageBucket: "passwordmanager-43.appspot.com",
+  messagingSenderId: "419467193948",
+  appId: "1:419467193948:web:04cbbaea7c74e5dfe80099",
 };
 import {
   createUserWithEmailAndPassword,
   getAuth,
   signInWithEmailAndPassword,
   updateProfile,
-} from '@firebase/auth';
-import { initializeApp } from 'firebase/app';
-import { getDatabase, ref, get, set, serverTimestamp, remove, push } from 'firebase/database';
+} from "@firebase/auth";
+import { initializeApp } from "firebase/app";
+import {
+  getDatabase,
+  ref,
+  get,
+  set,
+  serverTimestamp,
+  remove,
+  push,
+  update,
+} from "firebase/database";
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
@@ -40,30 +49,30 @@ export const createUser = async (email, password, name) => {
   const defaultCategories = {
     facebook: {
       info: {
-        icon: 'Facebook',
+        icon: "Facebook",
       },
       items: {
-        '-N6dwzTiLPKzIT7gaAMi': {
-          category: 'facebook',
-          email: 'dddddadsfadsfsdf',
-          account_name: 'dsfadsa',
-          password: 'asdfasdfadsffffffdddd',
-          fav_icon: 'heart-outline',
+        "-N6dwzTiLPKzIT7gaAMi": {
+          category: "facebook",
+          email: "dddddadsfadsfsdf",
+          account_name: "dsfadsa",
+          password: "asdfasdfadsffffffdddd",
+          fav_icon: "heart-outline",
           key: serverTimestamp(),
         },
       },
     },
     google: {
       info: {
-        icon: 'Google',
+        icon: "Google",
       },
       items: {
-        '-N8nvwDXZms7DpuLjDuu': {
-          category: 'google',
-          email: 'abc@example.com',
-          account_name: 'example Account',
-          password: 'examplepassword',
-          fav_icon: 'heart-outline',
+        "-N8nvwDXZms7DpuLjDuu": {
+          category: "google",
+          email: "abc@example.com",
+          account_name: "example Account",
+          password: "examplepassword",
+          fav_icon: "heart-outline",
 
           key: serverTimestamp(),
         },
@@ -71,15 +80,15 @@ export const createUser = async (email, password, name) => {
     },
     instagram: {
       info: {
-        icon: 'Instagram',
+        icon: "Instagram",
       },
       items: {
-        '-N6ibRGx4HG9kPyFakvK': {
-          category: 'instagram',
-          email: 'abc@example.com',
-          account_name: 'example Account',
-          password: 'examplepassword',
-          fav_icon: 'heart',
+        "-N6ibRGx4HG9kPyFakvK": {
+          category: "instagram",
+          email: "abc@example.com",
+          account_name: "example Account",
+          password: "examplepassword",
+          fav_icon: "heart",
           key: serverTimestamp(),
         },
       },
@@ -87,7 +96,7 @@ export const createUser = async (email, password, name) => {
   };
   try {
     // checkinng if username in userNameList
-    const userNameList = await get(ref(db, 'Users/UsersList/'));
+    const userNameList = await get(ref(db, "Users/UsersList/"));
 
     const checkUserName = userNameList.forEach((item) => {
       if (item.val().username === name) {
@@ -98,7 +107,7 @@ export const createUser = async (email, password, name) => {
     });
 
     if (checkUserName) {
-      return { error: { message: 'Username already exists' } };
+      return { error: { message: "Username already exists" } };
     }
 
     // creatingUser
@@ -108,7 +117,7 @@ export const createUser = async (email, password, name) => {
       await updateProfile(user, { displayName: name });
 
       // Entering User Data
-      await set(ref(db, 'Users/' + name), {
+      await set(ref(db, "Users/" + name), {
         User_info: {
           username: name,
           email: email,
@@ -121,7 +130,7 @@ export const createUser = async (email, password, name) => {
       // Entering UserName to list Of Usernames
       let UserNameList = {};
       UserNameList[user.uid] = { username: name, uid: user.uid };
-      await set(ref(db, 'Users/UsersList/'), UserNameList);
+      await set(ref(db, "Users/UsersList/"), UserNameList);
 
       return user;
     }
@@ -169,20 +178,26 @@ export const addCategory = async (username, categoryName, icon) => {
     items: {},
   };
 
-  const newCategoryRef = ref(db, `Users/${username}/Categories/${categoryName.toLowerCase()}`);
+  const newCategoryRef = ref(
+    db,
+    `Users/${username}/Categories/${categoryName.toLowerCase()}`
+  );
   try {
     await set(newCategoryRef, newCategoryData);
-    return 'Done';
+    return "Done";
   } catch (err) {
     throw err;
   }
 };
 
 export const removeCategory = async (username, categoryName) => {
-  const deleteCategoryRef = ref(db, `Users/${username}/Categories/${categoryName.toLowerCase()}`);
+  const deleteCategoryRef = ref(
+    db,
+    `Users/${username}/Categories/${categoryName.toLowerCase()}`
+  );
   try {
     await remove(deleteCategoryRef);
-    return 'deleted';
+    return "deleted";
   } catch (err) {
     throw err;
   }
@@ -191,11 +206,44 @@ export const removeCategory = async (username, categoryName) => {
 /*    ALL CATEGORY DETAILS FUNCTIONS
  ********************************************* */
 
-export const addCategoryDetails = async (username, category, categoryDta) => {
+export const addCategoryDetails = async (username, category, categoryData) => {
   try {
-    const categoryRef = ref(db, `Users/${username}/Categories/${category.toLowerCase()}/items/`);
-    const newAdded = await push(categoryRef, categoryDta);
+    const categoryRef = ref(
+      db,
+      `Users/${username}/Categories/${category.toLowerCase()}/items/`
+    );
+    const newAdded = await push(categoryRef, categoryData);
     return newAdded;
+  } catch (err) {
+    throw err;
+  }
+};
+export const updateCategoryDetails = async (
+  username,
+  category,
+  categoryData,
+  id
+) => {
+  try {
+    const categoryRef = ref(
+      db,
+      `Users/${username}/Categories/${category.toLowerCase()}/items/${id}/`
+    );
+    const newAdded = await update(categoryRef, categoryData);
+    return newAdded;
+  } catch (err) {
+    throw err;
+  }
+};
+
+export const removeCategoryDetails = async (username, category, id) => {
+  const deleteCategoryRef = ref(
+    db,
+    `Users/${username}/Categories/${category.toLowerCase()}/items/${id}`
+  );
+  try {
+    await remove(deleteCategoryRef);
+    return "deleted";
   } catch (err) {
     throw err;
   }

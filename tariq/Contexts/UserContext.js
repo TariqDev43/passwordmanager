@@ -1,12 +1,12 @@
-import React from 'react';
-import { useState } from 'react';
-import { useCallback } from 'react';
-import { useMemo } from 'react';
-import { memo } from 'react';
-import { createContext } from 'react';
-import { useContext } from 'react';
+import React from "react";
+import { useState } from "react";
+import { useCallback } from "react";
+import { useMemo } from "react";
+import { memo } from "react";
+import { createContext } from "react";
+import { useContext } from "react";
 
-import { getAllCategories, getUserInfo } from '../services/firebaseService';
+import { getAllCategories, getUserInfo } from "../services/firebaseService";
 
 const UserContext = createContext({});
 
@@ -21,7 +21,7 @@ export const UserProvider = memo(({ children }) => {
   const changeUser = useCallback((val) => {
     val && setUserName(val.displayName);
     setUser(val);
-    console.log('changeUser');
+    console.log("changeUser");
   });
 
   const fetchUserInfo = useCallback(async (userName) => {
@@ -29,20 +29,19 @@ export const UserProvider = memo(({ children }) => {
       try {
         const userData = await getUserInfo(userName);
         setUserInfo(userData);
-        console.log('user info ran');
-        return 'success';
+        console.log("user info ran");
+        return "success";
       } catch (err) {
         throw err;
       }
     } else {
-      console.log('no username');
+      console.log("no username");
     }
   }, []);
 
   const fetchAllCategory = useCallback(async (userName) => {
     const allCategories = await getAllCategories(userName);
-    console.log('user Categories');
-
+    console.log("user Categories");
     setAllCategory(null);
     setAllCategory(allCategories);
     return allCategories;
@@ -66,7 +65,9 @@ export const UserProvider = memo(({ children }) => {
     fetchUserInfo,
     fetchAllCategory,
   }));
-  return <UserContext.Provider value={userValues}>{children}</UserContext.Provider>;
+  return (
+    <UserContext.Provider value={userValues}>{children}</UserContext.Provider>
+  );
 });
 
 export default function useUser() {
