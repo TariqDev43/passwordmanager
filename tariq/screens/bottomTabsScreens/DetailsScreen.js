@@ -1,24 +1,38 @@
 import { View, Text, SafeAreaView, TouchableOpacity, Pressable, Keyboard } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Modal } from 'react-native';
-import { useState } from 'react';
-import { TextInput } from 'react-native-gesture-handler';
+import { useEffect, useState } from 'react';
+import { FlatList, RefreshControl, TextInput } from 'react-native-gesture-handler';
 import { memo } from 'react';
 import useTheme from '../../Contexts/ThemeContext';
 import useSettings from '../../Contexts/SettingContext';
 import useUser from '../../Contexts/UserContext';
 import tw from 'tailwind-react-native-classnames';
-import * as Clipboard from 'expo-clipboard';
-0;
+
+import ErrorModal from '../../components/ErrorModal';
+import { serverTimestamp } from 'firebase/database';
+import { addCategoryDetails } from '../../services/firebaseService';
+import CategoriesDetailsList from '../../components/CategoriesDetailsList';
+
 const DetailsScreen = ({
   route: {
-    params: { item, category },
+    params: { item },
   },
 }) => {
   // ********** All states are shown here
   const { theme } = useTheme();
+  const { userName, allCategory, fetchAllCategory } = useUser();
   const { elevation, elevationValue } = useSettings();
-  const { changeUser } = useUser();
+  const [categoryData, setCategoryData] = useState(null);
+
+  // const { changeUser } = useUser();
+
+  //  Error Modal
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [modalTitle, setModalTitle] = useState('');
+  const [modalBody, setModalBody] = useState('');
+
+  const [refreshing, setRefreshing] = useState(false);
 
   // Focus States
   const [emailFocus, setEmailFocus] = useState(false);
@@ -30,6 +44,39 @@ const DetailsScreen = ({
 
   // ********** Functions Below
 
+  const addCategoryData = async () => {
+    const categoryDta = {
+      category: item.category.toLowerCase(),
+      email: 'abc@example.com',
+      account_name: 'example hint',
+      password: 'examplepassword',
+      fav_icon: 'heart-outline',
+      notes: 'test notes',
+      key: serverTimestamp(),
+    };
+    try {
+      const data = await addCategoryDetails(userName, item.category, categoryDta);
+      console.log(data);
+    } catch (err) {
+      setShowErrorModal(true);
+      setModalTitle('Error');
+      setModalBody(err.message);
+    }
+  };
+
+  const onRefresh = async () => {
+    try {
+      setRefreshing(true);
+      await fetchAllCategory(userName);
+      setRefreshing(false);
+      return true;
+    } catch (err) {
+      setShowErrorModal(true);
+      setModalTitle('Error');
+      setModalBody(err.message.toString());
+    }
+  };
+
   // turning focus off
   const setFocusOff = () => {
     setHintFocus(false);
@@ -37,12 +84,34 @@ const DetailsScreen = ({
     setPasswordFocus(false);
   };
 
+  useEffect(() => {
+    console.log();
+    if (item.value?.items) {
+      console.log('exists');
+      const data = item.value.items;
+      let i = [];
+      Object.keys(data).map((key) => {
+        i.push({ id: key, value: data[key] });
+      });
+      setCategoryData(i);
+    }
+  }, []);
+
   return (
     <SafeAreaView style={[tw`flex-1 px-6`, { backgroundColor: theme.mainBgColor }]}>
+      {/* Error Modal */}
+
+      <ErrorModal
+        show={showErrorModal}
+        setShow={setShowErrorModal}
+        modalTitle={modalTitle}
+        modalBody={modalBody}
+      />
+
       {/* ************ Top Heading ************ */}
       <View style={tw`my-5 flex-row justify-between items-center`}>
         <Text style={[tw`text-2xl font-extrabold`, { color: theme.mainColor }]}>
-          {category.toUpperCase()}
+          {item.category.toUpperCase()}
         </Text>
         <TouchableOpacity onPress={() => setShowAddModal(!showAddModal)}>
           <MaterialCommunityIcons name='plus-box-outline' color={theme.mainColor} size={35} />
@@ -50,88 +119,24 @@ const DetailsScreen = ({
       </View>
 
       {/* ************ Main List ************ */}
-      {item &&
-        item.map((data) => (
-          <View key={data.id}>
-            {/* ******* Main Container ******* */}
-            <View
-              style={[
-                tw`px-5 py-3 rounded-xl`,
-                {
-                  backgroundColor: theme.bgColor,
-                  elevation: elevation ? elevationValue : 0,
-                },
-              ]}
-            >
-              {/* ******* Account Section ******* */}
-              <View style={tw`flex-row items-center`}>
-                <Text
-                  style={[tw`flex-1 text-lg font-semibold`, { color: theme.mainColor }]}
-                  numberOfLines={1}
-                >
-                  {data.account_name}
-                </Text>
-                <TouchableOpacity>
-                  <MaterialCommunityIcons name={data.fav_icon} color={theme.mainColor} size={23} />
-                </TouchableOpacity>
-                <TouchableOpacity>
-                  <MaterialCommunityIcons
-                    name='square-edit-outline'
-                    color={theme.mainColor}
-                    size={23}
-                    style={tw`mx-2`}
-                  />
-                </TouchableOpacity>
-                <TouchableOpacity>
-                  <MaterialCommunityIcons name='delete-outline' color={theme.mainColor} size={23} />
-                </TouchableOpacity>
-              </View>
 
-              {/* ******* Hr underline ******* */}
-              <View style={tw`border border-gray-200 mt-2 `}></View>
+      {item && categoryData && allCategory && (
+        <FlatList
+          contentContainerStyle={{ paddingBottom: 160 }}
+          data={categoryData}
+          showsVerticalScrollIndicator={false}
+          numColumns={1}
+          keyExtractor={(test) => test.id}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+          renderItem={({ item: data, index }) => {
+            return (
+              // *******************  Main Div  *********************************
 
-              {/* ******* Passwords Sections ******* */}
-              <View style={tw`my-4 mt-4 `}>
-                {/* ******* Email  ******* */}
-                <View style={tw`flex-row items-center justify-between my-2`}>
-                  <MaterialCommunityIcons name='email' color={theme.mainColor} size={22} />
-                  <Text style={[tw`flex-1 mx-3`, { color: theme.mainTextColor }]} numberOfLines={1}>
-                    {data.email}
-                  </Text>
-                  <TouchableOpacity>
-                    <MaterialCommunityIcons
-                      style={tw`mx-1`}
-                      onPress={() => Clipboard.setStringAsync(`${data.email}`)}
-                      name='content-copy'
-                      color={theme.mainColor}
-                      size={22}
-                    />
-                  </TouchableOpacity>
-                </View>
-                {/* ******* Password  ******* */}
-                <View style={tw`flex-row items-center justify-between my-2`}>
-                  <MaterialCommunityIcons
-                    onPress={() => Clipboard.setStringAsync(`${data.password}`)}
-                    name='key'
-                    color={theme.mainColor}
-                    size={22}
-                  />
-                  <Text style={[tw`flex-1 mx-3`, { color: theme.mainTextColor }]} numberOfLines={1}>
-                    {data.password}
-                  </Text>
-                  <TouchableOpacity>
-                    <MaterialCommunityIcons
-                      style={tw`mx-1`}
-                      name='content-copy'
-                      color={theme.mainColor}
-                      size={22}
-                    />
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </View>
-          </View>
-        ))}
+              <CategoriesDetailsList index={index} data={data} onRefresh={onRefresh} />
+            );
+          }}
+        />
+      )}
 
       {/* *********** ALL Models Below ************* */}
       <Modal
@@ -257,6 +262,7 @@ const DetailsScreen = ({
                 ]}
                 onPress={() => {
                   setShowAddModal(!showAddModal);
+                  addCategoryData();
                   setFocusOff();
                 }}
               >

@@ -28,9 +28,8 @@ const Home = ({ navigation: { navigate } }) => {
    ********************************************* */
   //  all contexts
   const { theme } = useTheme();
-  const { user, allCategories, allCategoryInfo, refreshAllCategoryInfo } = useUser();
+  const { userName, allCategory, fetchAllCategory } = useUser();
   const { elevation, elevationValue } = useSettings();
-  const uid = user.uid;
 
   // All Modal
   const [showModal, setShowModal] = useState(false);
@@ -47,7 +46,6 @@ const Home = ({ navigation: { navigate } }) => {
   const [icon, setIcon] = useState('heart');
   const [categoryText, setCategoryText] = useState('');
   const [refreshing, setRefreshing] = useState(false);
-
   const [loading, setLoading] = useState(false);
 
   const iconList = useMemo(
@@ -68,6 +66,8 @@ const Home = ({ navigation: { navigate } }) => {
 
   /*   All Functions
    ********************************************* */
+
+  // ADD CATEGORY
   const addNewCategory = async () => {
     setLoading(true);
     if (categoryText === '') {
@@ -77,17 +77,8 @@ const Home = ({ navigation: { navigate } }) => {
       setLoading(false);
       return;
     }
-    const categoryData = {
-      category: categoryText,
-      icon: icon,
-      fav_icon: 'heart-outline',
-      account_name: 'Example Account',
-      email: 'example@example.com',
-      password: 'examplePassword',
-    };
-
     try {
-      const data = await addCategory(uid, categoryText, icon, categoryData);
+      const data = await addCategory(userName, categoryText, icon);
       setShowModal(false);
       if (data) {
         const done = await onRefresh();
@@ -107,7 +98,7 @@ const Home = ({ navigation: { navigate } }) => {
   const onRefresh = async () => {
     try {
       setRefreshing(true);
-      await refreshAllCategoryInfo();
+      await fetchAllCategory(userName);
       setRefreshing(false);
       return true;
     } catch (err) {
@@ -295,22 +286,20 @@ const Home = ({ navigation: { navigate } }) => {
       <View style={tw`pb-16 px-5 py-2`}>
         <FlatList
           contentContainerStyle={{ paddingBottom: 160 }}
-          data={allCategories}
+          data={allCategory}
           showsVerticalScrollIndicator={false}
           numColumns={2}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item.category}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
           renderItem={({ item, index }) => {
             return (
               // *******************  Main Div  *********************************
 
               <CategoriesList
-                uid={uid}
                 index={index}
                 item={item}
                 onRefresh={onRefresh}
-                allCategoryInfo={allCategoryInfo}
-                allCategories={allCategories}
+                allCategory={allCategory}
                 navigate={navigate}
               />
             );

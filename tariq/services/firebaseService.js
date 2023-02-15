@@ -1,17 +1,4 @@
-import { initializeApp } from 'firebase/app';
 // import admin from "firebase-admin";
-
-import {
-  addDoc,
-  deleteDoc,
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  getFirestore,
-  setDoc,
-} from 'firebase/firestore';
-import { createUserWithEmailAndPassword, getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyCsbcjhdQw31OQeg5KrC7qXQuuvqk7VzWw',
@@ -22,222 +9,194 @@ const firebaseConfig = {
   messagingSenderId: '419467193948',
   appId: '1:419467193948:web:04cbbaea7c74e5dfe80099',
 };
-// Initialize Firebase
+import {
+  createUserWithEmailAndPassword,
+  getAuth,
+  signInWithEmailAndPassword,
+  updateProfile,
+} from '@firebase/auth';
+import { initializeApp } from 'firebase/app';
+import { getDatabase, ref, get, set, serverTimestamp, remove, push } from 'firebase/database';
+
 const app = initializeApp(firebaseConfig);
-// Initialize Cloud Firestore and get a reference to the service
-export const db = getFirestore(app);
 export const auth = getAuth(app);
+const db = getDatabase();
 
-/*
+/*  Login - Register
  ********************************************* */
-// Admin App
 
-export const login = async (username, password) => {
+export const login = async (email, password) => {
   try {
-    const data = await signInWithEmailAndPassword(auth, username, password);
-    return data.user;
+    const { user } = await signInWithEmailAndPassword(auth, email, password);
+    if (user.uid) {
+      return user;
+    }
   } catch (err) {
     throw err;
   }
 };
 
 export const createUser = async (email, password, name) => {
+  const defaultCategories = {
+    facebook: {
+      info: {
+        icon: 'Facebook',
+      },
+      items: {
+        '-N6dwzTiLPKzIT7gaAMi': {
+          category: 'facebook',
+          email: 'dddddadsfadsfsdf',
+          account_name: 'dsfadsa',
+          password: 'asdfasdfadsffffffdddd',
+          fav_icon: 'heart-outline',
+          key: serverTimestamp(),
+        },
+      },
+    },
+    google: {
+      info: {
+        icon: 'Google',
+      },
+      items: {
+        '-N8nvwDXZms7DpuLjDuu': {
+          category: 'google',
+          email: 'abc@example.com',
+          account_name: 'example Account',
+          password: 'examplepassword',
+          fav_icon: 'heart-outline',
+
+          key: serverTimestamp(),
+        },
+      },
+    },
+    instagram: {
+      info: {
+        icon: 'Instagram',
+      },
+      items: {
+        '-N6ibRGx4HG9kPyFakvK': {
+          category: 'instagram',
+          email: 'abc@example.com',
+          account_name: 'example Account',
+          password: 'examplepassword',
+          fav_icon: 'heart',
+          key: serverTimestamp(),
+        },
+      },
+    },
+  };
   try {
-    const { user } = await createUserWithEmailAndPassword(auth, email, password);
-    addUserData(user.uid, email, password, name);
-    addCategory(user.uid, 'facebook', 'facebook', {
-      category: 'facebook',
-      icon: 'facebook',
-      fav_icon: 'heart-outline',
-      account_name: 'Example Account',
-      email: 'example@example.com',
-      password: 'examplePassword',
+    // checkinng if username in userNameList
+    const userNameList = await get(ref(db, 'Users/UsersList/'));
+
+    const checkUserName = userNameList.forEach((item) => {
+      if (item.val().username === name) {
+        return true;
+      } else {
+        return false;
+      }
     });
-    addCategory(user.uid, 'google', 'google', {
-      category: 'google',
-      icon: 'facebook',
-      fav_icon: 'heart-outline',
-      account_name: 'Example Account',
-      email: 'example@example.com',
-      password: 'examplePassword',
-    });
-    addCategory(user.uid, 'instagram', 'instagram', {
-      category: 'facebook',
-      icon: 'facebook',
-      fav_icon: 'heart-outline',
-      account_name: 'Example Account',
-      email: 'example@example.com',
-      password: 'examplePassword',
-    });
-    return user;
-  } catch (err) {
-    throw err;
-  }
-  // admin
-  //   .auth()
-  //   .createUser({
-  //     uid: uid,
-  //     email: email,
-  //     password: password,
-  //   })
-  //   .then(function (userRecord) {
-  //     // See the UserRecord reference doc for the contents of userRecord.
-  //     console.log("Successfully created new user:", userRecord.uid);
-  //     addUserData(userRecord.uid, email, password, name);
-  //     addCategory("facebook", "facebook", {
-  //       icon: "facebook",
-  //       fav_icon: "heart-outline",
-  //       account_name: "Example Account",
-  //       email: "example@example.com",
-  //       password: "examplePassword",
-  //     });
-  //     addCategory("google", "google", {
-  //       icon: "facebook",
-  //       fav_icon: "heart-outline",
-  //       account_name: "Example Account",
-  //       email: "example@example.com",
-  //       password: "examplePassword",
-  //     });
-  //     addCategory("instagram", "instagram", {
-  //       icon: "facebook",
-  //       fav_icon: "heart-outline",
-  //       account_name: "Example Account",
-  //       email: "example@example.com",
-  //       password: "examplePassword",
-  //     });
-  //   })
-  //   .catch(function (error) {
-  //     console.log("Error creating new user:", error.message);
-  //   });
-};
 
-// const uid = 'abcTestAccount';
-// const email = 'a@b.com';
-// const password = 'abc123';
-// const name = 'tariq';
-// // createUser(uid, email, password, name);
-// // getAllUsers();
+    if (checkUserName) {
+      return { error: { message: 'Username already exists' } };
+    }
 
-const addUserData = async (uid, email, password, name) => {
-  const userRef = collection(db, 'Users');
+    // creatingUser
+    let { user } = await createUserWithEmailAndPassword(auth, email, password);
+    if (user.uid) {
+      // Updating User Data
+      await updateProfile(user, { displayName: name });
 
-  try {
-    await setDoc(doc(userRef, uid), {
-      uid,
-      email,
-      password,
-      name,
-    });
-    console.log('Successfully Added');
-    return 'Successfully Added';
-  } catch (error) {
-    throw error;
-  }
-};
+      // Entering User Data
+      await set(ref(db, 'Users/' + name), {
+        User_info: {
+          username: name,
+          email: email,
+          password: password,
+          uid: user.uid,
+        },
+        Categories: defaultCategories,
+      });
 
-export const getUserData = async (uid) => {
-  let userRef = doc(db, `Users/${uid}`);
-  try {
-    const data = await getDoc(userRef);
+      // Entering UserName to list Of Usernames
+      let UserNameList = {};
+      UserNameList[user.uid] = { username: name, uid: user.uid };
+      await set(ref(db, 'Users/UsersList/'), UserNameList);
 
-    return data;
+      return user;
+    }
   } catch (err) {
     throw err;
   }
 };
-/*
+
+/*   Get User Info
  ********************************************* */
-
-/*  add category
- ********************************************* */
-export const addCategory = async (uid, categoryName, selectedIcon, categoryData) => {
-  let category = categoryName;
-  let icon = selectedIcon.toLowerCase();
-
-  // Category Items
-
+export const getUserInfo = async (username) => {
+  const userInfoRef = ref(db, `Users/${username}/User_info`);
   try {
-    const category_ref = collection(db, `Users/${uid}/Categories/${category}/Items`);
-    const data = await addDoc(category_ref, categoryData);
-    const totalCategories = doc(db, `Users/${uid}/TotalCategories`, category.toLowerCase());
-    // Adding Category in icon List
-    await setDoc(totalCategories, { category, icon });
-
-    return data;
-  } catch (err) {
-    console.log(err.messsage);
-    throw err;
-  }
-};
-
-export const addFav = async (uid, categoryData) => {
-  try {
-    // Category Items
-    const favRef = collection(db, `Users/${uid}/Fav`);
-    // Icon
-    const data = await addDoc(favRef, categoryData);
-    return data;
+    const userInfo = await get(userInfoRef);
+    return userInfo.val();
   } catch (err) {
     throw err;
   }
 };
 
-/*   Get Category By Name
+/*   ALL HOME CATEGORY FUNCTION
  ********************************************* */
-export const getAllCategories = async (uid) => {
-  const categories = collection(db, `Users/${uid}/TotalCategories`);
-  let allCategories = [];
+export const getAllCategories = async (username) => {
   try {
-    const res = await getDocs(categories);
-    res.docs.forEach((doc) => allCategories.push({ ...doc.data(), id: doc.id }));
+    const categoriesRef = ref(db, `Users/${username}/Categories/`);
+    const data = await get(categoriesRef);
+
+    let allCategories = [];
+
+    data.forEach((category) => {
+      allCategories.push({ category: category.key, value: category.val() });
+    });
+
     return allCategories;
   } catch (err) {
     throw err;
   }
 };
-export const getAllFav = async (uid) => {
-  const favsRef = collection(db, `Users/${uid}/Fav`);
-  let allFav = [];
+
+export const addCategory = async (username, categoryName, icon) => {
+  let newCategoryData = {
+    info: {
+      icon: icon.toLowerCase(),
+    },
+    items: {},
+  };
+
+  const newCategoryRef = ref(db, `Users/${username}/Categories/${categoryName.toLowerCase()}`);
   try {
-    const res = await getDocs(favsRef);
-    res.docs.forEach((doc) => allFav.push({ ...doc.data(), id: doc.id }));
-    return allFav;
+    await set(newCategoryRef, newCategoryData);
+    return 'Done';
   } catch (err) {
     throw err;
   }
 };
 
-export const getCategoryByName = async (uid, name) => {
+export const removeCategory = async (username, categoryName) => {
+  const deleteCategoryRef = ref(db, `Users/${username}/Categories/${categoryName.toLowerCase()}`);
   try {
-    const categories = collection(db, `Users/${uid}/Categories/${name.toLowerCase()}/Items`);
-    let data = [];
-    const res = await getDocs(categories);
-    res.docs.forEach((doc) => {
-      data.push({ ...doc.data(), id: doc.id });
-    });
-
-    return data;
+    await remove(deleteCategoryRef);
+    return 'deleted';
   } catch (err) {
     throw err;
   }
 };
 
-export const deleteSelectedDoc = async (uid, name) => {
+/*    ALL CATEGORY DETAILS FUNCTIONS
+ ********************************************* */
+
+export const addCategoryDetails = async (username, category, categoryDta) => {
   try {
-    const allItems = collection(db, `Users/${uid}/Categories/${name}/Items`);
-    const test = await getDocs(allItems);
-    test.forEach((doc) => deleteDoc(doc.ref, doc.id));
-    const docRef = doc(db, `Users/${uid}/Categories`, name);
-    await deleteDoc(docRef);
-    const allCategoriesNames = doc(db, `Users/${uid}/TotalCategories`, name.toLowerCase());
-    deleteDoc(allCategoriesNames);
+    const categoryRef = ref(db, `Users/${username}/Categories/${category.toLowerCase()}/items/`);
+    const newAdded = await push(categoryRef, categoryDta);
+    return newAdded;
   } catch (err) {
     throw err;
   }
 };
-
-// console.log(await getCategoryByName("facebook"));
-
-// console.log(await getAllCategories());
-
-// addCategory("facebook", "facebook", { test: "this is just a test" });
