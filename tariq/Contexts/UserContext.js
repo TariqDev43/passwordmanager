@@ -6,12 +6,7 @@ import { memo } from 'react';
 import { createContext } from 'react';
 import { useContext } from 'react';
 
-import {
-  getUserData,
-  getAllCategories,
-  getCategoryByName,
-  getAllFav,
-} from '../services/firebaseService';
+import { getAllCategories, getUserInfo } from '../services/firebaseService';
 
 const UserContext = createContext({});
 
@@ -19,73 +14,57 @@ export const UserProvider = memo(({ children }) => {
   /* *************  States  **************** */
   const [user, setUser] = useState(null);
   const [userInfo, setUserInfo] = useState(null);
-  const [allCategories, setAllCategories] = useState(null);
-  const [allCategoryInfo, setAllCategoryInfo] = useState(null);
-  const [allFav, setAllFav] = useState(null);
-  const [uid, setUid] = useState(null);
+  const [allCategory, setAllCategory] = useState(null);
+  // const [allFav, setAllFav] = useState(null);
+  const [userName, setUserName] = useState(null);
 
   const changeUser = useCallback((val) => {
-    val && setUid(val.uid);
+    val && setUserName(val.displayName);
     setUser(val);
     console.log('changeUser');
   });
-  const getUserInfo = useCallback(async () => {
-    try {
-      const userData = await getUserData(uid);
-      setUserInfo(userData.data());
-      return 'success';
-    } catch (err) {
-      throw err;
-    }
-  });
-  const refreshAllCategories = useCallback(async () => {
-    try {
-      const data = await getAllCategories(uid);
-      setAllCategories(data);
-      console.log('categories');
-      return data;
-    } catch (err) {
-      console.log(err.message);
-    }
-  });
-  const refreshAllCategoryInfo = useCallback(async () => {
-    const categgories = await refreshAllCategories();
 
-    const allCategoryInfoList = await categgories.reduce(async (promisedValue, item) => {
-      const newItem = await promisedValue;
-      const { category } = item;
-      newItem[category] = await getCategoryByName(uid, category);
-      return newItem;
-    }, {});
-    // console.log(allCategoryInfoList);
-
-    setAllCategoryInfo(null);
-    setAllCategoryInfo(allCategoryInfoList);
-    return allCategoryInfoList;
-  });
-  const refreshAllFav = useCallback(async () => {
-    try {
-      const data = await getAllFav(uid);
-      setAllFav(data);
-      console.log('favasdfsa');
-    } catch (err) {
-      console.log(err.message);
+  const fetchUserInfo = useCallback(async (userName) => {
+    if (userName) {
+      try {
+        const userData = await getUserInfo(userName);
+        setUserInfo(userData);
+        console.log('user info ran');
+        return 'success';
+      } catch (err) {
+        throw err;
+      }
+    } else {
+      console.log('no username');
     }
-  });
+  }, []);
+
+  const fetchAllCategory = useCallback(async (userName) => {
+    const allCategories = await getAllCategories(userName);
+    console.log('user Categories');
+
+    setAllCategory(null);
+    setAllCategory(allCategories);
+    return allCategories;
+  }, []);
+
+  // const refreshAllFav = useCallback(async () => {
+  //   try {
+  //     const data = await getAllFav(uid);
+  //     setAllFav(data);
+  //   } catch (err) {
+  //     console.log(err.message);
+  //   }
+  // });
 
   const userValues = useMemo(() => ({
     user,
-    uid,
-    userInfo,
-    allCategories,
-    allCategoryInfo,
-    allFav,
-
+    userName,
     changeUser,
-    getUserInfo,
-    refreshAllCategories,
-    refreshAllCategoryInfo,
-    refreshAllFav,
+    userInfo,
+    allCategory,
+    fetchUserInfo,
+    fetchAllCategory,
   }));
   return <UserContext.Provider value={userValues}>{children}</UserContext.Provider>;
 });

@@ -5,21 +5,23 @@ import tw from 'tailwind-react-native-classnames';
 import { Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import useSettings from '../Contexts/SettingContext';
 import useTheme from '../Contexts/ThemeContext';
-import { deleteSelectedDoc } from '../services/firebaseService';
+import { removeCategory } from '../services/firebaseService';
 import ErrorModal from './ErrorModal';
+import useUser from '../Contexts/UserContext';
 
-const CategoriesList = ({ uid, index, item, navigate, allCategoryInfo, onRefresh }) => {
+const CategoriesList = ({ index, item, onRefresh, allCategory, navigate }) => {
   const { theme } = useTheme();
   const { elevation, elevationValue } = useSettings();
   const [loading, setLoading] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [modalTitle, setModalTitle] = useState('');
   const [modalBody, setModalBody] = useState('');
+  const { userName } = useUser();
 
-  const deleteCategory = async (uid, category) => {
+  const deleteCategory = async (category) => {
     try {
       setLoading(true);
-      await deleteSelectedDoc(uid, category);
+      await removeCategory(userName, category);
       setLoading(false);
       await onRefresh();
     } catch (err) {
@@ -32,7 +34,7 @@ const CategoriesList = ({ uid, index, item, navigate, allCategoryInfo, onRefresh
 
   return (
     <Animated.View
-      entering={BounceInDown.delay((index + 1) * 100)}
+      entering={BounceInDown.delay((index + 1) * 50)}
       style={[tw`flex-1 mx-1 `, { marginVertical: 5 }]}
     >
       <ErrorModal
@@ -41,12 +43,11 @@ const CategoriesList = ({ uid, index, item, navigate, allCategoryInfo, onRefresh
         modalTitle={modalTitle}
         modalBody={modalBody}
       />
-      {allCategoryInfo && (
+      {allCategory && (
         <TouchableOpacity
           onPress={() => {
             navigate('Details', {
-              item: allCategoryInfo[item.category],
-              category: item.category,
+              item,
             });
           }}
           style={[
@@ -58,7 +59,11 @@ const CategoriesList = ({ uid, index, item, navigate, allCategoryInfo, onRefresh
           ]}
         >
           {/* ****** Icon  ******* */}
-          <MaterialCommunityIcons name={item.icon} color={theme.mainColor} size={33} />
+          <MaterialCommunityIcons
+            name={item?.value.info.icon.toLowerCase()}
+            color={theme.mainColor}
+            size={33}
+          />
           {/* ******  Name  ******* */}
           <Text numberOfLines={1} style={[tw`flex-1 text-xs mx-2`, { color: theme.mainTextColor }]}>
             {item.category.toUpperCase()}
@@ -66,7 +71,7 @@ const CategoriesList = ({ uid, index, item, navigate, allCategoryInfo, onRefresh
           {/* ******  3-Dots menu  ******* */}
           <TouchableOpacity
             onPress={() => {
-              deleteCategory(uid, item.category);
+              deleteCategory(item.category);
             }}
           >
             {!loading && (

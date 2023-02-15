@@ -10,20 +10,9 @@ const InitializeScreen = () => {
   /*   All states
    ********************************************* */
   const { theme } = useTheme();
-  // const [userInfo, setUserInfo] = useState(null);
-  // const [categories, setCategories] = useState(null);
-  // const [categoryInfo, setCategoriesInfo] = useState(null);
-  // const [favorites, setFavorites] = useState(null);
-  const {
-    changeUser,
-    userInfo,
-    allCategories,
-    allCategoryInfo,
-    allFav,
-    getUserInfo,
-    refreshAllCategoryInfo,
-    refreshAllFav,
-  } = useUser();
+
+  const { userName, changeUser, userInfo, allCategory, fetchUserInfo, fetchAllCategory } =
+    useUser();
   const navigation = useNavigation();
   /*   All functions
    ********************************************* */
@@ -31,21 +20,22 @@ const InitializeScreen = () => {
   useEffect(() => {
     const getData = async () => {
       try {
-        getUserInfo();
-        refreshAllCategoryInfo();
-        refreshAllFav();
+        fetchUserInfo(userName);
+        fetchAllCategory(userName);
       } catch (err) {
         console.log(err.message);
       }
     };
-    getData();
-  }, []);
+    if (userName) {
+      getData();
+    }
+  }, [userName]);
 
   useEffect(() => {
-    if (userInfo != null && allCategories != null && allCategoryInfo != null && allFav != null) {
+    if (userInfo != null && allCategory != null) {
       navigation.navigate('BottomNav');
     }
-  }, [userInfo, allCategories, allCategoryInfo, allFav]);
+  }, [userInfo, allCategory]);
 
   return (
     <View style={[tw`flex-1 justify-center items-center`, { backgroundColor: theme.mainBgColor }]}>
@@ -65,29 +55,14 @@ const InitializeScreen = () => {
           )}
         </View>
       </View>
-      <View style={[tw`flex-row justify-between my-3 w-3/4`, {}]}>
-        <Text style={[tw`text-xl font-semibold`, { color: theme.mainTextColor }]}>
-          Getting Categories
-        </Text>
-        <View style={[tw``, {}]}>
-          {!allCategories && <ActivityIndicator color={theme.mainColor} />}
-          {allCategories && (
-            <LottieView
-              loop={false}
-              style={{ width: 30, height: 30 }}
-              autoPlay
-              source={require('../../assets/success.json')}
-            />
-          )}
-        </View>
-      </View>
+
       <View style={[tw`flex-row justify-between my-3 w-3/4`, {}]}>
         <Text style={[tw`text-xl font-semibold`, { color: theme.mainTextColor }]}>
           Getting Category Info
         </Text>
         <View>
-          {!allCategoryInfo && <ActivityIndicator color={theme.mainColor} />}
-          {allCategoryInfo && (
+          {!allCategory && <ActivityIndicator color={theme.mainColor} />}
+          {allCategory && (
             <LottieView
               loop={false}
               style={{ width: 30, height: 30 }}
@@ -97,20 +72,7 @@ const InitializeScreen = () => {
           )}
         </View>
       </View>
-      <View style={[tw`flex-row justify-between my-3 w-3/4`, {}]}>
-        <Text style={[tw`text-xl font-semibold`, { color: theme.mainTextColor }]}>
-          Getting Favorites
-        </Text>
-        {!allFav && <ActivityIndicator color={theme.mainColor} />}
-        {allFav && (
-          <LottieView
-            loop={false}
-            style={{ width: 30, height: 30 }}
-            autoPlay
-            source={require('../../assets/success.json')}
-          />
-        )}
-      </View>
+
       <Button title='Go Back' onPress={() => changeUser(null)} />
     </View>
   );

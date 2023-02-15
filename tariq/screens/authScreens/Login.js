@@ -132,47 +132,55 @@ const Login = () => {
   };
   const registerFunc = async () => {
     setFocusOff();
-    if (username == null) {
-      setShowModal(true);
-      setModalTitle('Register Error');
-      setModalBody('Username Is Required');
-      return;
-    }
-    if (registerEmail == null) {
-      setShowModal(true);
-      setModalTitle('Register Error');
-      setModalBody('Email Is Required');
-      return;
-    }
-    if (registerPassword == null) {
-      setShowModal(true);
-      setModalTitle('Register Error');
-      setModalBody('Password Is Required');
-      return;
-    }
-    if (registerConfirmPassword == null) {
-      setShowModal(true);
-      setModalTitle('Register Error');
-      setModalBody('Confirm Password Is Required');
-      return;
-    }
-    if (registerPassword != registerConfirmPassword) {
-      setShowModal(true);
-      setModalTitle('Register Error');
-      setModalBody('Passwords Do Not Match');
-      return;
-    }
+    // if (username == null) {
+    //   setShowModal(true);
+    //   setModalTitle('Register Error');
+    //   setModalBody('Username Is Required');
+    //   return;
+    // }
+    // if (registerEmail == null) {
+    //   setShowModal(true);
+    //   setModalTitle('Register Error');
+    //   setModalBody('Email Is Required');
+    //   return;
+    // }
+    // if (registerPassword == null) {
+    //   setShowModal(true);
+    //   setModalTitle('Register Error');
+    //   setModalBody('Password Is Required');
+    //   return;
+    // }
+    // if (registerConfirmPassword == null) {
+    //   setShowModal(true);
+    //   setModalTitle('Register Error');
+    //   setModalBody('Confirm Password Is Required');
+    //   return;
+    // }
+    // if (registerPassword != registerConfirmPassword) {
+    //   setShowModal(true);
+    //   setModalTitle('Register Error');
+    //   setModalBody('Passwords Do Not Match');
+    //   return;
+    // }
     try {
       setLoginLoading(true);
-      const user = await createUser(registerEmail, registerPassword, username);
+      const user = await createUser('a@b.com', 'abc123', 'test');
+      // const user = await createUser(registerEmail, registerPassword, username);
+      if (user.error) {
+        setShowModal(true);
+        setModalTitle('Login Error');
+        setModalBody(user.error.message);
+        setLoginLoading(false);
+        return;
+      }
       if (user.uid) {
         setLoginLoading(false);
         setSuccessRegister(true);
         registerSuccess.current?.play();
         setUserInfo(user);
-        console.log(user);
       } else {
-        setModalTitle('Login Error');
+        setShowModal(true);
+        setModalTitle('Register Error');
         setModalBody('user not returned');
       }
     } catch (err) {
