@@ -11,7 +11,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 
-import { memo, useState } from 'react';
+import { memo, useCallback, useState } from 'react';
 import { useMemo } from 'react';
 import useTheme from '../../Contexts/ThemeContext';
 import useUser from '../../Contexts/UserContext';
@@ -107,6 +107,34 @@ const Home = ({ navigation: { navigate } }) => {
       setModalBody(err.message.toString());
     }
   };
+
+  const renderItem = useCallback(
+    ({ item, index }) => (
+      <CategoriesList
+        index={index}
+        item={item}
+        onRefresh={onRefresh}
+        allCategory={allCategory}
+        navigate={navigate}
+      />
+    ),
+    [allCategory]
+  );
+
+  // ({ item, index }) => {
+  //   return (
+  //     // *******************  Main Div  *********************************
+
+  //     <CategoriesList
+  //       index={index}
+  //       item={item}
+  //       onRefresh={onRefresh}
+  //       allCategory={allCategory}
+  //       navigate={navigate}
+  //     />
+  //   );
+  // }
+
   return (
     <SafeAreaView
       className={`flex-1 `}
@@ -287,23 +315,12 @@ const Home = ({ navigation: { navigate } }) => {
         <FlatList
           contentContainerStyle={{ paddingBottom: 160 }}
           data={allCategory}
+          extraData={allCategory}
           showsVerticalScrollIndicator={false}
           numColumns={2}
           keyExtractor={(item) => item.category}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-          renderItem={({ item, index }) => {
-            return (
-              // *******************  Main Div  *********************************
-
-              <CategoriesList
-                index={index}
-                item={item}
-                onRefresh={onRefresh}
-                allCategory={allCategory}
-                navigate={navigate}
-              />
-            );
-          }}
+          renderItem={renderItem}
         />
       </View>
       {/**************** Category Settings Modal ******************************/}

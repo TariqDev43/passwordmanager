@@ -6,27 +6,21 @@ import {
   Pressable,
   Keyboard,
   ActivityIndicator,
-} from "react-native";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { Modal } from "react-native";
-import { useEffect, useState } from "react";
-import {
-  FlatList,
-  RefreshControl,
-  TextInput,
-} from "react-native-gesture-handler";
-import { memo } from "react";
-import useTheme from "../../Contexts/ThemeContext";
-import useUser from "../../Contexts/UserContext";
-import tw from "tailwind-react-native-classnames";
+} from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Modal } from 'react-native';
+import { useEffect, useState } from 'react';
+import { FlatList, RefreshControl, TextInput } from 'react-native-gesture-handler';
+import { memo } from 'react';
+import useTheme from '../../Contexts/ThemeContext';
+import useUser from '../../Contexts/UserContext';
+import tw from 'tailwind-react-native-classnames';
 
-import ErrorModal from "../../components/ErrorModal";
-import { serverTimestamp } from "firebase/database";
-import {
-  addCategoryDetails,
-  updateCategoryDetails,
-} from "../../services/firebaseService";
-import CategoriesDetailsList from "../../components/CategoriesDetailsList";
+import ErrorModal from '../../components/ErrorModal';
+import { serverTimestamp } from 'firebase/database';
+import { addCategoryDetails, updateCategoryDetails } from '../../services/firebaseService';
+import CategoriesDetailsList from '../../components/CategoriesDetailsList';
+import Animated from 'react-native-reanimated';
 
 const DetailsScreen = ({
   route: {
@@ -44,8 +38,8 @@ const DetailsScreen = ({
 
   //  Error Modal
   const [showErrorModal, setShowErrorModal] = useState(false);
-  const [modalTitle, setModalTitle] = useState("");
-  const [modalBody, setModalBody] = useState("");
+  const [modalTitle, setModalTitle] = useState('');
+  const [modalBody, setModalBody] = useState('');
 
   const [refreshing, setRefreshing] = useState(false);
 
@@ -54,9 +48,9 @@ const DetailsScreen = ({
   const [passwordFocus, setPasswordFocus] = useState(false);
   const [accountFocus, setAccountFocus] = useState(false);
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [account, setAccount] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [account, setAccount] = useState('');
 
   // Modal
   const [showAddModal, setShowAddModal] = useState(false);
@@ -69,22 +63,22 @@ const DetailsScreen = ({
   };
 
   const addCategoryData = async () => {
-    if (account == "") {
+    if (account == '') {
       setShowErrorModal(true);
-      setModalTitle("INPUT ERROR");
-      setModalBody("Account is required");
+      setModalTitle('INPUT ERROR');
+      setModalBody('Account is required');
       return;
     }
-    if (password == "") {
+    if (password == '') {
       setShowErrorModal(true);
-      setModalTitle("INPUT ERROR");
-      setModalBody("Password is required");
+      setModalTitle('INPUT ERROR');
+      setModalBody('Password is required');
       return;
     }
-    if (email == "") {
+    if (email == '') {
       setShowErrorModal(true);
-      setModalTitle("INPUT ERROR");
-      setModalBody("Email is required");
+      setModalTitle('INPUT ERROR');
+      setModalBody('Email is required');
       return;
     }
     const categoryDta = {
@@ -92,43 +86,39 @@ const DetailsScreen = ({
       email: email,
       account_name: account,
       password: password,
-      fav_icon: "heart-outline",
-      notes: "test notes",
+      fav_icon: 'heart-outline',
+      notes: 'test notes',
       key: serverTimestamp(),
     };
     try {
       setLoading(true);
-      const data = await addCategoryDetails(
-        userName,
-        item.category,
-        categoryDta
-      );
+      await addCategoryDetails(userName, item.category, categoryDta);
       setLoading(false);
       setShowAddModal(!showAddModal);
       await onRefresh();
     } catch (err) {
       setShowErrorModal(true);
-      setModalTitle("Error");
+      setModalTitle('Error');
       setModalBody(err.message);
     }
   };
   const updateCategoryData = async () => {
-    if (account == "") {
+    if (account == '') {
       setShowErrorModal(true);
-      setModalTitle("INPUT ERROR");
-      setModalBody("Account is required");
+      setModalTitle('INPUT ERROR');
+      setModalBody('Account is required');
       return;
     }
-    if (password == "") {
+    if (password == '') {
       setShowErrorModal(true);
-      setModalTitle("INPUT ERROR");
-      setModalBody("Password is required");
+      setModalTitle('INPUT ERROR');
+      setModalBody('Password is required');
       return;
     }
-    if (email == "") {
+    if (email == '') {
       setShowErrorModal(true);
-      setModalTitle("INPUT ERROR");
-      setModalBody("Email is required");
+      setModalTitle('INPUT ERROR');
+      setModalBody('Email is required');
       return;
     }
     const categoryDta = {
@@ -150,7 +140,7 @@ const DetailsScreen = ({
       await onRefresh();
     } catch (err) {
       setShowErrorModal(true);
-      setModalTitle("Error");
+      setModalTitle('Error');
       setModalBody(err.message);
     }
   };
@@ -160,12 +150,11 @@ const DetailsScreen = ({
       setRefreshing(true);
       await fetchAllCategory(userName);
       setRefreshing(false);
-      setText("", "", "");
+      setText('', '', '');
       setSelectedItem(null);
-      return true;
     } catch (err) {
       setShowErrorModal(true);
-      setModalTitle("Error");
+      setModalTitle('Error');
       setModalBody(err.message.toString());
     }
   };
@@ -185,6 +174,7 @@ const DetailsScreen = ({
         i.push({ id: key, value: data[key] });
       });
       setCategoryData(i);
+      setLoading(false);
     } else {
       setCategoryData(null);
     }
@@ -195,9 +185,7 @@ const DetailsScreen = ({
   }, [allCategory]);
 
   return (
-    <SafeAreaView
-      style={[tw`flex-1 px-6`, { backgroundColor: theme.mainBgColor }]}
-    >
+    <SafeAreaView style={[tw`flex-1 px-6`, { backgroundColor: theme.mainBgColor }]}>
       {/* Error Modal */}
 
       <ErrorModal
@@ -213,37 +201,37 @@ const DetailsScreen = ({
           {item.category.toUpperCase()}
         </Text>
         <TouchableOpacity onPress={() => setShowAddModal(!showAddModal)}>
-          <MaterialCommunityIcons
-            name="plus-box-outline"
-            color={theme.mainColor}
-            size={35}
-          />
+          <MaterialCommunityIcons name='plus-box-outline' color={theme.mainColor} size={35} />
         </TouchableOpacity>
       </View>
 
       {/* ************ Main List ************ */}
-      {item && categoryData && allCategory && (
-        <FlatList
+
+      {categoryData && (
+        <Animated.FlatList
           contentContainerStyle={{ paddingBottom: 160 }}
           data={categoryData}
+          // extraData={categoryData}
           showsVerticalScrollIndicator={false}
           numColumns={1}
-          keyExtractor={(test) => test.id}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }
+          keyExtractor={(item) => item?.id}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
           renderItem={({ item: data, index }) => {
             return (
               // *******************  Main Div  *********************************
 
-              <CategoriesDetailsList
-                index={index}
-                data={data}
-                setText={setText}
-                setSelectedItem={setSelectedItem}
-                setShowAddModal={setShowAddModal}
-                onRefresh={onRefresh}
-              />
+              <View>
+                {categoryData && allCategory && (
+                  <CategoriesDetailsList
+                    index={index}
+                    data={data}
+                    setText={setText}
+                    setSelectedItem={setSelectedItem}
+                    setShowAddModal={setShowAddModal}
+                    onRefresh={onRefresh}
+                  />
+                )}
+              </View>
             );
           }}
         />
@@ -259,10 +247,7 @@ const DetailsScreen = ({
         <View style={tw`justify-center items-center flex-1`}>
           {/* ************  Modal main Container  */}
           <Pressable
-            style={[
-              tw`p-5 rounded-xl w-4/5 `,
-              { backgroundColor: theme.modalBg, elevation: 15 },
-            ]}
+            style={[tw`p-5 rounded-xl w-4/5 `, { backgroundColor: theme.modalBg, elevation: 15 }]}
             onPress={() => {
               Keyboard.dismiss();
               setFocusOff();
@@ -272,10 +257,7 @@ const DetailsScreen = ({
             <View>
               <View style={tw`flex-row `}>
                 <Text
-                  style={[
-                    tw`flex-1 text-xl font-semibold`,
-                    { color: theme.mainColor },
-                  ]}
+                  style={[tw`flex-1 text-xl font-semibold`, { color: theme.mainColor }]}
                   numberOfLines={1}
                 >
                   ADD INFO
@@ -287,24 +269,20 @@ const DetailsScreen = ({
                 {/* ******* Account Section  ******* */}
                 <View style={tw`flex-row items-center justify-between mb-2 `}>
                   <MaterialCommunityIcons
-                    name="account"
+                    name='account'
                     color={accountFocus ? theme.mainColor : theme.grey}
                     size={22}
                   />
                   <TextInput
-                    placeholder="Account Name"
+                    placeholder='Account Name'
                     defaultValue={seletedItem?.account_name}
                     onChangeText={setAccount}
-                    placeholderTextColor={
-                      theme.themeMode == "dark" ? theme.grey : "darkgray"
-                    }
+                    placeholderTextColor={theme.themeMode == 'dark' ? theme.grey : 'darkgray'}
                     style={[
                       tw`flex-1 mx-3 border-b-2
                   `,
                       {
-                        borderBottomColor: accountFocus
-                          ? theme.mainColor
-                          : theme.grey,
+                        borderBottomColor: accountFocus ? theme.mainColor : theme.grey,
                         color: theme.mainTextColor,
                       },
                     ]}
@@ -315,25 +293,21 @@ const DetailsScreen = ({
                 {/* ******* Email  ******* */}
                 <View style={tw`flex-row items-center justify-between my-3 `}>
                   <MaterialCommunityIcons
-                    name="email"
+                    name='email'
                     color={emailFocus ? theme.mainColor : theme.grey}
                     size={22}
                   />
                   <TextInput
-                    className=""
-                    placeholder="Enter Email"
+                    className=''
+                    placeholder='Enter Email'
                     defaultValue={seletedItem?.email}
                     onChangeText={setEmail}
-                    placeholderTextColor={
-                      theme.themeMode == "dark" ? theme.grey : "darkgray"
-                    }
+                    placeholderTextColor={theme.themeMode == 'dark' ? theme.grey : 'darkgray'}
                     style={[
                       tw`flex-1 mx-3 border-b-2
                   `,
                       {
-                        borderBottomColor: emailFocus
-                          ? theme.mainColor
-                          : theme.grey,
+                        borderBottomColor: emailFocus ? theme.mainColor : theme.grey,
                         color: theme.mainTextColor,
                       },
                     ]}
@@ -342,28 +316,22 @@ const DetailsScreen = ({
                   />
                 </View>
                 {/* ******* Password  ******* */}
-                <View
-                  style={tw`flex-row items-center justify-between my-3 mb-2 `}
-                >
+                <View style={tw`flex-row items-center justify-between my-3 mb-2 `}>
                   <MaterialCommunityIcons
-                    name="key"
+                    name='key'
                     color={passwordFocus ? theme.mainColor : theme.grey}
                     size={22}
                   />
                   <TextInput
-                    placeholder="Enter Password"
+                    placeholder='Enter Password'
                     defaultValue={seletedItem?.password}
                     onChangeText={setPassword}
-                    placeholderTextColor={
-                      theme.themeMode == "dark" ? theme.grey : "darkgray"
-                    }
+                    placeholderTextColor={theme.themeMode == 'dark' ? theme.grey : 'darkgray'}
                     style={[
                       tw`flex-1 mx-3 border-b-2
                   `,
                       {
-                        borderBottomColor: passwordFocus
-                          ? theme.mainColor
-                          : theme.grey,
+                        borderBottomColor: passwordFocus ? theme.mainColor : theme.grey,
                         color: theme.mainTextColor,
                       },
                     ]}
@@ -386,12 +354,7 @@ const DetailsScreen = ({
                   setFocusOff();
                 }}
               >
-                <Text
-                  style={[
-                    tw`font-bold text-xs m-1`,
-                    { color: theme.mainTextColor },
-                  ]}
-                >
+                <Text style={[tw`font-bold text-xs m-1`, { color: theme.mainTextColor }]}>
                   Close
                 </Text>
               </TouchableOpacity>
@@ -410,14 +373,10 @@ const DetailsScreen = ({
                     setFocusOff();
                   }}
                 >
-                  {!loading && (
-                    <Text style={tw`font-bold text-xs m-1 text-white`}>
-                      ADD
-                    </Text>
-                  )}
+                  {!loading && <Text style={tw`font-bold text-xs m-1 text-white`}>ADD</Text>}
                   {loading && (
                     <View style={tw`m-1`}>
-                      <ActivityIndicator color={"white"} />
+                      <ActivityIndicator color={'white'} />
                     </View>
                   )}
                 </TouchableOpacity>
@@ -436,14 +395,10 @@ const DetailsScreen = ({
                     setFocusOff();
                   }}
                 >
-                  {!loading && (
-                    <Text style={tw`font-bold text-xs m-1 text-white`}>
-                      UPDATE
-                    </Text>
-                  )}
+                  {!loading && <Text style={tw`font-bold text-xs m-1 text-white`}>UPDATE</Text>}
                   {loading && (
                     <View style={tw`m-1`}>
-                      <ActivityIndicator color={"white"} />
+                      <ActivityIndicator color={'white'} />
                     </View>
                   )}
                 </TouchableOpacity>

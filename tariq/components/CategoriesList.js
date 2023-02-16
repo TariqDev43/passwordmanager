@@ -1,21 +1,21 @@
-import React, { memo, useState } from "react";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-import Animated, { BounceInDown } from "react-native-reanimated";
-import tw from "tailwind-react-native-classnames";
-import { Text, TouchableOpacity, ActivityIndicator } from "react-native";
-import useSettings from "../Contexts/SettingContext";
-import useTheme from "../Contexts/ThemeContext";
-import { removeCategory } from "../services/firebaseService";
-import ErrorModal from "./ErrorModal";
-import useUser from "../Contexts/UserContext";
+import React, { memo, useState } from 'react';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import Animated, { BounceInDown } from 'react-native-reanimated';
+import tw from 'tailwind-react-native-classnames';
+import { Text, TouchableOpacity, ActivityIndicator } from 'react-native';
+import useSettings from '../Contexts/SettingContext';
+import useTheme from '../Contexts/ThemeContext';
+import { removeCategory } from '../services/firebaseService';
+import ErrorModal from './ErrorModal';
+import useUser from '../Contexts/UserContext';
 
 const CategoriesList = ({ index, item, onRefresh, allCategory, navigate }) => {
   const { theme } = useTheme();
   const { elevation, elevationValue } = useSettings();
   const [loading, setLoading] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
-  const [modalTitle, setModalTitle] = useState("");
-  const [modalBody, setModalBody] = useState("");
+  const [modalTitle, setModalTitle] = useState('');
+  const [modalBody, setModalBody] = useState('');
   const { userName } = useUser();
 
   const deleteCategory = async (category) => {
@@ -26,7 +26,7 @@ const CategoriesList = ({ index, item, onRefresh, allCategory, navigate }) => {
       await onRefresh();
     } catch (err) {
       setShowErrorModal(true);
-      setModalTitle("Error");
+      setModalTitle('Error');
       setModalBody(err.message);
       setLoading(false);
     }
@@ -46,7 +46,7 @@ const CategoriesList = ({ index, item, onRefresh, allCategory, navigate }) => {
       {allCategory && (
         <TouchableOpacity
           onPress={() => {
-            navigate("Details", {
+            navigate('Details', {
               item,
               index,
             });
@@ -66,10 +66,7 @@ const CategoriesList = ({ index, item, onRefresh, allCategory, navigate }) => {
             size={33}
           />
           {/* ******  Name  ******* */}
-          <Text
-            numberOfLines={1}
-            style={[tw`flex-1 text-xs mx-2`, { color: theme.mainTextColor }]}
-          >
+          <Text numberOfLines={1} style={[tw`flex-1 text-xs mx-2`, { color: theme.mainTextColor }]}>
             {item.category.toUpperCase()}
           </Text>
           {/* ******  3-Dots menu  ******* */}
@@ -79,11 +76,7 @@ const CategoriesList = ({ index, item, onRefresh, allCategory, navigate }) => {
             }}
           >
             {!loading && (
-              <MaterialCommunityIcons
-                name={"delete"}
-                color={theme.mainColor}
-                size={25}
-              />
+              <MaterialCommunityIcons name={'delete'} color={theme.mainColor} size={25} />
             )}
             {loading && <ActivityIndicator />}
           </TouchableOpacity>
