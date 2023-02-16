@@ -34,8 +34,6 @@ const DetailsScreen = ({
   const [loading, setLoading] = useState(false);
   const [seletedItem, setSelectedItem] = useState(null);
 
-  // const { changeUser } = useUser();
-
   //  Error Modal
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [modalTitle, setModalTitle] = useState('');
@@ -255,13 +253,89 @@ const DetailsScreen = ({
           >
             {/* ************  Main Content *********************  */}
             <View>
-              <View style={tw`flex-row `}>
+              <View style={tw`flex-row items-center`}>
                 <Text
                   style={[tw`flex-1 text-xl font-semibold`, { color: theme.mainColor }]}
                   numberOfLines={1}
                 >
                   ADD INFO
                 </Text>
+
+                <View style={tw`flex-row justify-end items-center`}>
+                  <TouchableOpacity
+                    style={[
+                      tw`mx-2 p-1 px-2 rounded `,
+                      { backgroundColor: theme.bgColor, elevation: 2 },
+                    ]}
+                    onPress={() => {
+                      setShowAddModal(!showAddModal);
+                      setSelectedItem(null);
+                      setFocusOff();
+                    }}
+                  >
+                    <MaterialCommunityIcons
+                      name='close'
+                      color={passwordFocus ? theme.mainColor : theme.grey}
+                      size={22}
+                    />
+                    {/* <Text style={[tw`font-bold text-xs m-1`, { color: theme.mainTextColor }]}>
+                      Close
+                    </Text> */}
+                  </TouchableOpacity>
+
+                  {!seletedItem && (
+                    <TouchableOpacity
+                      style={[
+                        tw` p-1 px-3 rounded`,
+                        {
+                          backgroundColor: theme.mainColor,
+                          elevation: 3,
+                        },
+                      ]}
+                      onPress={() => {
+                        addCategoryData();
+                        setFocusOff();
+                      }}
+                    >
+                      {!loading && <MaterialCommunityIcons name='plus' color={'white'} size={22} />}
+                      {/* {!loading && <Text style={tw`font-bold text-xs m-1 text-white`}>ADD</Text>} */}
+                      {loading && (
+                        <View style={tw`m-1`}>
+                          <ActivityIndicator color={'white'} />
+                        </View>
+                      )}
+                    </TouchableOpacity>
+                  )}
+                  {seletedItem && (
+                    <TouchableOpacity
+                      style={[
+                        tw` p-1 px-3 rounded`,
+                        {
+                          backgroundColor: theme.mainColor,
+                          elevation: 3,
+                        },
+                      ]}
+                      onPress={() => {
+                        updateCategoryData();
+                        setFocusOff();
+                      }}
+                    >
+                      {/* {!loading && <Text style={tw`font-bold text-xs m-1 text-white`}>UPDATE</Text>} */}
+                      {!loading && (
+                        <MaterialCommunityIcons
+                          name='plus'
+                          color={passwordFocus ? theme.mainColor : theme.grey}
+                          size={22}
+                        />
+                      )}
+                      {loading && (
+                        <View style={tw`m-1`}>
+                          <ActivityIndicator color={'white'} />
+                        </View>
+                      )}
+                    </TouchableOpacity>
+                  )}
+                </View>
               </View>
 
               {/* ***********  Passwords Sections  ************** */}
@@ -342,7 +416,7 @@ const DetailsScreen = ({
               </View>
             </View>
             {/**************** Buttons ***********************/}
-            <View style={tw`flex-row justify-end items-center mt-2`}>
+            {/* <View style={tw`flex-row justify-end items-center mt-2`}>
               <TouchableOpacity
                 style={[
                   tw`mx-2 p-1 px-2 rounded `,
@@ -403,7 +477,7 @@ const DetailsScreen = ({
                   )}
                 </TouchableOpacity>
               )}
-            </View>
+            </View> */}
           </Pressable>
         </View>
       </Modal>

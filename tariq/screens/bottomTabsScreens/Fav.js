@@ -52,7 +52,7 @@ const Fav = () => {
               <Animated.View
                 entering={BounceInDown}
                 style={[
-                  tw`px-5 py-3 rounded-xl`,
+                  tw`px-5 py-3 rounded-xl my-1 mx-1`,
                   {
                     backgroundColor: theme.bgColor,
                     elevation: elevation ? elevationValue : 0,
@@ -122,7 +122,7 @@ const Fav = () => {
                 <View style={tw`border border-gray-200 mt-2 `}></View>
 
                 {/* ******* Passwords Sections ******* */}
-                <View style={tw`my-4 mt-4 `}>
+                <View style={tw`mt-4 `}>
                   {/* ******* Email  ******* */}
                   <View style={tw`flex-row items-center justify-between my-2`}>
                     <MaterialCommunityIcons name='email' color={theme.mainColor} size={22} />

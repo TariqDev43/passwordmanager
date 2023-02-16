@@ -147,7 +147,7 @@ const CategoriesDetailsList = ({ index, data, setSelectedItem, setShowAddModal, 
         <View style={tw`border border-gray-200 mt-2 `}></View>
 
         {/* ******* Passwords Sections ******* */}
-        <View style={tw`my-4 mt-4 `}>
+        <View style={tw`mt-4 `}>
           {/* ******* Email  ******* */}
           <View style={tw`flex-row items-center justify-between my-2`}>
             <MaterialCommunityIcons name='email' color={theme.mainColor} size={22} />
