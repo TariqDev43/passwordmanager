@@ -6,7 +6,7 @@ import { memo } from 'react';
 import { createContext } from 'react';
 import { useContext } from 'react';
 
-import { getAllCategories, getUserInfo } from '../services/firebaseService';
+import { getAllCategories, getFavs, getUserInfo } from '../services/firebaseService';
 
 const UserContext = createContext({});
 
@@ -15,7 +15,7 @@ export const UserProvider = memo(({ children }) => {
   const [user, setUser] = useState(null);
   const [userInfo, setUserInfo] = useState(null);
   const [allCategory, setAllCategory] = useState(null);
-  // const [allFav, setAllFav] = useState(null);
+  const [allFav, setAllFav] = useState(null);
   const [userName, setUserName] = useState(null);
 
   const changeUser = useCallback((val) => {
@@ -47,14 +47,13 @@ export const UserProvider = memo(({ children }) => {
     return allCategories;
   }, []);
 
-  // const refreshAllFav = useCallback(async () => {
-  //   try {
-  //     const data = await getAllFav(uid);
-  //     setAllFav(data);
-  //   } catch (err) {
-  //     console.log(err.message);
-  //   }
-  // });
+  const fetchAllFav = useCallback(async (userName) => {
+    const allFav = await getFavs(userName);
+    console.log('user Favs');
+    setAllFav(null);
+    setAllFav(allFav);
+    return allFav;
+  }, []);
 
   const userValues = useMemo(() => ({
     user,
@@ -62,8 +61,10 @@ export const UserProvider = memo(({ children }) => {
     changeUser,
     userInfo,
     allCategory,
+    allFav,
     fetchUserInfo,
     fetchAllCategory,
+    fetchAllFav,
   }));
   return <UserContext.Provider value={userValues}>{children}</UserContext.Provider>;
 });

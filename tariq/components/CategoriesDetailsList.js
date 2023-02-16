@@ -7,16 +7,17 @@ import useSettings from '../Contexts/SettingContext';
 import useTheme from '../Contexts/ThemeContext';
 import ErrorModal from './ErrorModal';
 import useUser from '../Contexts/UserContext';
-import { addToFav, removeCategoryDetails } from '../services/firebaseService';
+import { addToFav, removeCategoryDetails, removeFromFav } from '../services/firebaseService';
 
-const CategoriesList = ({ index, data, setSelectedItem, setShowAddModal, setText }) => {
+const CategoriesDetailsList = ({ index, data, setSelectedItem, setShowAddModal, setText }) => {
   const { theme } = useTheme();
   const { elevation, elevationValue } = useSettings();
   const [loading, setLoading] = useState(false);
+  const [favLoading, setFavLoading] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [modalTitle, setModalTitle] = useState('');
   const [modalBody, setModalBody] = useState('');
-  const { userName, fetchAllCategory } = useUser();
+  const { userName, fetchAllCategory, fetchAllFav } = useUser();
 
   const deleteCategoryData = async (category, id) => {
     try {
@@ -44,12 +45,24 @@ const CategoriesList = ({ index, data, setSelectedItem, setShowAddModal, setText
 
   const addToFavList = async (category) => {
     try {
-      // setLoading(true);
-
-      const resp = await addToFav(userName, category, data, data.id);
-
-      // setLoading(false);
-      // await onRefresh();
+      setFavLoading(true);
+      await addToFav(userName, category, data, data.id);
+      setFavLoading(false);
+      await onRefresh();
+      fetchAllFav(userName);
+    } catch (err) {
+      setShowErrorModal(true);
+      setModalTitle('Error');
+      setModalBody(err.message);
+    }
+  };
+  const removeFromFavList = async (category) => {
+    try {
+      setFavLoading(true);
+      await removeFromFav(userName, category, data, data.id);
+      setFavLoading(false);
+      await onRefresh();
+      fetchAllFav(userName);
     } catch (err) {
       setShowErrorModal(true);
       setModalTitle('Error');
@@ -87,13 +100,22 @@ const CategoriesList = ({ index, data, setSelectedItem, setShowAddModal, setText
           </Text>
           <TouchableOpacity
             onPress={() => {
-              setShowErrorModal(true);
-              setModalTitle('Comming Soon');
-              setModalBody('add to fav comming soon..');
-              addToFavList(data.value.category);
+              // setShowErrorModal(true);
+              // setModalTitle('Comming Soon');
+              // setModalBody('add to fav comming soon..');
+              data.value.fav_icon == 'heart-outline'
+                ? addToFavList(data.value.category)
+                : removeFromFavList(data.value.category);
             }}
           >
-            <MaterialCommunityIcons name={data.value.fav_icon} color={theme.mainColor} size={23} />
+            {!favLoading && (
+              <MaterialCommunityIcons
+                name={data.value.fav_icon}
+                color={theme.mainColor}
+                size={23}
+              />
+            )}
+            {favLoading && <ActivityIndicator />}
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => {
@@ -168,4 +190,4 @@ const CategoriesList = ({ index, data, setSelectedItem, setShowAddModal, setText
   );
 };
 
-export default memo(CategoriesList);
+export default memo(CategoriesDetailsList);

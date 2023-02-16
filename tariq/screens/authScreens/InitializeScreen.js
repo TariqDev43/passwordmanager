@@ -11,8 +11,16 @@ const InitializeScreen = () => {
    ********************************************* */
   const { theme } = useTheme();
 
-  const { userName, changeUser, userInfo, allCategory, fetchUserInfo, fetchAllCategory } =
-    useUser();
+  const {
+    userName,
+    changeUser,
+    userInfo,
+    allCategory,
+    fetchUserInfo,
+    fetchAllCategory,
+    allFav,
+    fetchAllFav,
+  } = useUser();
   const navigation = useNavigation();
   /*   All functions
    ********************************************* */
@@ -22,6 +30,7 @@ const InitializeScreen = () => {
       try {
         fetchUserInfo(userName);
         fetchAllCategory(userName);
+        fetchAllFav(userName);
       } catch (err) {
         console.log(err.message);
       }
@@ -32,10 +41,10 @@ const InitializeScreen = () => {
   }, [userName]);
 
   useEffect(() => {
-    if (userInfo != null && allCategory != null) {
+    if (userInfo != null && allCategory != null && allFav != null) {
       navigation.navigate('BottomNav');
     }
-  }, [userInfo, allCategory]);
+  }, [userInfo, allCategory, allFav]);
 
   return (
     <View style={[tw`flex-1 justify-center items-center`, { backgroundColor: theme.mainBgColor }]}>
@@ -63,6 +72,23 @@ const InitializeScreen = () => {
         <View>
           {!allCategory && <ActivityIndicator color={theme.mainColor} />}
           {allCategory && (
+            <LottieView
+              loop={false}
+              style={{ width: 30, height: 30 }}
+              autoPlay
+              source={require('../../assets/success.json')}
+            />
+          )}
+        </View>
+      </View>
+
+      <View style={[tw`flex-row justify-between my-3 w-3/4`, {}]}>
+        <Text style={[tw`text-xl font-semibold`, { color: theme.mainTextColor }]}>
+          Getting Favs
+        </Text>
+        <View>
+          {!allFav && <ActivityIndicator color={theme.mainColor} />}
+          {allFav && (
             <LottieView
               loop={false}
               style={{ width: 30, height: 30 }}

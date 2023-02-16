@@ -237,13 +237,54 @@ export const removeCategoryDetails = async (username, category, id) => {
 
 /*    All Favorite Categories
  ********************************************* */
-export const addToFav = async (username, category, categoryData, id) => {
-  console.log(id);
-  console.log(categoryData);
-
+export const getFavs = async (name) => {
   try {
-    const categoryRef = ref(db, `Users/${username}/Favs/${category.toLowerCase()}/items/`);
-    // const newAdded = await push(categoryRef, categoryData);
+    // set data to Favs
+    const favRef = ref(db, `Users/${name}/Favs/`);
+    const data = await get(favRef);
+
+    let allFavList = [];
+    data.forEach((item) => {
+      allFavList.push({ id: item.key, value: item.val() });
+    });
+
+    return allFavList;
+  } catch (err) {
+    throw err;
+  }
+};
+
+export const addToFav = async (username, category, categoryData, id) => {
+  try {
+    // set data to Favs
+    const favRef = ref(db, `Users/${username}/Favs/${id}`);
+    await set(favRef, { ...categoryData.value, fav_icon: 'heart' });
+
+    // set data to Favs
+    const favIconRef = ref(
+      db,
+      `Users/${username}/Categories/${category.toLowerCase()}/items/${id}`
+    );
+    await set(favIconRef, { ...categoryData.value, fav_icon: 'heart' });
+
+    return 'newAdded';
+  } catch (err) {
+    throw err;
+  }
+};
+export const removeFromFav = async (username, category, categoryData, id) => {
+  try {
+    // set data to Favs
+    const favRef = ref(db, `Users/${username}/Favs/${id}`);
+    await remove(favRef);
+
+    // set fav ICon
+    const favIconRef = ref(
+      db,
+      `Users/${username}/Categories/${category.toLowerCase()}/items/${id}`
+    );
+    await set(favIconRef, { ...categoryData.value, fav_icon: 'heart-outline' });
+
     return 'newAdded';
   } catch (err) {
     throw err;

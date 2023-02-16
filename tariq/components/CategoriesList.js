@@ -34,7 +34,7 @@ const CategoriesList = ({ index, item, onRefresh, allCategory, navigate }) => {
 
   return (
     <Animated.View
-      entering={BounceInDown.delay((index + 1) * 50)}
+      entering={BounceInDown.delay(index + 1 * 100)}
       style={[tw`flex-1 mx-1 `, { marginVertical: 5 }]}
     >
       <ErrorModal
