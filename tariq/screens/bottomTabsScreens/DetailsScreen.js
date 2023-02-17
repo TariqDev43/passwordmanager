@@ -21,6 +21,7 @@ import { addCategoryDetails, updateCategoryDetails } from '../../services/fireba
 import CategoriesDetailsList from '../../components/CategoriesDetailsList';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import useSettings from '../../Contexts/SettingContext';
+import uuid from 'react-native-uuid';
 
 const DetailsScreen = ({
   route: {
@@ -58,6 +59,10 @@ const DetailsScreen = ({
   const [categoryData, setCategoryData] = useState(null);
 
   // ********** Functions Below
+  const getUid = () => {
+    const uid = uuid.v1();
+    return uid;
+  };
 
   const addCategoryData = async () => {
     if (account == '') {
@@ -87,9 +92,24 @@ const DetailsScreen = ({
       notes: 'test notes',
       key: serverTimestamp(),
     };
+
     try {
       setLoading(true);
-      await addCategoryDetails(userName, item.category, categoryDta);
+      // console.log(item.value);
+      const uid = getUid();
+      let items_data = {};
+      items_data[uid] = categoryDta;
+      console.log(
+        JSON.stringify({
+          category: item.category,
+          value: {
+            info: { icon: item.value.info.icon },
+            items: items_data,
+          },
+        })
+      );
+      await addCategoryDetails(userName, item.category, categoryDta, uid);
+
       setLoading(false);
       setShowAddModal(!showAddModal);
       await onRefresh();

@@ -1,6 +1,5 @@
 // import admin from "firebase-admin";
 import { config } from './config';
-import uuid from 'react-native-uuid';
 
 const firebaseConfig = config;
 import {
@@ -185,11 +184,11 @@ export const removeCategory = async (username, categoryName) => {
 /*    ALL CATEGORY DETAILS FUNCTIONS
  ********************************************* */
 
-export const addCategoryDetails = async (username, category, categoryData) => {
+export const addCategoryDetails = async (username, category, categoryData, id) => {
   try {
     const categoryRef = ref(
       db,
-      `Users/${username}/Categories/${category.toLowerCase()}/items/${uuid.v1()}`
+      `Users/${username}/Categories/${category.toLowerCase()}/items/${id}`
     );
     const newAdded = await set(categoryRef, categoryData);
     return newAdded;
