@@ -8,6 +8,7 @@ import useUser from '../../Contexts/UserContext';
 import ErrorModal from '../../components/ErrorModal';
 import Animated, { BounceInDown } from 'react-native-reanimated';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import * as Clipboard from 'expo-clipboard';
 
 const Fav = () => {
   const { theme } = useTheme();

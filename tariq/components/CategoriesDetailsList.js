@@ -1,4 +1,4 @@
-import React, { memo, useState } from 'react';
+import React, { memo, useRef, useState } from 'react';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Animated, { BounceInDown } from 'react-native-reanimated';
 import tw from 'tailwind-react-native-classnames';
@@ -8,16 +8,23 @@ import useTheme from '../Contexts/ThemeContext';
 import ErrorModal from './ErrorModal';
 import useUser from '../Contexts/UserContext';
 import { addToFav, removeCategoryDetails, removeFromFav } from '../services/firebaseService';
+import LottieView from 'lottie-react-native';
+import * as Clipboard from 'expo-clipboard';
 
 const CategoriesDetailsList = ({ index, data, setSelectedItem, setShowAddModal, setText }) => {
   const { theme } = useTheme();
   const { elevation, elevationValue } = useSettings();
+  const { userName, fetchAllCategory, fetchAllFav } = useUser();
+
   const [loading, setLoading] = useState(false);
   const [favLoading, setFavLoading] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [modalTitle, setModalTitle] = useState('');
   const [modalBody, setModalBody] = useState('');
-  const { userName, fetchAllCategory, fetchAllFav } = useUser();
+
+  const [emailCopy, setEmailCopy] = useState(false);
+  const [passwordCopy, setPasswordCopy] = useState(false);
+  const copyRef = useRef(null);
 
   const deleteCategoryData = async (category, id) => {
     try {
@@ -70,6 +77,29 @@ const CategoriesDetailsList = ({ index, data, setSelectedItem, setShowAddModal, 
     }
   };
 
+  const copyEmailClipboard = async (val) => {
+    try {
+      setEmailCopy(true);
+      await Clipboard.setStringAsync(val);
+      copyRef.current?.play();
+    } catch (err) {
+      setShowErrorModal(true);
+      setModalTitle('Copy Error');
+      setModalBody(err.message);
+    }
+  };
+  const copyPasswordClipboard = async (val) => {
+    try {
+      setPasswordCopy(true);
+      await Clipboard.setStringAsync(val);
+      copyRef.current?.play();
+    } catch (err) {
+      setShowErrorModal(true);
+      setModalTitle('Copy Error');
+      setModalBody(err.message);
+    }
+  };
+
   return (
     <Animated.View
       entering={BounceInDown.delay((index + 1) * 50)}
@@ -93,7 +123,7 @@ const CategoriesDetailsList = ({ index, data, setSelectedItem, setShowAddModal, 
         {/* ******* Account Section ******* */}
         <View style={tw`flex-row items-center`}>
           <Text
-            style={[tw`flex-1 text-lg font-semibold`, { color: theme.mainColor }]}
+            style={[tw`flex-1 text-lg font-semibold mr-2`, { color: theme.mainColor }]}
             numberOfLines={1}
           >
             {data.value.account_name}
@@ -154,35 +184,71 @@ const CategoriesDetailsList = ({ index, data, setSelectedItem, setShowAddModal, 
             <Text style={[tw`flex-1 mx-3`, { color: theme.mainTextColor }]} numberOfLines={1}>
               {data.value.email}
             </Text>
-            <TouchableOpacity>
-              <MaterialCommunityIcons
-                style={tw`mx-1`}
-                onPress={() => Clipboard.setStringAsync(`${data.value.email}`)}
-                name='content-copy'
-                color={theme.mainColor}
-                size={22}
+            {!emailCopy && (
+              <TouchableOpacity>
+                <MaterialCommunityIcons
+                  style={tw`mx-1`}
+                  onPress={() => copyEmailClipboard(`${data.value.email}`)}
+                  name='content-copy'
+                  color={theme.mainColor}
+                  size={22}
+                />
+              </TouchableOpacity>
+            )}
+            {emailCopy && (
+              <LottieView
+                autoPlay={false}
+                loop={false}
+                ref={copyRef}
+                onAnimationFinish={async () => {
+                  setEmailCopy(false);
+                }}
+                style={[
+                  tw`ml-1 mr-2`,
+                  {
+                    width: 22,
+                    height: 22,
+                  },
+                ]}
+                source={require('../assets/success.json')}
               />
-            </TouchableOpacity>
+            )}
           </View>
           {/* ******* Password  ******* */}
           <View style={tw`flex-row items-center justify-between my-2`}>
-            <MaterialCommunityIcons
-              onPress={() => Clipboard.setStringAsync(`${data.value.password}`)}
-              name='key'
-              color={theme.mainColor}
-              size={22}
-            />
+            <MaterialCommunityIcons name='key' color={theme.mainColor} size={22} />
             <Text style={[tw`flex-1 mx-3`, { color: theme.mainTextColor }]} numberOfLines={1}>
               {data.value.password}
             </Text>
-            <TouchableOpacity>
-              <MaterialCommunityIcons
-                style={tw`mx-1`}
-                name='content-copy'
-                color={theme.mainColor}
-                size={22}
+            {!passwordCopy && (
+              <TouchableOpacity>
+                <MaterialCommunityIcons
+                  style={tw`mx-1`}
+                  name='content-copy'
+                  onPress={() => copyPasswordClipboard(`${data.value.password}`)}
+                  color={theme.mainColor}
+                  size={22}
+                />
+              </TouchableOpacity>
+            )}
+            {passwordCopy && (
+              <LottieView
+                autoPlay={false}
+                loop={false}
+                ref={copyRef}
+                onAnimationFinish={async () => {
+                  setPasswordCopy(false);
+                }}
+                style={[
+                  tw`ml-1 mr-2`,
+                  {
+                    width: 22,
+                    height: 22,
+                  },
+                ]}
+                source={require('../assets/success.json')}
               />
-            </TouchableOpacity>
+            )}
           </View>
         </View>
       </View>

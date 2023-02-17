@@ -195,7 +195,10 @@ const DetailsScreen = ({
 
       {/* ************ Top Heading ************ */}
       <View style={tw`my-5 flex-row justify-between items-center`}>
-        <Text style={[tw`text-2xl font-extrabold`, { color: theme.mainColor }]}>
+        <Text
+          style={[tw`text-2xl flex-1 font-extrabold mr-3`, { color: theme.mainColor }]}
+          numberOfLines={1}
+        >
           {item.category.toUpperCase()}
         </Text>
         <TouchableOpacity onPress={() => setShowAddModal(!showAddModal)}>
@@ -206,7 +209,7 @@ const DetailsScreen = ({
       {/* ************ Main List ************ */}
 
       {categoryData && (
-        <Animated.FlatList
+        <FlatList
           contentContainerStyle={{ paddingBottom: 160 }}
           data={categoryData}
           // extraData={categoryData}
