@@ -29,20 +29,7 @@ const BottomNav = () => {
   return (
     <>
       {/* TopBar */}
-      <SafeAreaView style={[tw`px-6 `, { backgroundColor: theme.mainBgColor }]}>
-        <View style={tw`flex-row justify-between mt-4`}>
-          <TouchableOpacity onPress={UpdateTheme}>
-            <Ionicons name={themeMode == 'light' ? 'moon' : 'sunny'} size={28} color='grey' />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              changeUser(null);
-            }}
-          >
-            <Ionicons name='md-log-out-outline' color={'grey'} size={30} />
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
+      <SafeAreaView style={[tw`px-6 `, { backgroundColor: theme.mainBgColor }]}></SafeAreaView>
       {/* Screens  */}
       <View style={[tw`flex-1 bg-red-500`]}>
         <Tabs.Navigator

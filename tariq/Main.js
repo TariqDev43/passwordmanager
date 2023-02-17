@@ -24,7 +24,6 @@ const Main = () => {
   const [themeMode, setThemeMode] = useState(null);
   const { changeColor, themeMode: theme, changeTheme } = useTheme();
   const { changeElevationValue, changeElevation } = useSettings();
-
   const { user } = useUser();
 
   useLayoutEffect(() => {
@@ -83,7 +82,7 @@ const Main = () => {
             <Stack.Screen name='Login' component={Login} />
           ) : (
             <>
-              <Stack.Screen name='Initialize' component={InitializeScreen} />
+              {/* <Stack.Screen name='Initialize' component={InitializeScreen} /> */}
               <Stack.Screen name='BottomNav' component={BottomNav} />
             </>
           )}

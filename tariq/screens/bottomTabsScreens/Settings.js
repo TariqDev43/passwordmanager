@@ -1,18 +1,14 @@
-import { Keyboard, Pressable, Switch, Text, TouchableOpacity, View } from 'react-native';
+import { Button, Keyboard, Pressable, Switch, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import { memo, useCallback, useEffect, useState } from 'react';
 import { Modal } from 'react-native';
 import Slider from '@react-native-community/slider';
 import useTheme from '../../Contexts/ThemeContext';
+import useUser from '../../Contexts/UserContext';
 import useSettings from '../../Contexts/SettingContext';
 import tw from 'tailwind-react-native-classnames';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-  withTiming,
-} from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 
 const Settings = () => {
   /*   ALL STATES
@@ -20,6 +16,7 @@ const Settings = () => {
   //  all contexts
   const { theme, changeColor, themeMode, changeTheme } = useTheme();
   const { elevation, elevationValue, changeElevation, changeElevationValue } = useSettings();
+  const { changeUser } = useUser();
 
   const [settingsToggle, setSettingsToggle] = useState(elevation === 'true' ? true : false);
 
@@ -204,6 +201,25 @@ const Settings = () => {
             <Text style={[tw``, { color: theme.mainColor }]}>Gray</Text>
           </TouchableOpacity>
         </View>
+      </View>
+      {/* *********  Logout  *********** */}
+      <View
+        className=''
+        style={[
+          tw`py-2 px-4 m-1 my-2 rounded-lg flex-row items-center `,
+          {
+            elevation: elevation ? elevationValue : 0,
+            shadowColor: elevation ? theme.mainColor : theme.mainBgColor,
+
+            backgroundColor: theme.bgColor,
+          },
+        ]}
+      >
+        <MaterialCommunityIcons name={'logout'} size={28} color={theme.mainColor} />
+        <Text style={[tw`text-lg font-extrabold flex-1 mx-2`, { color: theme.mainTextColor }]}>
+          Theme
+        </Text>
+        <Button onPress={() => changeUser(null)} title='logout' />
       </View>
       {/* Color Select Modal */}
       <Modal
