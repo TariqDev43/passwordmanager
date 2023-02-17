@@ -11,7 +11,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 
-import { memo, useCallback, useState } from 'react';
+import { memo, useCallback, useEffect, useState } from 'react';
 import { useMemo } from 'react';
 import useTheme from '../../Contexts/ThemeContext';
 import useUser from '../../Contexts/UserContext';
@@ -22,6 +22,7 @@ import { addCategory } from '../../services/firebaseService';
 import { RefreshControl } from 'react-native-gesture-handler';
 import CategoriesList from '../../components/CategoriesList';
 import ErrorModal from '../../components/ErrorModal';
+import Animated, { Layout } from 'react-native-reanimated';
 
 const Home = ({ navigation: { navigate } }) => {
   /*   All States
@@ -317,10 +318,10 @@ const Home = ({ navigation: { navigate } }) => {
       </Modal>
       {/**************** Main Scrollable Content ******************************/}
       <View style={tw`pb-16 px-5 py-2`}>
-        <FlatList
+        <Animated.FlatList
           contentContainerStyle={{ paddingBottom: 160 }}
           data={allCategory}
-          extraData={allCategory}
+          layout={Layout}
           showsVerticalScrollIndicator={false}
           numColumns={2}
           keyExtractor={(item) => item.category}

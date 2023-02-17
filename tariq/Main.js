@@ -49,12 +49,20 @@ const Main = () => {
         const elevationValue = await getDataFromStorage('elevationValue');
 
         try {
-          storageTheme == 'light' ? setThemeMode('light') : setThemeMode('dark');
+          storageTheme == 'light'
+            ? setThemeMode('light')
+            : storageTheme == 'dark'
+            ? setThemeMode('dark')
+            : setThemeMode('gray');
         } catch (error) {
           console.log(error.message);
         }
         try {
-          storageTheme == 'light' ? changeTheme('light') : changeTheme('dark');
+          storageTheme == 'light'
+            ? changeTheme('light')
+            : storageTheme == 'dark'
+            ? changeTheme('dark')
+            : changeTheme('gray');
         } catch (error) {
           console.log(error.message);
         }

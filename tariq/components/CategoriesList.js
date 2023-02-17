@@ -1,6 +1,6 @@
 import React, { memo, useState } from 'react';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import Animated, { BounceInDown } from 'react-native-reanimated';
+import Animated, { BounceInDown, Layout } from 'react-native-reanimated';
 import tw from 'tailwind-react-native-classnames';
 import { Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import useSettings from '../Contexts/SettingContext';
@@ -41,6 +41,7 @@ const CategoriesList = ({ index, item, onRefresh, allCategory, navigate }) => {
 
   return (
     <Animated.View
+      layout={Layout}
       entering={BounceInDown.delay(index + 1 * 100)}
       style={[tw`flex-1 mx-1 `, { marginVertical: 5 }]}
     >

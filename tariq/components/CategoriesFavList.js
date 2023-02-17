@@ -1,6 +1,6 @@
 import React, { memo, useRef, useState } from 'react';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import Animated, { BounceInDown } from 'react-native-reanimated';
+import Animated, { BounceInDown, Layout } from 'react-native-reanimated';
 import tw from 'tailwind-react-native-classnames';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 import useSettings from '../Contexts/SettingContext';
@@ -81,6 +81,7 @@ const CategoriesDetailsList = ({ data }) => {
 
   return (
     <Animated.View
+      layout={Layout}
       entering={BounceInDown}
       style={[
         tw`px-5 py-3 rounded-xl my-1 mx-1`,
