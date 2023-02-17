@@ -26,6 +26,7 @@ import ErrorModal from '../../components/ErrorModal';
 const Home = ({ navigation: { navigate } }) => {
   /*   All States
    ********************************************* */
+
   //  all contexts
   const { theme } = useTheme();
   const { userName, allCategory, fetchAllCategory } = useUser();
@@ -34,7 +35,6 @@ const Home = ({ navigation: { navigate } }) => {
   // All Modal
   const [showModal, setShowModal] = useState(false);
   const [showIconModal, setShowIconModal] = useState(false);
-  // const [showCategorySettingsModal, setShowCategorySettingsModal] = useState(false);
 
   //  Error Modal
   const [showErrorModal, setShowErrorModal] = useState(false);
@@ -121,20 +121,6 @@ const Home = ({ navigation: { navigate } }) => {
     [allCategory]
   );
 
-  // ({ item, index }) => {
-  //   return (
-  //     // *******************  Main Div  *********************************
-
-  //     <CategoriesList
-  //       index={index}
-  //       item={item}
-  //       onRefresh={onRefresh}
-  //       allCategory={allCategory}
-  //       navigate={navigate}
-  //     />
-  //   );
-  // }
-
   return (
     <SafeAreaView
       className={`flex-1 `}
@@ -165,78 +151,87 @@ const Home = ({ navigation: { navigate } }) => {
       >
         <Pressable
           style={tw`flex-1 justify-center items-center `}
-          onPress={() => Keyboard.dismiss()}
+          onPress={() => {
+            Keyboard.dismiss();
+            setShowModal(!showModal);
+          }}
         >
-          <View
-            style={[tw`p-5 rounded-xl w-72 `, { elevation: 15, backgroundColor: theme.modalBg }]}
-          >
-            {/**************** Title ***********************/}
-            <Text style={[tw`font-bold text-lg`, { color: theme.mainColor }]}>ADD CATEOGRY</Text>
-            {/**************** Category text input ***********************/}
-            <View style={tw`flex-row justify-between`}>
-              <TextInput
-                color={theme.mainColor}
-                value={categoryText}
-                onChangeText={setCategoryText}
-                placeholderTextColor={theme.mainTextColor}
-                style={[
-                  tw`border-b-2 my-7  flex-1`,
-                  {
-                    borderBottomColor: isFocused ? theme.mainColor : theme.grey,
-                  },
-                ]}
-                placeholder={'Write category name..'}
-                onFocus={() => setIsFocused(true)}
-                onBlur={() => setIsFocused(false)}
-              />
-              <TouchableOpacity style={tw`self-center`} onPressOut={() => setShowIconModal(true)}>
-                <View
+          <Pressable onPress={() => setShowModal(true)}>
+            <View
+              style={[
+                tw`p-5 rounded-xl w-72`,
+                { elevation: 15 },
+                { elevation: 15, backgroundColor: theme.modalBg },
+              ]}
+            >
+              {/**************** Title ***********************/}
+              <Text style={[tw`font-bold text-lg`, { color: theme.mainColor }]}>ADD CATEOGRY</Text>
+              {/**************** Category text input ***********************/}
+              <View style={tw`flex-row justify-between`}>
+                <TextInput
+                  color={theme.mainColor}
+                  value={categoryText}
+                  onChangeText={setCategoryText}
+                  placeholderTextColor={theme.mainTextColor}
                   style={[
-                    tw`rounded-full p-1 border-2`,
+                    tw`border-b-2 my-7  flex-1`,
                     {
-                      elevation: 3,
-                      borderColor: theme.mainColor,
-                      backgroundColor: theme.bgColor,
+                      borderBottomColor: isFocused ? theme.mainColor : theme.grey,
                     },
                   ]}
-                >
-                  <MaterialCommunityIcons name={icon} size={30} color={theme.mainColor} />
-                </View>
-              </TouchableOpacity>
-            </View>
-
-            {/**************** Buttons ***********************/}
-            <View style={tw`flex-row justify-end mt-3 items-center `}>
-              <TouchableOpacity
-                style={[
-                  tw`mx-2 p-1 px-2 rounded `,
-                  { backgroundColor: theme.bgColor, elevation: 2 },
-                ]}
-                onPress={() => setShowModal(!showModal)}
-              >
-                <Text style={[tw`font-bold text-xs m-1`, { color: theme.mainTextColor }]}>
-                  Close
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[
-                  tw`p-1 px-3 rounded`,
-                  {
-                    backgroundColor: theme.mainColor,
-                    elevation: 3,
-                  },
-                ]}
-                onPress={() => addNewCategory()}
-              >
-                {!loading && <Text style={tw`font-bold text-xs m-1 text-white`}>ADD</Text>}
-                {loading && (
-                  <View style={tw`m-1`}>
-                    <ActivityIndicator color={'white'} />
+                  placeholder={'Write category name..'}
+                  onFocus={() => setIsFocused(true)}
+                  onBlur={() => setIsFocused(false)}
+                />
+                <TouchableOpacity style={tw`self-center`} onPressOut={() => setShowIconModal(true)}>
+                  <View
+                    style={[
+                      tw`rounded-full p-1 border-2`,
+                      {
+                        elevation: 3,
+                        borderColor: theme.mainColor,
+                        backgroundColor: theme.bgColor,
+                      },
+                    ]}
+                  >
+                    <MaterialCommunityIcons name={icon} size={30} color={theme.mainColor} />
                   </View>
-                )}
-              </TouchableOpacity>
+                </TouchableOpacity>
+              </View>
+
+              {/**************** Buttons ***********************/}
+              <View style={tw`flex-row justify-end mt-3 items-center `}>
+                <TouchableOpacity
+                  style={[
+                    tw`mx-2 p-1 px-2 rounded `,
+                    { backgroundColor: theme.bgColor, elevation: 2 },
+                  ]}
+                  onPress={() => setShowModal(!showModal)}
+                >
+                  <Text style={[tw`font-bold text-xs m-1`, { color: theme.mainTextColor }]}>
+                    Close
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    tw`p-1 px-3 rounded`,
+                    {
+                      backgroundColor: theme.mainColor,
+                      elevation: 3,
+                    },
+                  ]}
+                  onPress={() => addNewCategory()}
+                >
+                  {!loading && <Text style={tw`font-bold text-xs m-1 text-white`}>ADD</Text>}
+                  {loading && (
+                    <View style={tw`m-1`}>
+                      <ActivityIndicator color={'white'} />
+                    </View>
+                  )}
+                </TouchableOpacity>
+              </View>
             </View>
-          </View>
+          </Pressable>
         </Pressable>
       </Modal>
       {/**************** Icon Modal ******************************/}
@@ -248,66 +243,76 @@ const Home = ({ navigation: { navigate } }) => {
       >
         <Pressable
           style={tw`justify-center flex-1 items-center `}
-          onPress={() => Keyboard.dismiss()}
+          onPress={() => {
+            Keyboard.dismiss();
+            setShowIconModal(!showIconModal);
+          }}
         >
-          <View
-            style={[
-              tw`py-5 px-4 rounded-xl w-64 h-1/2`,
-              { elevation: 15, backgroundColor: theme.mainBgColor },
-            ]}
+          <Pressable
+            style={tw`w-64 h-1/2`}
+            onPress={() => {
+              setShowIconModal(true);
+            }}
           >
-            <Text style={[tw`font-bold my-2 mx-1 text-lg `, { color: theme.mainColor }]}>
-              SELECT ICON
-            </Text>
-            {/* *******  Lopping icons here *********** */}
-            <FlatList
-              data={iconList}
-              style={tw`mb-2`}
-              keyExtractor={(item, index) => index}
-              showsVerticalScrollIndicator={false}
-              renderItem={({ item }) => {
-                return (
-                  <TouchableOpacity
-                    onPressIn={() => setIcon(item.icon)}
-                    key={item.name}
-                    style={[
-                      tw`p-2 mx-1 mb-1 px-3 items-center justify-between flex-row rounded-lg `,
-                      {
-                        backgroundColor: icon == item.icon ? theme.mainColor : theme.bgColor,
-                        elevation: elevation ? elevationValue : 0,
-                      },
-                    ]}
-                  >
-                    {/* *******  Text For scrollable select icons *********** */}
-                    <Text
-                      style={[
-                        tw`text-xs`,
-                        {
-                          color: icon == item.icon ? 'white' : theme.mainTextColor,
-                        },
-                      ]}
-                    >
-                      {item.name.toUpperCase()}
-                    </Text>
-                    {/* *******  Icon inside scrollable select icons *********** */}
-                    <MaterialCommunityIcons
-                      name={item.icon}
-                      size={25}
-                      color={icon == item.icon ? 'white' : theme.mainColor}
-                    />
-                  </TouchableOpacity>
-                );
-              }}
-            />
-            {/**************** Buttons ***********************/}
-            <View style={tw`flex-row justify-end  mx-1  items-center `}>
-              <TouchableOpacity onPress={() => setShowIconModal(!showIconModal)} style={tw`p-1`}>
-                <Text style={[tw`font-bold text-xs`, { color: theme.mainColor }]}>
-                  SELECT CATEGORY
-                </Text>
-              </TouchableOpacity>
+            <View
+              style={[
+                tw`py-5 px-4 rounded-xl `,
+                { elevation: 15, backgroundColor: theme.mainBgColor },
+              ]}
+            >
+              <Text style={[tw`font-bold my-2 mx-1 text-lg `, { color: theme.mainColor }]}>
+                SELECT ICON
+              </Text>
+              {/* *******  Lopping icons here *********** */}
+              <FlatList
+                data={iconList}
+                style={tw`mb-2`}
+                keyExtractor={(item, index) => index}
+                showsVerticalScrollIndicator={false}
+                renderItem={({ item }) => {
+                  return (
+                    <Pressable onPressIn={() => setIcon(item.icon)} key={item.name}>
+                      <View
+                        style={[
+                          tw`p-2 mx-1 mb-1 px-3 items-center justify-between flex-row rounded-lg `,
+                          {
+                            backgroundColor: icon == item.icon ? theme.mainColor : theme.bgColor,
+                            elevation: elevation ? elevationValue : 0,
+                          },
+                        ]}
+                      >
+                        {/* *******  Text For scrollable select icons *********** */}
+                        <Text
+                          style={[
+                            tw`text-xs`,
+                            {
+                              color: icon == item.icon ? 'white' : theme.mainTextColor,
+                            },
+                          ]}
+                        >
+                          {item.name.toUpperCase()}
+                        </Text>
+                        {/* *******  Icon inside scrollable select icons *********** */}
+                        <MaterialCommunityIcons
+                          name={item.icon}
+                          size={25}
+                          color={icon == item.icon ? 'white' : theme.mainColor}
+                        />
+                      </View>
+                    </Pressable>
+                  );
+                }}
+              />
+              {/**************** Buttons ***********************/}
+              <View style={tw`flex-row justify-end  mx-1  items-center `}>
+                <TouchableOpacity onPress={() => setShowIconModal(!showIconModal)} style={tw`p-1`}>
+                  <Text style={[tw`font-bold text-xs`, { color: theme.mainColor }]}>
+                    SELECT CATEGORY
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
-          </View>
+          </Pressable>
         </Pressable>
       </Modal>
       {/**************** Main Scrollable Content ******************************/}

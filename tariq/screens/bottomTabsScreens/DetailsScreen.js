@@ -20,7 +20,8 @@ import ErrorModal from '../../components/ErrorModal';
 import { serverTimestamp } from 'firebase/database';
 import { addCategoryDetails, updateCategoryDetails } from '../../services/firebaseService';
 import CategoriesDetailsList from '../../components/CategoriesDetailsList';
-import Animated from 'react-native-reanimated';
+import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
+import useSettings from '../../Contexts/SettingContext';
 
 const DetailsScreen = ({
   route: {
@@ -30,6 +31,8 @@ const DetailsScreen = ({
   // ********** All states are shown here
   const { theme } = useTheme();
   const { userName, allCategory, fetchAllCategory } = useUser();
+  const { elevation, elevationValue } = useSettings();
+
   const [categoryData, setCategoryData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [seletedItem, setSelectedItem] = useState(null);
@@ -237,6 +240,29 @@ const DetailsScreen = ({
           }}
         />
       )}
+      {!categoryData && (
+        <Animated.View
+          entering={FadeIn.duration(500)}
+          style={[
+            tw`h-1/3 my-6 rounded-2xl justify-center items-center p-8`,
+            {
+              elevation: elevation ? elevationValue : 0,
+              backgroundColor: theme.bgColor,
+            },
+          ]}
+        >
+          <Text
+            style={[
+              tw`
+          text-lg font-semibold opacity-50 text-center
+          `,
+              { color: theme.mainTextColor },
+            ]}
+          >
+            Your don'nt have any passwords in this category
+          </Text>
+        </Animated.View>
+      )}
 
       {/* *********** ALL Models Below ************* */}
       <Modal
@@ -245,181 +271,188 @@ const DetailsScreen = ({
         onRequestClose={() => setShowAddModal(!showAddModal)}
       >
         {/* ************  Modal Background Container  */}
-        <View style={tw`justify-center items-center flex-1`}>
-          {/* ************  Modal main Container  */}
+        <Pressable
+          style={[tw`justify-center items-center flex-1`]}
+          onPress={() => {
+            Keyboard.dismiss();
+            setShowAddModal(false);
+            setFocusOff();
+          }}
+        >
           <Pressable
-            style={[tw`p-5 rounded-xl w-4/5 `, { backgroundColor: theme.modalBg, elevation: 15 }]}
-            onPress={() => {
-              Keyboard.dismiss();
-              setFocusOff();
-            }}
+            onPress={() => setShowAddModal(true)}
+            style={[tw`p-5 rounded-xl w-4/5`, { backgroundColor: theme.modalBg, elevation: 15 }]}
           >
-            {/* ************  Main Content *********************  */}
-            <View>
-              <View style={tw`flex-row items-center`}>
-                <Text
-                  style={[tw`flex-1 text-xl font-semibold`, { color: theme.mainColor }]}
-                  numberOfLines={1}
-                >
-                  ADD INFO
-                </Text>
-
-                <View style={tw`flex-row justify-end items-center`}>
-                  <TouchableOpacity
-                    style={[
-                      tw`mx-2 p-1 px-2 rounded `,
-                      { backgroundColor: theme.bgColor, elevation: 2 },
-                    ]}
-                    onPress={() => {
-                      setShowAddModal(!showAddModal);
-                      setSelectedItem(null);
-                      setFocusOff();
-                    }}
+            {/* ************  Modal main Container  */}
+            <View onPress={() => setShowAddModal(true)}>
+              {/* ************  Main Content *********************  */}
+              <View>
+                <View style={tw`flex-row items-center`}>
+                  <Text
+                    style={[tw`flex-1 text-xl font-semibold`, { color: theme.mainColor }]}
+                    numberOfLines={1}
                   >
+                    ADD INFO
+                  </Text>
+
+                  <View style={tw`flex-row justify-end items-center`}>
+                    <TouchableOpacity
+                      style={[
+                        tw`mx-2 p-1 px-2 rounded `,
+                        { backgroundColor: theme.bgColor, elevation: 2 },
+                      ]}
+                      onPress={() => {
+                        setShowAddModal(!showAddModal);
+                        setSelectedItem(null);
+                        setFocusOff();
+                      }}
+                    >
+                      <MaterialCommunityIcons
+                        name='close'
+                        color={passwordFocus ? theme.mainColor : theme.grey}
+                        size={22}
+                      />
+                      {/* <Text style={[tw`font-bold text-xs m-1`, { color: theme.mainTextColor }]}>
+                      Close
+                    </Text> */}
+                    </TouchableOpacity>
+
+                    {!seletedItem && (
+                      <TouchableOpacity
+                        style={[
+                          tw` p-1 px-3 rounded`,
+                          {
+                            backgroundColor: theme.mainColor,
+                            elevation: 3,
+                          },
+                        ]}
+                        onPress={() => {
+                          addCategoryData();
+                          setFocusOff();
+                        }}
+                      >
+                        {!loading && (
+                          <MaterialCommunityIcons name='plus' color={'white'} size={22} />
+                        )}
+                        {/* {!loading && <Text style={tw`font-bold text-xs m-1 text-white`}>ADD</Text>} */}
+                        {loading && (
+                          <View style={tw`m-1`}>
+                            <ActivityIndicator color={'white'} />
+                          </View>
+                        )}
+                      </TouchableOpacity>
+                    )}
+                    {seletedItem && (
+                      <TouchableOpacity
+                        style={[
+                          tw` p-1 px-3 rounded`,
+                          {
+                            backgroundColor: theme.mainColor,
+                            elevation: 3,
+                          },
+                        ]}
+                        onPress={() => {
+                          updateCategoryData();
+                          setFocusOff();
+                        }}
+                      >
+                        {/* {!loading && <Text style={tw`font-bold text-xs m-1 text-white`}>UPDATE</Text>} */}
+                        {!loading && (
+                          <MaterialCommunityIcons
+                            name='plus'
+                            color={passwordFocus ? theme.mainColor : theme.grey}
+                            size={22}
+                          />
+                        )}
+                        {loading && (
+                          <View style={tw`m-1`}>
+                            <ActivityIndicator color={'white'} />
+                          </View>
+                        )}
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                </View>
+
+                {/* ***********  Passwords Sections  ************** */}
+                <View style={tw`my-4 mt-3 `}>
+                  {/* ******* Account Section  ******* */}
+                  <View style={tw`flex-row items-center justify-between mb-2 `}>
                     <MaterialCommunityIcons
-                      name='close'
+                      name='account'
+                      color={accountFocus ? theme.mainColor : theme.grey}
+                      size={22}
+                    />
+                    <TextInput
+                      placeholder='Account Name'
+                      defaultValue={seletedItem?.account_name}
+                      onChangeText={setAccount}
+                      placeholderTextColor={theme.themeMode == 'dark' ? theme.grey : 'darkgray'}
+                      style={[
+                        tw`flex-1 mx-3 border-b-2
+                  `,
+                        {
+                          borderBottomColor: accountFocus ? theme.mainColor : theme.grey,
+                          color: theme.mainTextColor,
+                        },
+                      ]}
+                      onFocus={() => setAccountFocus(true)}
+                      onBlur={() => setAccountFocus(false)}
+                    />
+                  </View>
+                  {/* ******* Email  ******* */}
+                  <View style={tw`flex-row items-center justify-between my-3 `}>
+                    <MaterialCommunityIcons
+                      name='email'
+                      color={emailFocus ? theme.mainColor : theme.grey}
+                      size={22}
+                    />
+                    <TextInput
+                      className=''
+                      placeholder='Enter Email'
+                      defaultValue={seletedItem?.email}
+                      onChangeText={setEmail}
+                      placeholderTextColor={theme.themeMode == 'dark' ? theme.grey : 'darkgray'}
+                      style={[
+                        tw`flex-1 mx-3 border-b-2
+                  `,
+                        {
+                          borderBottomColor: emailFocus ? theme.mainColor : theme.grey,
+                          color: theme.mainTextColor,
+                        },
+                      ]}
+                      onFocus={() => setEmailFocus(true)}
+                      onBlur={() => setEmailFocus(false)}
+                    />
+                  </View>
+                  {/* ******* Password  ******* */}
+                  <View style={tw`flex-row items-center justify-between my-3 mb-2 `}>
+                    <MaterialCommunityIcons
+                      name='key'
                       color={passwordFocus ? theme.mainColor : theme.grey}
                       size={22}
                     />
-                    {/* <Text style={[tw`font-bold text-xs m-1`, { color: theme.mainTextColor }]}>
-                      Close
-                    </Text> */}
-                  </TouchableOpacity>
-
-                  {!seletedItem && (
-                    <TouchableOpacity
+                    <TextInput
+                      placeholder='Enter Password'
+                      defaultValue={seletedItem?.password}
+                      onChangeText={setPassword}
+                      placeholderTextColor={theme.themeMode == 'dark' ? theme.grey : 'darkgray'}
                       style={[
-                        tw` p-1 px-3 rounded`,
+                        tw`flex-1 mx-3 border-b-2
+                  `,
                         {
-                          backgroundColor: theme.mainColor,
-                          elevation: 3,
+                          borderBottomColor: passwordFocus ? theme.mainColor : theme.grey,
+                          color: theme.mainTextColor,
                         },
                       ]}
-                      onPress={() => {
-                        addCategoryData();
-                        setFocusOff();
-                      }}
-                    >
-                      {!loading && <MaterialCommunityIcons name='plus' color={'white'} size={22} />}
-                      {/* {!loading && <Text style={tw`font-bold text-xs m-1 text-white`}>ADD</Text>} */}
-                      {loading && (
-                        <View style={tw`m-1`}>
-                          <ActivityIndicator color={'white'} />
-                        </View>
-                      )}
-                    </TouchableOpacity>
-                  )}
-                  {seletedItem && (
-                    <TouchableOpacity
-                      style={[
-                        tw` p-1 px-3 rounded`,
-                        {
-                          backgroundColor: theme.mainColor,
-                          elevation: 3,
-                        },
-                      ]}
-                      onPress={() => {
-                        updateCategoryData();
-                        setFocusOff();
-                      }}
-                    >
-                      {/* {!loading && <Text style={tw`font-bold text-xs m-1 text-white`}>UPDATE</Text>} */}
-                      {!loading && (
-                        <MaterialCommunityIcons
-                          name='plus'
-                          color={passwordFocus ? theme.mainColor : theme.grey}
-                          size={22}
-                        />
-                      )}
-                      {loading && (
-                        <View style={tw`m-1`}>
-                          <ActivityIndicator color={'white'} />
-                        </View>
-                      )}
-                    </TouchableOpacity>
-                  )}
+                      onFocus={() => setPasswordFocus(true)}
+                      onBlur={() => setPasswordFocus(false)}
+                    />
+                  </View>
                 </View>
               </View>
-
-              {/* ***********  Passwords Sections  ************** */}
-              <View style={tw`my-4 mt-3 `}>
-                {/* ******* Account Section  ******* */}
-                <View style={tw`flex-row items-center justify-between mb-2 `}>
-                  <MaterialCommunityIcons
-                    name='account'
-                    color={accountFocus ? theme.mainColor : theme.grey}
-                    size={22}
-                  />
-                  <TextInput
-                    placeholder='Account Name'
-                    defaultValue={seletedItem?.account_name}
-                    onChangeText={setAccount}
-                    placeholderTextColor={theme.themeMode == 'dark' ? theme.grey : 'darkgray'}
-                    style={[
-                      tw`flex-1 mx-3 border-b-2
-                  `,
-                      {
-                        borderBottomColor: accountFocus ? theme.mainColor : theme.grey,
-                        color: theme.mainTextColor,
-                      },
-                    ]}
-                    onFocus={() => setAccountFocus(true)}
-                    onBlur={() => setAccountFocus(false)}
-                  />
-                </View>
-                {/* ******* Email  ******* */}
-                <View style={tw`flex-row items-center justify-between my-3 `}>
-                  <MaterialCommunityIcons
-                    name='email'
-                    color={emailFocus ? theme.mainColor : theme.grey}
-                    size={22}
-                  />
-                  <TextInput
-                    className=''
-                    placeholder='Enter Email'
-                    defaultValue={seletedItem?.email}
-                    onChangeText={setEmail}
-                    placeholderTextColor={theme.themeMode == 'dark' ? theme.grey : 'darkgray'}
-                    style={[
-                      tw`flex-1 mx-3 border-b-2
-                  `,
-                      {
-                        borderBottomColor: emailFocus ? theme.mainColor : theme.grey,
-                        color: theme.mainTextColor,
-                      },
-                    ]}
-                    onFocus={() => setEmailFocus(true)}
-                    onBlur={() => setEmailFocus(false)}
-                  />
-                </View>
-                {/* ******* Password  ******* */}
-                <View style={tw`flex-row items-center justify-between my-3 mb-2 `}>
-                  <MaterialCommunityIcons
-                    name='key'
-                    color={passwordFocus ? theme.mainColor : theme.grey}
-                    size={22}
-                  />
-                  <TextInput
-                    placeholder='Enter Password'
-                    defaultValue={seletedItem?.password}
-                    onChangeText={setPassword}
-                    placeholderTextColor={theme.themeMode == 'dark' ? theme.grey : 'darkgray'}
-                    style={[
-                      tw`flex-1 mx-3 border-b-2
-                  `,
-                      {
-                        borderBottomColor: passwordFocus ? theme.mainColor : theme.grey,
-                        color: theme.mainTextColor,
-                      },
-                    ]}
-                    onFocus={() => setPasswordFocus(true)}
-                    onBlur={() => setPasswordFocus(false)}
-                  />
-                </View>
-              </View>
-            </View>
-            {/**************** Buttons ***********************/}
-            {/* <View style={tw`flex-row justify-end items-center mt-2`}>
+              {/**************** Buttons ***********************/}
+              {/* <View style={tw`flex-row justify-end items-center mt-2`}>
               <TouchableOpacity
                 style={[
                   tw`mx-2 p-1 px-2 rounded `,
@@ -481,8 +514,9 @@ const DetailsScreen = ({
                 </TouchableOpacity>
               )}
             </View> */}
+            </View>
           </Pressable>
-        </View>
+        </Pressable>
       </Modal>
     </SafeAreaView>
   );
