@@ -1,14 +1,8 @@
 // import admin from "firebase-admin";
+import { config } from './config';
+import uuid from 'react-native-uuid';
 
-const firebaseConfig = {
-  apiKey: 'AIzaSyCsbcjhdQw31OQeg5KrC7qXQuuvqk7VzWw',
-  authDomain: 'passwordmanager-43.firebaseapp.com',
-  databaseURL: 'https://passwordmanager-43-default-rtdb.firebaseio.com',
-  projectId: 'passwordmanager-43',
-  storageBucket: 'passwordmanager-43.appspot.com',
-  messagingSenderId: '419467193948',
-  appId: '1:419467193948:web:04cbbaea7c74e5dfe80099',
-};
+const firebaseConfig = config;
 import {
   createUserWithEmailAndPassword,
   getAuth,
@@ -16,16 +10,7 @@ import {
   updateProfile,
 } from '@firebase/auth';
 import { initializeApp } from 'firebase/app';
-import {
-  getDatabase,
-  ref,
-  get,
-  set,
-  serverTimestamp,
-  remove,
-  push,
-  update,
-} from 'firebase/database';
+import { getDatabase, ref, get, set, serverTimestamp, remove, update } from 'firebase/database';
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
@@ -202,8 +187,11 @@ export const removeCategory = async (username, categoryName) => {
 
 export const addCategoryDetails = async (username, category, categoryData) => {
   try {
-    const categoryRef = ref(db, `Users/${username}/Categories/${category.toLowerCase()}/items/`);
-    const newAdded = await push(categoryRef, categoryData);
+    const categoryRef = ref(
+      db,
+      `Users/${username}/Categories/${category.toLowerCase()}/items/${uuid.v1()}`
+    );
+    const newAdded = await set(categoryRef, categoryData);
     return newAdded;
   } catch (err) {
     throw err;

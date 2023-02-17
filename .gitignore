@@ -10,5 +10,7 @@ npm-debug.*
 *.orig.*
 web-build/
 
+tariq/services/config.js
+
 # macOS
 .DS_Store

@@ -121,7 +121,6 @@ const Home = ({ navigation: { navigate } }) => {
     ),
     [allCategory]
   );
-
   return (
     <SafeAreaView
       className={`flex-1 `}
