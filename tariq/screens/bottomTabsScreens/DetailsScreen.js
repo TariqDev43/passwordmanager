@@ -15,7 +15,6 @@ import { memo } from 'react';
 import useTheme from '../../Contexts/ThemeContext';
 import useUser from '../../Contexts/UserContext';
 import tw from 'tailwind-react-native-classnames';
-
 import ErrorModal from '../../components/ErrorModal';
 import { serverTimestamp } from 'firebase/database';
 import { addCategoryDetails, updateCategoryDetails } from '../../services/firebaseService';
@@ -29,19 +28,19 @@ const DetailsScreen = ({
   },
 }) => {
   // ********** All states are shown here
+  // All Contexts
   const { theme } = useTheme();
   const { userName, allCategory, fetchAllCategory } = useUser();
   const { elevation, elevationValue } = useSettings();
 
-  const [categoryData, setCategoryData] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [seletedItem, setSelectedItem] = useState(null);
-
-  //  Error Modal
+  //  All Modals
+  const [showAddModal, setShowAddModal] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [modalTitle, setModalTitle] = useState('');
   const [modalBody, setModalBody] = useState('');
 
+  // All animations
+  const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
   // Focus States
@@ -49,19 +48,16 @@ const DetailsScreen = ({
   const [passwordFocus, setPasswordFocus] = useState(false);
   const [accountFocus, setAccountFocus] = useState(false);
 
+  // Texts related States
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [account, setAccount] = useState('');
 
-  // Modal
-  const [showAddModal, setShowAddModal] = useState(false);
+  // Update Selection
+  const [seletedItem, setSelectedItem] = useState(null);
+  const [categoryData, setCategoryData] = useState(null);
 
   // ********** Functions Below
-  const setText = (accountText, emailText, passwordText) => {
-    setAccount(accountText);
-    setEmail(emailText);
-    setPassword(passwordText);
-  };
 
   const addCategoryData = async () => {
     if (account == '') {
@@ -103,6 +99,7 @@ const DetailsScreen = ({
       setModalBody(err.message);
     }
   };
+
   const updateCategoryData = async () => {
     if (account == '') {
       setShowErrorModal(true);
@@ -145,6 +142,12 @@ const DetailsScreen = ({
       setModalBody(err.message);
     }
   };
+  // Updates textFields to contains selected items text for updateing
+  const setText = (accountText, emailText, passwordText) => {
+    setAccount(accountText);
+    setEmail(emailText);
+    setPassword(passwordText);
+  };
 
   const onRefresh = async () => {
     try {
@@ -167,6 +170,9 @@ const DetailsScreen = ({
     setPasswordFocus(false);
   };
 
+  // getsThe category Data and makes a list of loopable items
+  // here receive the index of selected category from params
+  // then gets the selected item details list form ListOfAll categories
   const categoryDetailsData = () => {
     if (allCategory && allCategory[index].value?.items) {
       const data = allCategory[index].value.items;
