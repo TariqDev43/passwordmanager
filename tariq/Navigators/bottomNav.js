@@ -9,12 +9,21 @@ import HomeNav from './HomeNav';
 import useTheme from '../Contexts/ThemeContext.js';
 import tw from 'tailwind-react-native-classnames';
 import useUser from '../Contexts/UserContext.js';
+import { useNavigation } from '@react-navigation/native';
 
 const BottomNav = () => {
-  const Tabs = createBottomTabNavigator();
+  /*  ALL STATES
+   ********************************************* */
+  //  all contexts
   const { theme, changeTheme, themeMode } = useTheme();
   const { changeUser } = useUser();
+
+  const Tabs = createBottomTabNavigator();
+  // const navigation = useNavigation();
+  /*   ALL FUNCTIONS
+   ********************************************* */
   const UpdateTheme = async () => {
+    // navigation.goBack();
     themeMode == 'light' ? changeTheme('dark') : changeTheme('light');
   };
   return (

@@ -1,7 +1,7 @@
 import { Keyboard, Pressable, Switch, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
-import { memo, useCallback, useState } from 'react';
+import { memo, useCallback, useEffect, useState } from 'react';
 import { Modal } from 'react-native';
 import Slider from '@react-native-community/slider';
 import useTheme from '../../Contexts/ThemeContext';
@@ -45,11 +45,15 @@ const Settings = () => {
   ];
 
   // Ranimated
-  const offset = useSharedValue(5);
+  const offset = useSharedValue(themeMode == 'light' ? 5 : themeMode == 'dark' ? 61 : 115);
 
   const themeStyles = useAnimatedStyle(() => ({
     transform: [{ translateX: withTiming(offset.value) }],
   }));
+
+  useEffect(() => {
+    offset.value = themeMode == 'light' ? 5 : themeMode == 'dark' ? 61 : 115;
+  }, [themeMode]);
 
   /*   ALL FUNCTIONS
    ********************************************* */
@@ -74,7 +78,6 @@ const Settings = () => {
           tw`py-6 px-4 m-1 rounded-lg`,
           {
             elevation: elevation ? elevationValue : 0,
-            shadowColor: elevation ? theme.mainColor : theme.mainBgColor,
             shadowColor: elevation ? theme.mainColor : theme.mainBgColor,
             backgroundColor: theme.bgColor,
           },
@@ -121,6 +124,7 @@ const Settings = () => {
           {
             elevation: elevation ? elevationValue : 0,
             shadowColor: elevation ? theme.mainColor : theme.mainBgColor,
+
             backgroundColor: theme.bgColor,
           },
         ]}
@@ -133,7 +137,7 @@ const Settings = () => {
           <MaterialCommunityIcons name={'circle'} color={theme.mainColor} size={35} />
         </TouchableOpacity>
       </View>
-      {/* *********  Theme color *********** */}
+      {/* *********  Theme Mode *********** */}
       <View
         className=''
         style={[
@@ -141,6 +145,7 @@ const Settings = () => {
           {
             elevation: elevation ? elevationValue : 0,
             shadowColor: elevation ? theme.mainColor : theme.mainBgColor,
+
             backgroundColor: theme.bgColor,
           },
         ]}
@@ -166,7 +171,7 @@ const Settings = () => {
                 width: 60,
                 left: 0,
                 backgroundColor: theme.bgColor,
-                transform: [{ translateX: 5 }],
+                transform: [{ translateX: offset.value }],
               },
               themeStyles,
             ]}
