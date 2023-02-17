@@ -9,9 +9,12 @@ import ErrorModal from './ErrorModal';
 import LottieView from 'lottie-react-native';
 import * as Clipboard from 'expo-clipboard';
 import useUser from '../Contexts/UserContext';
-import { removeFromFavList, removeFromFav } from '../services/firebaseService';
+import { removeFromFav } from '../services/firebaseService';
 
 const CategoriesDetailsList = ({ data }) => {
+  /*   ALL STATES
+   ********************************************* */
+  //  all contexts
   const { theme } = useTheme();
   const { userName, fetchAllFav, fetchAllCategory } = useUser();
   const { elevation, elevationValue } = useSettings();

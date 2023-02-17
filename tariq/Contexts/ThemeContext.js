@@ -33,9 +33,9 @@ export const ThemeProvider = memo(({ children }) => {
     modalBg: '#262626',
   };
   const GreyTheme = {
-    mainColor: '#4C4A48',
-    mainBgColor: '#5d5a58',
-    bgColor: '#2C2A28',
+    mainColor: mainColor,
+    mainBgColor: '#4b4a48',
+    bgColor: '#5e5a57',
     grey: 'lightgrey',
     mainTextColor: 'white',
     oppositeTextColor: 'black',
@@ -45,6 +45,9 @@ export const ThemeProvider = memo(({ children }) => {
   const theme = themeMode == 'light' ? LightTheme : themeMode == 'dark' ? DarkTheme : GreyTheme;
 
   const changeTheme = useCallback((value) => {
+    console.log(themeMode);
+    console.log(value);
+
     setThemeMode(value);
     setDataToStorage('themeMode', value);
   });
@@ -65,7 +68,7 @@ export const ThemeProvider = memo(({ children }) => {
       selected,
       changeScreen,
     }),
-    [theme, setThemeMode, changeTheme, themeMode, changeColor, selected, changeScreen]
+    [theme, themeMode, selected]
   );
   return <ThemeContext.Provider value={themeValues}>{children}</ThemeContext.Provider>;
 });

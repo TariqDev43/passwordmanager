@@ -66,7 +66,8 @@ const Main = () => {
 
     keys();
   }, []);
-  const userExits = user;
+  // const userExits = user;
+  const userExits = true;
   return (
     <NavigationContainer>
       {themeMode != null ? (
@@ -75,8 +76,8 @@ const Main = () => {
             <Stack.Screen name='Login' component={Login} />
           ) : (
             <>
-              <Stack.Screen name='Initialize' component={InitializeScreen} />
               <Stack.Screen name='BottomNav' component={BottomNav} />
+              <Stack.Screen name='Initialize' component={InitializeScreen} />
             </>
           )}
         </Stack.Navigator>

@@ -10,14 +10,21 @@ import ErrorModal from './ErrorModal';
 import useUser from '../Contexts/UserContext';
 
 const CategoriesList = ({ index, item, onRefresh, allCategory, navigate }) => {
+  /*   ALL STATES
+   ********************************************* */
+  //  all contexts
   const { theme } = useTheme();
   const { elevation, elevationValue } = useSettings();
+  const { userName } = useUser();
+
   const [loading, setLoading] = useState(false);
+
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [modalTitle, setModalTitle] = useState('');
   const [modalBody, setModalBody] = useState('');
-  const { userName } = useUser();
 
+  /*   ALL FUCNTIONS
+   ********************************************* */
   const deleteCategory = async (category) => {
     try {
       setLoading(true);

@@ -1,49 +1,58 @@
-import {
-  Keyboard,
-  Pressable,
-  Switch,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { MaterialCommunityIcons, Ionicons } from "@expo/vector-icons";
-import { memo, useCallback, useState } from "react";
-import { Modal } from "react-native";
-import Slider from "@react-native-community/slider";
-import useTheme from "../../Contexts/ThemeContext";
-import useSettings from "../../Contexts/SettingContext";
-import tw from "tailwind-react-native-classnames";
+import { Keyboard, Pressable, Switch, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
+import { memo, useCallback, useState } from 'react';
+import { Modal } from 'react-native';
+import Slider from '@react-native-community/slider';
+import useTheme from '../../Contexts/ThemeContext';
+import useSettings from '../../Contexts/SettingContext';
+import tw from 'tailwind-react-native-classnames';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
 
 const Settings = () => {
-  const { theme, changeColor } = useTheme();
-  const { elevation, elevationValue, changeElevation, changeElevationValue } =
-    useSettings();
+  /*   ALL STATES
+   ********************************************* */
+  //  all contexts
+  const { theme, changeColor, themeMode, changeTheme } = useTheme();
+  const { elevation, elevationValue, changeElevation, changeElevationValue } = useSettings();
 
-  const [settingsToggle, setSettingsToggle] = useState(
-    elevation == "true" ? true : elevation
-  );
-  const [sliderValue, setSliderValue] = useState(elevationValue);
+  const [settingsToggle, setSettingsToggle] = useState(elevation === 'true' ? true : false);
 
+  const [slider, setSlider] = useState(parseInt(elevationValue));
   const [showColorModal, setShowColorModal] = useState(false);
 
   const colorList = [
-    "#0abdbf",
-    "#AA00FF",
+    '#0abdbf',
+    '#AA00FF',
 
-    "#FF6D00",
-    "#BF360C",
-    "orange",
+    '#FF6D00',
+    '#BF360C',
+    'orange',
 
-    "#69F0AE",
-    "#FDD835",
+    '#69F0AE',
+    '#FDD835',
 
-    "#1b5e20",
-    "#26A69A",
-    "#64DD17",
-    "#2196F3",
-    "hotpink",
+    '#1b5e20',
+    '#26A69A',
+    '#64DD17',
+    '#2196F3',
+    'hotpink',
   ];
+
+  // Ranimated
+  const offset = useSharedValue(5);
+
+  const themeStyles = useAnimatedStyle(() => ({
+    transform: [{ translateX: withTiming(offset.value) }],
+  }));
+
+  /*   ALL FUNCTIONS
+   ********************************************* */
 
   const handleShadow = async () => {
     setSettingsToggle(!settingsToggle);
@@ -54,14 +63,10 @@ const Settings = () => {
   });
 
   return (
-    <SafeAreaView
-      style={[tw`px-6 flex-1 `, { backgroundColor: theme.mainBgColor }]}
-    >
+    <SafeAreaView style={[tw`px-6 flex-1 `, { backgroundColor: theme.mainBgColor }]}>
       {/* TopBar */}
       <View style={tw`mb-5`}>
-        <Text style={[tw`text-3xl font-extrabold`, { color: theme.mainColor }]}>
-          Settings
-        </Text>
+        <Text style={[tw`text-3xl font-extrabold`, { color: theme.mainColor }]}>Settings</Text>
       </View>
       {/* *********  Shadows *********** */}
       <View
@@ -69,27 +74,20 @@ const Settings = () => {
           tw`py-6 px-4 m-1 rounded-lg`,
           {
             elevation: elevation ? elevationValue : 0,
+            shadowColor: elevation ? theme.mainColor : theme.mainBgColor,
+            shadowColor: elevation ? theme.mainColor : theme.mainBgColor,
             backgroundColor: theme.bgColor,
           },
         ]}
       >
         <View style={tw`flex-row  items-center`}>
-          <MaterialCommunityIcons
-            name={"box-shadow"}
-            color={theme.mainColor}
-            size={35}
-          />
-          <Text
-            style={[
-              tw`text-lg font-extrabold flex-1 mx-2 `,
-              { color: theme.mainTextColor },
-            ]}
-          >
+          <MaterialCommunityIcons name={'box-shadow'} color={theme.mainColor} size={35} />
+          <Text style={[tw`text-lg font-extrabold flex-1 mx-2 `, { color: theme.mainTextColor }]}>
             Shadow
           </Text>
           <Switch
             trackColor={{ false: theme.mainBgColor, true: theme.mainColor }}
-            ios_backgroundColor="#3e3e3e"
+            ios_backgroundColor='#3e3e3e'
             thumbColor={theme.grey}
             onValueChange={() => {
               handleShadow();
@@ -98,17 +96,8 @@ const Settings = () => {
           />
         </View>
         <View style={tw`flex-row items-center`}>
-          <MaterialCommunityIcons
-            name={"box-shadow"}
-            color={theme.mainColor}
-            size={35}
-          />
-          <Text
-            style={[
-              tw`text-lg font-extrabold flex-1 mx-2`,
-              { color: theme.mainTextColor },
-            ]}
-          >
+          <MaterialCommunityIcons name={'box-shadow'} color={theme.mainColor} size={35} />
+          <Text style={[tw`text-lg font-extrabold flex-1 mx-2`, { color: theme.mainTextColor }]}>
             Value
           </Text>
           <Slider
@@ -118,7 +107,7 @@ const Settings = () => {
             minimumTrackTintColor={theme.mainColor}
             maximumTrackTintColor={theme.mainColor}
             onValueChange={handleSlider}
-            value={sliderValue}
+            value={slider}
             thumbTintColor={theme.mainColor}
           />
         </View>
@@ -126,41 +115,96 @@ const Settings = () => {
 
       {/* *********  Theme color *********** */}
       <View
-        className=""
+        className=''
         style={[
           tw`py-6 px-4 m-1 my-2 rounded-lg flex-row items-center `,
           {
             elevation: elevation ? elevationValue : 0,
+            shadowColor: elevation ? theme.mainColor : theme.mainBgColor,
+            backgroundColor: theme.bgColor,
+          },
+        ]}
+      >
+        <Ionicons name={'color-palette-outline'} color={theme.mainColor} size={35} />
+        <Text style={[tw`text-lg font-extrabold flex-1 mx-2`, { color: theme.mainTextColor }]}>
+          Theme Color
+        </Text>
+        <TouchableOpacity onPress={() => setShowColorModal(!showColorModal)}>
+          <MaterialCommunityIcons name={'circle'} color={theme.mainColor} size={35} />
+        </TouchableOpacity>
+      </View>
+      {/* *********  Theme color *********** */}
+      <View
+        className=''
+        style={[
+          tw`py-2 px-4 m-1 my-2 rounded-lg flex-row items-center `,
+          {
+            elevation: elevation ? elevationValue : 0,
+            shadowColor: elevation ? theme.mainColor : theme.mainBgColor,
             backgroundColor: theme.bgColor,
           },
         ]}
       >
         <Ionicons
-          name={"color-palette-outline"}
+          name={themeMode == 'light' ? 'moon' : 'sunny'}
+          size={28}
           color={theme.mainColor}
-          size={35}
         />
-        <Text
+        <Text style={[tw`text-lg font-extrabold flex-1 mx-2`, { color: theme.mainTextColor }]}>
+          Theme
+        </Text>
+        <View
           style={[
-            tw`text-lg font-extrabold flex-1 mx-2`,
-            { color: theme.mainTextColor },
+            tw`py-1 rounded-xl flex-row justify-evenly items-center`,
+            { backgroundColor: theme.mainBgColor, width: 180 },
           ]}
         >
-          Theme Color
-        </Text>
-        <TouchableOpacity onPress={() => setShowColorModal(!showColorModal)}>
-          <MaterialCommunityIcons
-            name={"circle"}
-            color={theme.mainColor}
-            size={35}
-          />
-        </TouchableOpacity>
+          <Animated.View
+            style={[
+              tw`absolute  py-5 rounded-xl `,
+              {
+                width: 60,
+                left: 0,
+                backgroundColor: theme.bgColor,
+                transform: [{ translateX: 5 }],
+              },
+              themeStyles,
+            ]}
+          ></Animated.View>
+          <TouchableOpacity
+            onPress={() => {
+              offset.value = 5;
+              changeTheme('light');
+            }}
+            style={[tw`py-2 rounded-xl`]}
+          >
+            <Text style={[tw``, { color: theme.mainColor }]}>Light</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              offset.value = 61;
+              changeTheme('dark');
+            }}
+            style={[tw`py-2 mx-1 rounded-xl`]}
+          >
+            <Text style={[tw``, { color: theme.mainColor }]}>Dark</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              offset.value = 115;
+              changeTheme('gray');
+            }}
+            style={[tw`py-2 rounded-xl`]}
+          >
+            <Text style={[tw``, { color: theme.mainColor }]}>Gray</Text>
+          </TouchableOpacity>
+        </View>
       </View>
       {/* Color Select Modal */}
       <Modal
         visible={showColorModal}
         onRequestClose={() => setShowColorModal(!showColorModal)}
-        animationType="fade"
+        animationType='fade'
         transparent={true}
       >
         <Pressable
@@ -169,42 +213,27 @@ const Settings = () => {
         >
           <View
             style={[
-              tw`py-5 px-4 rounded-xl w-64 justify-between `,
+              tw`pt-2 pb-5 px-4 rounded-xl w-64 justify-between `,
               { elevation: 36, backgroundColor: theme.mainBgColor },
             ]}
           >
-            <View className="flex-row justify-between items-center">
-              <Text
-                style={[
-                  tw`font-bold my-2 text-lg `,
-                  { color: theme.mainColor },
-                ]}
-              >
-                Colors
-              </Text>
+            <View className='flex-row justify-between items-center'>
+              <Text style={[tw`font-bold  text-lg `, { color: theme.mainColor }]}>Colors</Text>
             </View>
             {/* *******  Lopping icons here *********** */}
-            <View style={tw`flex-row flex-wrap my-5 justify-center`}>
+            <View style={tw`flex-row flex-wrap my-2 justify-center`}>
               {colorList.map((i) => {
                 return (
                   <TouchableOpacity onPressIn={() => changeColor(i)} key={i}>
-                    <MaterialCommunityIcons
-                      name={"circle"}
-                      size={62}
-                      color={i}
-                    />
+                    <MaterialCommunityIcons name={'circle'} size={62} color={i} />
                   </TouchableOpacity>
                 );
               })}
             </View>
             {/**************** Buttons ***********************/}
             <View style={tw`flex-row justify-end mt-2 px-5 items-center `}>
-              <TouchableOpacity
-                onPress={() => setShowColorModal(!showColorModal)}
-              >
-                <Text
-                  style={[tw`font-bold text-xs`, { color: theme.mainColor }]}
-                >
+              <TouchableOpacity onPress={() => setShowColorModal(!showColorModal)}>
+                <Text style={[tw`font-bold text-xs`, { color: theme.mainColor }]}>
                   SELECT COLOR
                 </Text>
               </TouchableOpacity>

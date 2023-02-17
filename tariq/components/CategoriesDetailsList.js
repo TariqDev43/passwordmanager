@@ -12,12 +12,16 @@ import LottieView from 'lottie-react-native';
 import * as Clipboard from 'expo-clipboard';
 
 const CategoriesDetailsList = ({ index, data, setSelectedItem, setShowAddModal, setText }) => {
+  /*   ALL STATES
+   ********************************************* */
+  //  all Contexts
   const { theme } = useTheme();
   const { elevation, elevationValue } = useSettings();
   const { userName, fetchAllCategory, fetchAllFav } = useUser();
 
   const [loading, setLoading] = useState(false);
   const [favLoading, setFavLoading] = useState(false);
+
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [modalTitle, setModalTitle] = useState('');
   const [modalBody, setModalBody] = useState('');
@@ -25,6 +29,9 @@ const CategoriesDetailsList = ({ index, data, setSelectedItem, setShowAddModal, 
   const [emailCopy, setEmailCopy] = useState(false);
   const [passwordCopy, setPasswordCopy] = useState(false);
   const copyRef = useRef(null);
+
+  /*   ALL FUNCTIONS
+   ********************************************* */
 
   const deleteCategoryData = async (category, id) => {
     try {

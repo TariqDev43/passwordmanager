@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef, useState } from 'react';
+import { memo, useState } from 'react';
 import { Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import useSettings from '../../Contexts/SettingContext';
@@ -7,13 +7,13 @@ import tw from 'tailwind-react-native-classnames';
 import useUser from '../../Contexts/UserContext';
 import ErrorModal from '../../components/ErrorModal';
 import Animated from 'react-native-reanimated';
-
-import * as Clipboard from 'expo-clipboard';
-
 import CategoriesFavList from '../../components/CategoriesFavList';
 import { RefreshControl } from 'react-native-gesture-handler';
 
 const Fav = () => {
+  /*   ALL STATES
+   ********************************************* */
+  //  all contexts
   const { theme } = useTheme();
   const { elevation, elevationValue } = useSettings();
   const { userName, allFav, fetchAllFav } = useUser();
@@ -25,6 +25,8 @@ const Fav = () => {
 
   const [refreshing, setRefreshing] = useState(false);
 
+  /*   ALL FUNCTIONS
+   ********************************************* */
   const onRefresh = async () => {
     try {
       setRefreshing(true);
