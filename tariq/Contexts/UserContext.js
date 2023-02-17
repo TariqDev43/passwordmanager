@@ -42,7 +42,7 @@ export const UserProvider = memo(({ children }) => {
   const fetchAllCategory = useCallback(async (userName) => {
     const allCategoriesData = await getAllCategories(userName);
     console.log('user Categories');
-    // setAllCategory(null);
+    setAllCategory(null);
     setAllCategory(allCategoriesData);
     return allCategoriesData;
   }, []);
