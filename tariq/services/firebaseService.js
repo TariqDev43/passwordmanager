@@ -144,8 +144,27 @@ export const getAllCategories = async (username) => {
 
     let allCategories = [];
 
+    const ArrayOfPasswords = (item) => {
+      let myArray = [];
+      try {
+        Object.keys(item).map((key) => myArray.push({ ...item[key], id: key }));
+        return myArray;
+      } catch (err) {
+        throw err;
+      }
+
+      // item.forEach((item) => console.log(item));
+    };
+
     data.forEach((category) => {
-      allCategories.push({ category: category.key, value: category.val() });
+      // console.log(Object.keys(category.val().items));
+      // ArrayOfPasswords(category.val().items);
+      // allCategories.push({ category: category.key, value: category.val() });
+      allCategories.push({
+        category: category.key,
+        icon: category.val().info,
+        items: category.val().items && ArrayOfPasswords(category.val().items),
+      });
     });
 
     return allCategories;

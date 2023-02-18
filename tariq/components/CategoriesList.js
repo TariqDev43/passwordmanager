@@ -9,13 +9,13 @@ import { removeCategory } from '../services/firebaseService';
 import ErrorModal from './ErrorModal';
 import useUser from '../Contexts/UserContext';
 
-const CategoriesList = ({ index, item, onRefresh, allCategory, navigate }) => {
+const CategoriesList = ({ index, item, onRefresh, navigate }) => {
   /*   ALL STATES
    ********************************************* */
   //  all contexts
   const { theme } = useTheme();
   const { elevation, elevationValue } = useSettings();
-  const { userName } = useUser();
+  const { userName, allCategory } = useUser();
 
   const [loading, setLoading] = useState(false);
 
@@ -69,7 +69,7 @@ const CategoriesList = ({ index, item, onRefresh, allCategory, navigate }) => {
         >
           {/* ****** Icon  ******* */}
           <MaterialCommunityIcons
-            name={item?.value.info.icon.toLowerCase()}
+            name={item?.icon.icon.toLowerCase()}
             color={theme.mainColor}
             size={33}
           />

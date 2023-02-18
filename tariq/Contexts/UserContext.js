@@ -42,12 +42,18 @@ export const UserProvider = memo(({ children }) => {
   const fetchAllCategory = useCallback(async (userName) => {
     const allCategoriesData = await getAllCategories(userName);
     console.log('user Categories');
-    console.log(JSON.stringify(allCategoriesData));
-
     setAllCategory(null);
+    // console.log(JSON.stringify(allCategory));
+
     setAllCategory(allCategoriesData);
     return allCategoriesData;
   }, []);
+
+  const updateAllCategories = useCallback((index, val) => {
+    let test = allCategory;
+    test[index].items = val;
+    setAllCategory(test);
+  });
 
   const fetchAllFav = useCallback(async (userName) => {
     const allFav = await getFavs(userName);
@@ -64,6 +70,7 @@ export const UserProvider = memo(({ children }) => {
     userInfo,
     allCategory,
     allFav,
+    updateAllCategories,
     fetchUserInfo,
     fetchAllCategory,
     fetchAllFav,

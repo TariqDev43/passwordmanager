@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Modal } from 'react-native';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { FlatList, RefreshControl, TextInput } from 'react-native-gesture-handler';
 import { memo } from 'react';
 import useTheme from '../../Contexts/ThemeContext';
@@ -17,9 +17,23 @@ import useUser from '../../Contexts/UserContext';
 import tw from 'tailwind-react-native-classnames';
 import ErrorModal from '../../components/ErrorModal';
 import { serverTimestamp } from 'firebase/database';
-import { addCategoryDetails, updateCategoryDetails } from '../../services/firebaseService';
+import {
+  addCategoryDetails,
+  addToFav,
+  updateCategoryDetails,
+} from '../../services/firebaseService';
 import CategoriesDetailsList from '../../components/CategoriesDetailsList';
-import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
+import LottieView from 'lottie-react-native';
+import * as Clipboard from 'expo-clipboard';
+import Animated, {
+  BounceInDown,
+  FadeIn,
+  FadeOut,
+  Layout,
+  SlideInLeft,
+  ZoomInDown,
+  ZoomOut,
+} from 'react-native-reanimated';
 import useSettings from '../../Contexts/SettingContext';
 import uuid from 'react-native-uuid';
 
@@ -31,7 +45,7 @@ const DetailsScreen = ({
   // ********** All states are shown here
   // All Contexts
   const { theme } = useTheme();
-  const { userName, allCategory, fetchAllCategory } = useUser();
+  const { userName, allCategory, fetchAllCategory, updateAllCategories } = useUser();
   const { elevation, elevationValue } = useSettings();
 
   //  All Modals
@@ -56,7 +70,14 @@ const DetailsScreen = ({
 
   // Update Selection
   const [seletedItem, setSelectedItem] = useState(null);
-  const [categoryData, setCategoryData] = useState(null);
+  const [seletedIndex, setSelectedIndex] = useState(null);
+  const [categoryData, setCategoryData] = useState(
+    allCategory[index].items ? allCategory[index].items : []
+  );
+
+  useEffect(() => {
+    setCategoryData(allCategory[index].items ? allCategory[index].items : []);
+  }, [allCategory]);
 
   // ********** Functions Below
   const getUid = () => {
@@ -64,124 +85,144 @@ const DetailsScreen = ({
     return uid;
   };
 
-  const addCategoryData = async () => {
-    if (account == '') {
-      setShowErrorModal(true);
-      setModalTitle('INPUT ERROR');
-      setModalBody('Account is required');
-      return;
-    }
-    if (password == '') {
-      setShowErrorModal(true);
-      setModalTitle('INPUT ERROR');
-      setModalBody('Password is required');
-      return;
-    }
-    if (email == '') {
-      setShowErrorModal(true);
-      setModalTitle('INPUT ERROR');
-      setModalBody('Email is required');
-      return;
-    }
-    const categoryDta = {
-      category: item.category.toLowerCase(),
-      email: email,
-      account_name: account,
-      password: password,
-      fav_icon: 'heart-outline',
-      notes: 'test notes',
-      key: serverTimestamp(),
-    };
+  const [emailCopy, setEmailCopy] = useState(false);
+  const [passwordCopy, setPasswordCopy] = useState(false);
+  const copyRef = useRef(null);
+  const [favLoading, setFavLoading] = useState(false);
 
-    try {
-      setLoading(true);
-      // console.log(item.value);
-      const uid = getUid();
-      let items_data = {};
-      items_data[uid] = categoryDta;
-      console.log(
-        JSON.stringify({
-          category: item.category,
-          value: {
-            info: { icon: item.value.info.icon },
-            items: items_data,
-          },
-        })
-      );
-      await addCategoryDetails(userName, item.category, categoryDta, uid);
+  // const addCategoryData = async () => {
+  //   if (account == '') {
+  //     setShowErrorModal(true);
+  //     setModalTitle('INPUT ERROR');
+  //     setModalBody('Account is required');
+  //     return;
+  //   }
+  //   if (password == '') {
+  //     setShowErrorModal(true);
+  //     setModalTitle('INPUT ERROR');
+  //     setModalBody('Password is required');
+  //     return;
+  //   }
+  //   if (email == '') {
+  //     setShowErrorModal(true);
+  //     setModalTitle('INPUT ERROR');
+  //     setModalBody('Email is required');
+  //     return;
+  //   }
+  //   const categoryDta = {
+  //     category: item.category.toLowerCase(),
+  //     email: email,
+  //     account_name: account,
+  //     password: password,
+  //     fav_icon: 'heart-outline',
+  //     notes: 'test notes',
+  //     key: serverTimestamp(),
+  //   };
 
-      setLoading(false);
-      setShowAddModal(!showAddModal);
-      await onRefresh();
-    } catch (err) {
-      setShowErrorModal(true);
-      setModalTitle('Error');
-      setModalBody(err.message);
-    }
-  };
+  //   try {
+  //     setLoading(true);
+  //     // console.log(item.value);
+  //     const uid = getUid();
+  //     let items_data = {};
+  //     items_data[uid] = categoryDta;
 
-  const updateCategoryData = async () => {
-    if (account == '') {
-      setShowErrorModal(true);
-      setModalTitle('INPUT ERROR');
-      setModalBody('Account is required');
-      return;
-    }
-    if (password == '') {
-      setShowErrorModal(true);
-      setModalTitle('INPUT ERROR');
-      setModalBody('Password is required');
-      return;
-    }
-    if (email == '') {
-      setShowErrorModal(true);
-      setModalTitle('INPUT ERROR');
-      setModalBody('Email is required');
-      return;
-    }
-    const categoryDta = {
-      email: email,
-      account_name: account,
-      password: password,
-    };
+  //     const newAddedValue = allCategory[index];
+  //     newAddedValue.value.items[uid] = categoryDta;
+  //     // console.log(JSON.stringify(newTest));
 
-    try {
-      setLoading(true);
-      const data = await updateCategoryDetails(
-        userName,
-        item.category,
-        categoryDta,
-        seletedItem.id
-      );
-      setLoading(false);
-      setShowAddModal(!showAddModal);
-      await onRefresh();
-    } catch (err) {
-      setShowErrorModal(true);
-      setModalTitle('Error');
-      setModalBody(err.message);
-    }
-  };
+  //     // console.log(
+  //     //   JSON.stringify({
+  //     //     category: item.category,
+  //     //     value: {
+  //     //       info: { icon: item.value.info.icon },
+  //     //       items: items_data,
+  //     //     },
+  //     //   })
+  //     // );
+  //     updateAllCategories(index, newAddedValue);
+  //     categoryDetailsData();
+  //     addCategoryDetails(userName, item.category, categoryDta, uid);
+
+  //     setLoading(false);
+  //     setShowAddModal(!showAddModal);
+  //     // await onRefresh();
+  //   } catch (err) {
+  //     setShowErrorModal(true);
+  //     setModalTitle('Error');
+  //     setModalBody(err.message);
+  //   }
+  // };
+
+  // const updateCategoryData = async () => {
+  //   if (account == '') {
+  //     setShowErrorModal(true);
+  //     setModalTitle('INPUT ERROR');
+  //     setModalBody('Account is required');
+  //     return;
+  //   }
+  //   if (password == '') {
+  //     setShowErrorModal(true);
+  //     setModalTitle('INPUT ERROR');
+  //     setModalBody('Password is required');
+  //     return;
+  //   }
+  //   if (email == '') {
+  //     setShowErrorModal(true);
+  //     setModalTitle('INPUT ERROR');
+  //     setModalBody('Email is required');
+  //     return;
+  //   }
+  //   const categoryDta = {
+  //     email: email,
+  //     account_name: account,
+  //     password: password,
+  //   };
+
+  //   try {
+  //     setLoading(true);
+  //     const data = await updateCategoryDetails(
+  //       userName,
+  //       item.category,
+  //       categoryDta,
+  //       seletedItem.id
+  //     );
+  //     setLoading(false);
+  //     setShowAddModal(!showAddModal);
+  //     await onRefresh();
+  //   } catch (err) {
+  //     setShowErrorModal(true);
+  //     setModalTitle('Error');
+  //     setModalBody(err.message);
+  //   }
+  // };
   // Updates textFields to contains selected items text for updateing
+  const updateCategoryData = () => {
+    let newPassord = { ...seletedItem, email: email, account_name: account, password: password };
+    let newArray = categoryData;
+    newArray[seletedIndex] = newPassord;
+    setCategoryData(newArray);
+    updateAllCategories(index, newArray);
+    setShowAddModal(false);
+  };
   const setText = (accountText, emailText, passwordText) => {
     setAccount(accountText);
     setEmail(emailText);
     setPassword(passwordText);
   };
 
-  const onRefresh = async () => {
-    try {
-      setRefreshing(true);
-      await fetchAllCategory(userName);
-      setRefreshing(false);
-      setText('', '', '');
-      setSelectedItem(null);
-    } catch (err) {
-      setShowErrorModal(true);
-      setModalTitle('Error');
-      setModalBody(err.message.toString());
-    }
-  };
+  // const onRefresh = async () => {
+  //   try {
+  //     setRefreshing(true);
+  //     await fetchAllCategory(userName);
+  //     setRefreshing(false);
+  //     setText('', '', '');
+  //     setSelectedItem(null);
+  //   } catch (err) {
+  //     setShowErrorModal(true);
+  //     setModalTitle('Error');
+  //     setModalBody(err.message.toString());
+  //   }
+  // };
 
   // turning focus off
   const setFocusOff = () => {
@@ -193,23 +234,110 @@ const DetailsScreen = ({
   // getsThe category Data and makes a list of loopable items
   // here receive the index of selected category from params
   // then gets the selected item details list form ListOfAll categories
-  const categoryDetailsData = () => {
-    if (allCategory && allCategory[index].value?.items) {
-      const data = allCategory[index].value.items;
-      let i = [];
-      Object.keys(data).map((key) => {
-        i.push({ id: key, value: data[key] });
-      });
-      setCategoryData(i);
-      setLoading(false);
-    } else {
-      setCategoryData(null);
+  // const categoryDetailsData = () => {
+  //   if (allCategory && allCategory[index].value?.items) {
+  //     const data = allCategory[index].value.items;
+  //     let i = [];
+  //     Object.keys(data).map((key) => {
+  //       i.push({ id: key, value: data[key] });
+  //     });
+  //     setCategoryData(null);
+  //     setCategoryData(i);
+  //     setLoading(false);
+  //   } else {
+  //     setCategoryData(null);
+  //   }
+  // };
+
+  // useEffect(() => {
+  //   categoryDetailsData();
+  // }, [allCategory]);
+
+  const addCategoryData = () => {
+    let newPassord = {
+      category: item.category.toLowerCase(),
+      id: getUid(),
+      email: email,
+      account_name: account,
+      password: password,
+      fav_icon: 'heart-outline',
+      notes: 'test notes',
+      key: serverTimestamp(),
+    };
+    console.log(newPassord);
+    let newArray = [...categoryData, newPassord];
+    setCategoryData(newArray);
+    updateAllCategories(index, newArray);
+    console.log(JSON.stringify(newArray));
+    setShowAddModal(!showAddModal);
+  };
+
+  const deleteCategoryData = (category, id) => {
+    let newArray = categoryData.filter((item) => item.id !== id);
+    setCategoryData(newArray);
+    updateAllCategories(index, newArray);
+  };
+
+  const onRefresh = async () => {
+    try {
+      await fetchAllCategory(userName);
+      return true;
+    } catch (err) {
+      setShowErrorModal(true);
+      setModalTitle('Error');
+      setModalBody(err.message.toString());
     }
   };
 
-  useEffect(() => {
-    categoryDetailsData();
-  }, [allCategory]);
+  const addToFavList = async (category) => {
+    try {
+      setFavLoading(true);
+      await addToFav(userName, category, item, data.id);
+      setFavLoading(false);
+      await onRefresh();
+      fetchAllFav(userName);
+    } catch (err) {
+      setShowErrorModal(true);
+      setModalTitle('Error');
+      setModalBody(err.message);
+    }
+  };
+  const removeFromFavList = async (category) => {
+    try {
+      setFavLoading(true);
+      await removeFromFav(userName, category, data, data.id);
+      setFavLoading(false);
+      await onRefresh();
+      fetchAllFav(userName);
+    } catch (err) {
+      setShowErrorModal(true);
+      setModalTitle('Error');
+      setModalBody(err.message);
+    }
+  };
+
+  const copyEmailClipboard = async (val) => {
+    try {
+      setEmailCopy(true);
+      await Clipboard.setStringAsync(val);
+      copyRef.current?.play();
+    } catch (err) {
+      setShowErrorModal(true);
+      setModalTitle('Copy Error');
+      setModalBody(err.message);
+    }
+  };
+  const copyPasswordClipboard = async (val) => {
+    try {
+      setPasswordCopy(true);
+      await Clipboard.setStringAsync(val);
+      copyRef.current?.play();
+    } catch (err) {
+      setShowErrorModal(true);
+      setModalTitle('Copy Error');
+      setModalBody(err.message);
+    }
+  };
 
   return (
     <SafeAreaView style={[tw`flex-1 px-6`, { backgroundColor: theme.mainBgColor }]}>
@@ -228,7 +356,8 @@ const DetailsScreen = ({
           style={[tw`text-2xl flex-1 font-extrabold mr-3`, { color: theme.mainColor }]}
           numberOfLines={1}
         >
-          {item.category.toUpperCase()}
+          {/* {item.category.toUpperCase()} */}
+          Category Name
         </Text>
         <TouchableOpacity onPress={() => setShowAddModal(!showAddModal)}>
           <MaterialCommunityIcons name='plus-box-outline' color={theme.mainColor} size={35} />
@@ -237,58 +366,161 @@ const DetailsScreen = ({
 
       {/* ************ Main List ************ */}
 
-      {categoryData && (
-        <FlatList
-          contentContainerStyle={{ paddingBottom: 160 }}
-          data={categoryData}
-          // extraData={categoryData}
-          showsVerticalScrollIndicator={false}
-          numColumns={1}
-          keyExtractor={(item) => item?.id}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-          renderItem={({ item: data, index }) => {
-            return (
-              // *******************  Main Div  *********************************
+      <Animated.ScrollView showsVerticalScrollIndicator={false}>
+        <View style={[tw`pb-20`, {}]}>
+          {categoryData &&
+            categoryData.map((item, index) => (
+              <Animated.View
+                style={[tw`mb-2`, {}]}
+                layout={Layout}
+                entering={BounceInDown}
+                key={item.id}
+              >
+                <View
+                  style={[
+                    tw`px-5 py-3 rounded-xl`,
+                    {
+                      backgroundColor: theme.bgColor,
+                      elevation: elevation ? elevationValue : 0,
+                    },
+                  ]}
+                >
+                  {/* ******* Account Section ******* */}
+                  <View style={tw`flex-row items-center`}>
+                    <Text
+                      style={[tw`flex-1 text-lg font-semibold mr-2`, { color: theme.mainColor }]}
+                      numberOfLines={1}
+                    >
+                      {item?.account_name}
+                    </Text>
+                    <TouchableOpacity
+                      onPress={() => {
+                        setShowErrorModal(true);
+                        setModalTitle('Comming Soon');
+                        setModalBody('add to fav comming soon..');
+                        // item?.fav_icon == 'heart-outline'
+                        //   ? addToFavList(item?.category)
+                        //   : removeFromFavList(item?.category);
+                      }}
+                    >
+                      <MaterialCommunityIcons
+                        name={item?.fav_icon}
+                        color={theme.mainColor}
+                        size={23}
+                      />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => {
+                        setSelectedItem({ ...item, id: item.id });
+                        setSelectedIndex(index);
+                        setShowAddModal(true);
+                        setText(item?.account_name, item?.email, item?.password);
+                      }}
+                    >
+                      <MaterialCommunityIcons
+                        name='square-edit-outline'
+                        color={theme.mainColor}
+                        size={23}
+                        style={tw`mx-2`}
+                      />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => {
+                        deleteCategoryData(item?.category, item?.id);
+                      }}
+                    >
+                      <MaterialCommunityIcons name={'delete'} color={theme.mainColor} size={25} />
+                    </TouchableOpacity>
+                  </View>
+                  {/* ******* Hr underline ******* */}
+                  <View style={tw`border border-gray-200 mt-2 `}></View>
 
-              <View>
-                {categoryData && allCategory && (
-                  <CategoriesDetailsList
-                    index={index}
-                    data={data}
-                    setText={setText}
-                    setSelectedItem={setSelectedItem}
-                    setShowAddModal={setShowAddModal}
-                    onRefresh={onRefresh}
-                  />
-                )}
-              </View>
-            );
-          }}
-        />
-      )}
-      {!categoryData && (
-        <Animated.View
-          entering={FadeIn.duration(500)}
-          style={[
-            tw`h-1/3 my-6 rounded-2xl justify-center items-center p-8`,
-            {
-              elevation: elevation ? elevationValue : 0,
-              backgroundColor: theme.bgColor,
-            },
-          ]}
-        >
-          <Text
-            style={[
-              tw`
-          text-lg font-semibold opacity-50 text-center
-          `,
-              { color: theme.mainTextColor },
-            ]}
-          >
-            Your don'nt have any passwords in this category
-          </Text>
-        </Animated.View>
-      )}
+                  {/* ******* Passwords Sections ******* */}
+                  <View style={tw`mt-4 `}>
+                    {/* ******* Email  ******* */}
+                    <View style={tw`flex-row items-center justify-between my-2`}>
+                      <MaterialCommunityIcons name='email' color={theme.mainColor} size={22} />
+                      <Text
+                        style={[tw`flex-1 mx-3`, { color: theme.mainTextColor }]}
+                        numberOfLines={1}
+                      >
+                        {item?.email}
+                      </Text>
+                      {!emailCopy && (
+                        <TouchableOpacity>
+                          <MaterialCommunityIcons
+                            style={tw`mx-1`}
+                            onPress={() => copyEmailClipboard(`${item?.email}`)}
+                            name='content-copy'
+                            color={theme.mainColor}
+                            size={22}
+                          />
+                        </TouchableOpacity>
+                      )}
+                      {emailCopy && (
+                        <LottieView
+                          autoPlay={false}
+                          loop={false}
+                          ref={copyRef}
+                          onAnimationFinish={async () => {
+                            setEmailCopy(false);
+                          }}
+                          style={[
+                            tw`ml-1 mr-2`,
+                            {
+                              width: 22,
+                              height: 22,
+                            },
+                          ]}
+                          source={require('../../assets/success.json')}
+                        />
+                      )}
+                    </View>
+                    {/* ******* Password  ******* */}
+                    <View style={tw`flex-row items-center justify-between my-2`}>
+                      <MaterialCommunityIcons name='key' color={theme.mainColor} size={22} />
+                      <Text
+                        style={[tw`flex-1 mx-3`, { color: theme.mainTextColor }]}
+                        numberOfLines={1}
+                      >
+                        {item?.password}
+                      </Text>
+                      {!passwordCopy && (
+                        <TouchableOpacity>
+                          <MaterialCommunityIcons
+                            style={tw`mx-1`}
+                            name='content-copy'
+                            onPress={() => copyPasswordClipboard(`${item?.password}`)}
+                            color={theme.mainColor}
+                            size={22}
+                          />
+                        </TouchableOpacity>
+                      )}
+                      {passwordCopy && (
+                        <LottieView
+                          autoPlay={false}
+                          loop={false}
+                          ref={copyRef}
+                          onAnimationFinish={async () => {
+                            setPasswordCopy(false);
+                          }}
+                          style={[
+                            tw`ml-1 mr-2`,
+                            {
+                              width: 22,
+                              height: 22,
+                            },
+                          ]}
+                          source={require('../../assets/success.json')}
+                        />
+                      )}
+                    </View>
+                  </View>
+                </View>
+              </Animated.View>
+            ))}
+        </View>
+      </Animated.ScrollView>
 
       {/* *********** ALL Models Below ************* */}
       <Modal
