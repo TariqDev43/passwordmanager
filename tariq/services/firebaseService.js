@@ -157,14 +157,9 @@ export const getAllCategories = async (username) => {
       } catch (err) {
         throw err;
       }
-
-      // item.forEach((item) => console.log(item));
     };
 
     data.forEach((category) => {
-      // console.log(Object.keys(category.val().items));
-      // ArrayOfPasswords(category.val().items);
-      // allCategories.push({ category: category.key, value: category.val() });
       allCategories.push({
         category: category.key,
         icon: category.val().info,
@@ -258,7 +253,7 @@ export const getFavs = async (name) => {
 
     let allFavList = [];
     data.forEach((item) => {
-      allFavList.push({ id: item.key, value: item.val() });
+      allFavList.push({ id: item.key, ...item.val() });
     });
 
     return allFavList;
@@ -281,7 +276,6 @@ export const addToFav = async (username, category, categoryData, id) => {
       `Users/${username}/Categories/${category.toLowerCase()}/items/${id}`
     );
     await set(favIconRef, { ...categoryData, fav_icon: 'heart' });
-    console.log(categoryData);
 
     return 'newAdded';
   } catch (err) {

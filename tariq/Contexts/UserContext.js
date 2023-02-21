@@ -62,9 +62,18 @@ export const UserProvider = memo(({ children }) => {
   const fetchAllFav = useCallback(async (userName) => {
     const allFav = await getFavs(userName);
     console.log('user Favs');
-    setAllFav(null);
     setAllFav(allFav);
     return allFav;
+  }, []);
+
+  const updateAllFav = useCallback(async (method, val) => {
+    try {
+      method == 'add'
+        ? setAllFav([...allFav, val])
+        : setAllFav(allFav.filter((item) => item.id !== val.id));
+    } catch (err) {
+      throw err;
+    }
   }, []);
 
   const userValues = useMemo(() => ({
@@ -75,6 +84,7 @@ export const UserProvider = memo(({ children }) => {
     allCategory,
     allFav,
     updateAllCategories,
+    updateAllFav,
     fetchUserInfo,
     fetchAllCategory,
     fetchAllFav,

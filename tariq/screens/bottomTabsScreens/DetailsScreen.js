@@ -36,7 +36,7 @@ const DetailsScreen = ({
   // ********** All states are shown here
   // All Contexts
   const { theme } = useTheme();
-  const { userName, allCategory, fetchAllCategory, updateAllCategories } = useUser();
+  const { userName, allCategory, updateAllFav, updateAllCategories } = useUser();
   const { elevation, elevationValue } = useSettings();
 
   //  All Modals
@@ -75,113 +75,6 @@ const DetailsScreen = ({
     const uid = uuid.v1();
     return uid;
   };
-
-  // const addCategoryData = async () => {
-  //   if (account == '') {
-  //     setShowErrorModal(true);
-  //     setModalTitle('INPUT ERROR');
-  //     setModalBody('Account is required');
-  //     return;
-  //   }
-  //   if (password == '') {
-  //     setShowErrorModal(true);
-  //     setModalTitle('INPUT ERROR');
-  //     setModalBody('Password is required');
-  //     return;
-  //   }
-  //   if (email == '') {
-  //     setShowErrorModal(true);
-  //     setModalTitle('INPUT ERROR');
-  //     setModalBody('Email is required');
-  //     return;
-  //   }
-  //   const categoryDta = {
-  //     category: item.category.toLowerCase(),
-  //     email: email,
-  //     account_name: account,
-  //     password: password,
-  //     fav_icon: 'heart-outline',
-  //     notes: 'test notes',
-  //     key: serverTimestamp(),
-  //   };
-
-  //   try {
-  //     setLoading(true);
-  //     // console.log(item.value);
-  //     const uid = getUid();
-  //     let items_data = {};
-  //     items_data[uid] = categoryDta;
-
-  //     const newAddedValue = allCategory[index];
-  //     newAddedValue.value.items[uid] = categoryDta;
-  //     // console.log(JSON.stringify(newTest));
-
-  //     // console.log(
-  //     //   JSON.stringify({
-  //     //     category: item.category,
-  //     //     value: {
-  //     //       info: { icon: item.value.info.icon },
-  //     //       items: items_data,
-  //     //     },
-  //     //   })
-  //     // );
-  //     updateAllCategories(categoryIndex, newAddedValue);
-  //     categoryDetailsData();
-  //     addCategoryDetails(userName, item.category, categoryDta, uid);
-
-  //     setLoading(false);
-  //     setShowAddModal(!showAddModal);
-  //     // await onRefresh();
-  //   } catch (err) {
-  //     setShowErrorModal(true);
-  //     setModalTitle('Error');
-  //     setModalBody(err.message);
-  //   }
-  // };
-
-  // const updateCategoryData = async () => {
-  //   if (account == '') {
-  //     setShowErrorModal(true);
-  //     setModalTitle('INPUT ERROR');
-  //     setModalBody('Account is required');
-  //     return;
-  //   }
-  //   if (password == '') {
-  //     setShowErrorModal(true);
-  //     setModalTitle('INPUT ERROR');
-  //     setModalBody('Password is required');
-  //     return;
-  //   }
-  //   if (email == '') {
-  //     setShowErrorModal(true);
-  //     setModalTitle('INPUT ERROR');
-  //     setModalBody('Email is required');
-  //     return;
-  //   }
-  //   const categoryDta = {
-  //     email: email,
-  //     account_name: account,
-  //     password: password,
-  //   };
-
-  //   try {
-  //     setLoading(true);
-  //     const data = await updateCategoryDetails(
-  //       userName,
-  //       item.category,
-  //       categoryDta,
-  //       seletedItem.id
-  //     );
-  //     setLoading(false);
-  //     setShowAddModal(!showAddModal);
-  //     await onRefresh();
-  //   } catch (err) {
-  // setShowErrorModal(true);
-  // setModalTitle('Error');
-  // setModalBody(err.message);
-  //   }
-  // };
-  // Updates textFields to contains selected items text for updateing
 
   const addCategoryData = () => {
     if (account == '') {
@@ -272,12 +165,16 @@ const DetailsScreen = ({
         fav_icon: icon,
       };
       newArray[index] = data;
-
       setCategoryData(newArray);
       updateAllCategories(categoryIndex, newArray);
-      icon == 'heart'
-        ? addToFav(userName, category, data, data.id)
-        : removeFromFav(userName, category, data, data.id);
+      if (icon === 'heart') {
+        addToFav(userName, category, data, data.id);
+        updateAllFav('add', data);
+      } else {
+        removeFromFav(userName, category, data, data.id);
+        updateAllFav('remove', data);
+      }
+      // updateAllFav()
       // setFavLoading(true);
       // setFavLoading(false);
       // await onRefresh();

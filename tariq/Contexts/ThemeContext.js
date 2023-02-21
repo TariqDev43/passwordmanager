@@ -45,9 +45,6 @@ export const ThemeProvider = memo(({ children }) => {
   const theme = themeMode == 'light' ? LightTheme : themeMode == 'dark' ? DarkTheme : GreyTheme;
 
   const changeTheme = useCallback((value) => {
-    console.log(themeMode);
-    console.log(value);
-
     setThemeMode(value);
     setDataToStorage('themeMode', value);
   });

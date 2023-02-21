@@ -1,13 +1,12 @@
-import React, { memo, useEffect, useRef, useState } from 'react';
+import React, { memo, useRef, useState } from 'react';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import Animated, { BounceInDown, Layout, ZoomInEasyDown, ZoomOut } from 'react-native-reanimated';
 import tw from 'tailwind-react-native-classnames';
 import { Text, TouchableOpacity, ActivityIndicator, View } from 'react-native';
 import useSettings from '../Contexts/SettingContext';
 import useTheme from '../Contexts/ThemeContext';
 import ErrorModal from './ErrorModal';
 import useUser from '../Contexts/UserContext';
-import { addToFav, removeCategoryDetails, removeFromFav } from '../services/firebaseService';
+import { removeCategoryDetails } from '../services/firebaseService';
 import LottieView from 'lottie-react-native';
 import * as Clipboard from 'expo-clipboard';
 
@@ -28,7 +27,7 @@ const CategoriesDetailsList = ({
   //  all Contexts
   const { theme } = useTheme();
   const { elevation, elevationValue } = useSettings();
-  const { userName, allCategory, updateAllCategories } = useUser();
+  const { userName, updateAllCategories } = useUser();
 
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [modalTitle, setModalTitle] = useState('');
@@ -40,7 +39,6 @@ const CategoriesDetailsList = ({
 
   /*   ALL FUNCTIONS
    ********************************************* */
-
   const deleteCategoryData = async (category, id) => {
     try {
       let newArray = categoryData.filter((item) => item.id !== id);
@@ -66,6 +64,7 @@ const CategoriesDetailsList = ({
       setModalBody(err.message);
     }
   };
+
   const copyPasswordClipboard = async (val) => {
     try {
       setPasswordCopy(true);
@@ -104,10 +103,6 @@ const CategoriesDetailsList = ({
         </Text>
         <TouchableOpacity
           onPress={() => {
-            // setShowErrorModal(true);
-            // setModalTitle('Comming Soon');
-            // setModalBody('add to fav comming soon..');
-
             item?.fav_icon == 'heart-outline'
               ? addToFavList(index, item?.category, 'heart')
               : addToFavList(index, item?.category, 'heart-outline');

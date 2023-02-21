@@ -1,4 +1,4 @@
-import { memo, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 import { Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import useSettings from '../../Contexts/SettingContext';
@@ -16,10 +16,11 @@ const Fav = () => {
   //  all contexts
   const { theme } = useTheme();
   const { elevation, elevationValue } = useSettings();
-  const { userName, allFav, fetchAllFav } = useUser();
+  const { userName, allFav, updateAllFav } = useUser();
 
   //  Error Modal
   const [showErrorModal, setShowErrorModal] = useState(false);
+  const [favData, setFavData] = useState(allFav ? allFav : []);
   const [modalTitle, setModalTitle] = useState('');
   const [modalBody, setModalBody] = useState('');
 
@@ -27,19 +28,9 @@ const Fav = () => {
 
   /*   ALL FUNCTIONS
    ********************************************* */
-  const onRefresh = async () => {
-    try {
-      setRefreshing(true);
-      await fetchAllFav(userName);
-      setRefreshing(false);
-      return true;
-    } catch (err) {
-      setShowErrorModal(true);
-      setModalTitle('Error');
-      setModalBody(err.message.toString());
-    }
-  };
-
+  useEffect(() => {
+    setFavData(allFav);
+  }, [allFav]);
   return (
     <SafeAreaView style={[tw`px-6 flex-1 `, { backgroundColor: theme.mainBgColor }]}>
       {/* TopBar */}
@@ -53,23 +44,27 @@ const Fav = () => {
         modalTitle={modalTitle}
         modalBody={modalBody}
       />
-      {allFav && allFav.length > 0 && (
+      {favData && favData.length > 0 && (
         <Animated.FlatList
           contentContainerStyle={{ paddingBottom: 160 }}
-          data={allFav}
+          data={favData}
           showsVerticalScrollIndicator={false}
           numColumns={1}
           keyExtractor={(item) => item?.id}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-          renderItem={({ item: data, index }) => {
+          // refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+          renderItem={({ item, index }) => {
             return (
               // *******************  Main Div  *********************************
-              <View>{data && <CategoriesFavList data={data} />}</View>
+              <View>
+                {item && (
+                  <CategoriesFavList item={item} favData={favData} setFavData={setFavData} />
+                )}
+              </View>
             );
           }}
         />
       )}
-      {allFav && allFav.length == 0 && (
+      {favData && favData.length == 0 && (
         <View
           style={[
             tw`h-1/2 my-6 rounded-2xl justify-center items-center p-8`,

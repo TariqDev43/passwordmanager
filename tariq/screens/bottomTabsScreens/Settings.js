@@ -7,12 +7,7 @@ import Slider from '@react-native-community/slider';
 import useTheme from '../../Contexts/ThemeContext';
 import useSettings from '../../Contexts/SettingContext';
 import tw from 'tailwind-react-native-classnames';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-  withTiming,
-} from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 
 const Settings = () => {
   /*   ALL STATES
