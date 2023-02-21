@@ -268,17 +268,20 @@ export const getFavs = async (name) => {
 };
 
 export const addToFav = async (username, category, categoryData, id) => {
+  // console.log(categoryData);
+
   try {
     // set data to Favs
     const favRef = ref(db, `Users/${username}/Favs/${id}`);
-    await set(favRef, { ...categoryData.value, fav_icon: 'heart' });
+    await set(favRef, { ...categoryData, fav_icon: 'heart' });
 
     // set data to Favs
     const favIconRef = ref(
       db,
       `Users/${username}/Categories/${category.toLowerCase()}/items/${id}`
     );
-    await set(favIconRef, { ...categoryData.value, fav_icon: 'heart' });
+    await set(favIconRef, { ...categoryData, fav_icon: 'heart' });
+    console.log(categoryData);
 
     return 'newAdded';
   } catch (err) {
@@ -296,7 +299,7 @@ export const removeFromFav = async (username, category, categoryData, id) => {
       db,
       `Users/${username}/Categories/${category.toLowerCase()}/items/${id}`
     );
-    await set(favIconRef, { ...categoryData.value, fav_icon: 'heart-outline' });
+    await set(favIconRef, { ...categoryData, fav_icon: 'heart-outline' });
 
     return 'newAdded';
   } catch (err) {

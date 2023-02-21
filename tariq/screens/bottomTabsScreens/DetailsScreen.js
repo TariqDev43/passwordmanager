@@ -21,6 +21,7 @@ import {
   addCategoryDetails,
   updateCategoryDetails,
   addToFav,
+  removeFromFav,
 } from '../../services/firebaseService';
 import CategoriesDetailsList from '../../components/CategoriesDetailsList';
 import Animated, { Layout, ZoomInEasyDown, ZoomOut } from 'react-native-reanimated';
@@ -181,6 +182,55 @@ const DetailsScreen = ({
   //   }
   // };
   // Updates textFields to contains selected items text for updateing
+
+  const addCategoryData = () => {
+    if (account == '') {
+      setShowErrorModal(true);
+      setModalTitle('INPUT ERROR');
+      setModalBody('Account is required');
+      return;
+    }
+    if (password == '') {
+      setShowErrorModal(true);
+      setModalTitle('INPUT ERROR');
+      setModalBody('Password is required');
+      return;
+    }
+    if (email == '') {
+      setShowErrorModal(true);
+      setModalTitle('INPUT ERROR');
+      setModalBody('Email is required');
+      return;
+    }
+
+    const uid = getUid();
+    try {
+      // Locally Adding Category
+      let newPassword = {
+        category: item.category.toLowerCase(),
+        id: uid,
+        email: email,
+        account_name: account,
+        password: password,
+        fav_icon: 'heart-outline',
+        notes: 'test notes',
+        key: serverTimestamp(),
+      };
+      let newArray = [...categoryData, newPassword];
+      setCategoryData(newArray);
+      updateAllCategories(categoryIndex, newArray);
+      // Adding in Firebase
+      addCategoryDetails(userName, item.category.toLowerCase(), newPassword, uid);
+      setShowAddModal(!showAddModal);
+    } catch (err) {
+      deleteCategoryData(id);
+      setShowAddModal(!showAddModal);
+      setShowErrorModal(true);
+      setModalTitle('Error');
+      setModalBody(err.message);
+    }
+  };
+
   const updateCategoryData = () => {
     let newPassord = {
       ...seletedItem,
@@ -208,54 +258,6 @@ const DetailsScreen = ({
     setPasswordFocus(false);
   };
 
-  const addCategoryData = () => {
-    if (account == '') {
-      setShowErrorModal(true);
-      setModalTitle('INPUT ERROR');
-      setModalBody('Account is required');
-      return;
-    }
-    if (password == '') {
-      setShowErrorModal(true);
-      setModalTitle('INPUT ERROR');
-      setModalBody('Password is required');
-      return;
-    }
-    if (email == '') {
-      setShowErrorModal(true);
-      setModalTitle('INPUT ERROR');
-      setModalBody('Email is required');
-      return;
-    }
-
-    const uid = getUid();
-    try {
-      // Locally Adding Category
-      let newPassord = {
-        category: item.category.toLowerCase(),
-        id: uid,
-        email: email,
-        account_name: account,
-        password: password,
-        fav_icon: 'heart-outline',
-        notes: 'test notes',
-        key: serverTimestamp(),
-      };
-      let newArray = [...categoryData, newPassord];
-      setCategoryData(newArray);
-      updateAllCategories(categoryIndex, newArray);
-      // Adding in Firebase
-      addCategodryDetails(userName, item.category.toLowerCase(), newPassord, uid);
-      setShowAddModal(!showAddModal);
-    } catch (err) {
-      deleteCategoryData(id);
-      setShowAddModal(!showAddModal);
-      setShowErrorModal(true);
-      setModalTitle('Error');
-      setModalBody(err.message);
-    }
-  };
-
   const deleteCategoryData = (category, id) => {
     let newArray = categoryData.filter((item) => item.id !== id);
     setCategoryData(newArray);
@@ -270,10 +272,12 @@ const DetailsScreen = ({
         fav_icon: icon,
       };
       newArray[index] = data;
+
       setCategoryData(newArray);
       updateAllCategories(categoryIndex, newArray);
-
-      addToFav(userName, category, data, data.id);
+      icon == 'heart'
+        ? addToFav(userName, category, data, data.id)
+        : removeFromFav(userName, category, data, data.id);
       // setFavLoading(true);
       // setFavLoading(false);
       // await onRefresh();
