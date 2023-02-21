@@ -1,7 +1,12 @@
-// import admin from "firebase-admin";
-import { config } from './config';
-
-const firebaseConfig = config;
+const firebaseConfig = {
+  apiKey: 'AIzaSyCsbcjhdQw31OQeg5KrC7qXQuuvqk7VzWw',
+  authDomain: 'passwordmanager-43.firebaseapp.com',
+  databaseURL: 'https://passwordmanager-43-default-rtdb.firebaseio.com',
+  projectId: 'passwordmanager-43',
+  storageBucket: 'passwordmanager-43.appspot.com',
+  messagingSenderId: '419467193948',
+  appId: '1:419467193948:web:04cbbaea7c74e5dfe80099',
+};
 import {
   createUserWithEmailAndPassword,
   getAuth,
