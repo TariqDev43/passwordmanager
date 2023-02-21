@@ -10,7 +10,7 @@ import {
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Modal } from 'react-native';
 import { useEffect, useRef, useState } from 'react';
-import { FlatList, RefreshControl, TextInput } from 'react-native-gesture-handler';
+import { FlatList, RefreshControl, ScrollView, TextInput } from 'react-native-gesture-handler';
 import { memo } from 'react';
 import useTheme from '../../Contexts/ThemeContext';
 import useUser from '../../Contexts/UserContext';
@@ -25,21 +25,13 @@ import {
 import CategoriesDetailsList from '../../components/CategoriesDetailsList';
 import LottieView from 'lottie-react-native';
 import * as Clipboard from 'expo-clipboard';
-import Animated, {
-  BounceInDown,
-  FadeIn,
-  FadeOut,
-  Layout,
-  SlideInLeft,
-  ZoomInDown,
-  ZoomOut,
-} from 'react-native-reanimated';
+import Animated, { Layout, ZoomInEasyDown, ZoomOut } from 'react-native-reanimated';
 import useSettings from '../../Contexts/SettingContext';
 import uuid from 'react-native-uuid';
 
 const DetailsScreen = ({
   route: {
-    params: { item, index },
+    params: { item, categoryIndex },
   },
 }) => {
   // ********** All states are shown here
@@ -72,11 +64,11 @@ const DetailsScreen = ({
   const [seletedItem, setSelectedItem] = useState(null);
   const [seletedIndex, setSelectedIndex] = useState(null);
   const [categoryData, setCategoryData] = useState(
-    allCategory[index].items ? allCategory[index].items : []
+    allCategory[categoryIndex].items ? allCategory[categoryIndex].items : []
   );
 
   useEffect(() => {
-    setCategoryData(allCategory[index].items ? allCategory[index].items : []);
+    setCategoryData(allCategory[categoryIndex].items ? allCategory[categoryIndex].items : []);
   }, [allCategory]);
 
   // ********** Functions Below
@@ -84,11 +76,6 @@ const DetailsScreen = ({
     const uid = uuid.v1();
     return uid;
   };
-
-  const [emailCopy, setEmailCopy] = useState(false);
-  const [passwordCopy, setPasswordCopy] = useState(false);
-  const copyRef = useRef(null);
-  const [favLoading, setFavLoading] = useState(false);
 
   // const addCategoryData = async () => {
   //   if (account == '') {
@@ -139,7 +126,7 @@ const DetailsScreen = ({
   //     //     },
   //     //   })
   //     // );
-  //     updateAllCategories(index, newAddedValue);
+  //     updateAllCategories(categoryIndex, newAddedValue);
   //     categoryDetailsData();
   //     addCategoryDetails(userName, item.category, categoryDta, uid);
 
@@ -190,18 +177,24 @@ const DetailsScreen = ({
   //     setShowAddModal(!showAddModal);
   //     await onRefresh();
   //   } catch (err) {
-  //     setShowErrorModal(true);
-  //     setModalTitle('Error');
-  //     setModalBody(err.message);
+  // setShowErrorModal(true);
+  // setModalTitle('Error');
+  // setModalBody(err.message);
   //   }
   // };
   // Updates textFields to contains selected items text for updateing
   const updateCategoryData = () => {
-    let newPassord = { ...seletedItem, email: email, account_name: account, password: password };
+    let newPassord = {
+      ...seletedItem,
+      email: email,
+      account_name: account,
+      password: password,
+    };
     let newArray = categoryData;
     newArray[seletedIndex] = newPassord;
     setCategoryData(newArray);
-    updateAllCategories(index, newArray);
+    updateAllCategories(categoryIndex, newArray);
+    updateCategoryDetails(userName, seletedItem.category, newPassord, seletedItem.id);
     setShowAddModal(false);
   };
   const setText = (accountText, emailText, passwordText) => {
@@ -254,28 +247,38 @@ const DetailsScreen = ({
   // }, [allCategory]);
 
   const addCategoryData = () => {
-    let newPassord = {
-      category: item.category.toLowerCase(),
-      id: getUid(),
-      email: email,
-      account_name: account,
-      password: password,
-      fav_icon: 'heart-outline',
-      notes: 'test notes',
-      key: serverTimestamp(),
-    };
-    console.log(newPassord);
-    let newArray = [...categoryData, newPassord];
-    setCategoryData(newArray);
-    updateAllCategories(index, newArray);
-    console.log(JSON.stringify(newArray));
-    setShowAddModal(!showAddModal);
+    const uid = getUid();
+    try {
+      // Locally Adding Category
+      let newPassord = {
+        category: item.category.toLowerCase(),
+        id: uid,
+        email: email,
+        account_name: account,
+        password: password,
+        fav_icon: 'heart-outline',
+        notes: 'test notes',
+        key: serverTimestamp(),
+      };
+      let newArray = [...categoryData, newPassord];
+      setCategoryData(newArray);
+      updateAllCategories(categoryIndex, newArray);
+      // Adding in Firebase
+      addCategoryDetails(userName, item.category.toLowerCase(), newPassord, uid);
+      setShowAddModal(!showAddModal);
+    } catch (err) {
+      deleteCategoryData(id);
+      setShowAddModal(!showAddModal);
+      setShowErrorModal(true);
+      setModalTitle('Error');
+      setModalBody(err.message);
+    }
   };
 
   const deleteCategoryData = (category, id) => {
     let newArray = categoryData.filter((item) => item.id !== id);
     setCategoryData(newArray);
-    updateAllCategories(index, newArray);
+    updateAllCategories(categoryIndex, newArray);
   };
 
   const onRefresh = async () => {
@@ -286,56 +289,6 @@ const DetailsScreen = ({
       setShowErrorModal(true);
       setModalTitle('Error');
       setModalBody(err.message.toString());
-    }
-  };
-
-  const addToFavList = async (category) => {
-    try {
-      setFavLoading(true);
-      await addToFav(userName, category, item, data.id);
-      setFavLoading(false);
-      await onRefresh();
-      fetchAllFav(userName);
-    } catch (err) {
-      setShowErrorModal(true);
-      setModalTitle('Error');
-      setModalBody(err.message);
-    }
-  };
-  const removeFromFavList = async (category) => {
-    try {
-      setFavLoading(true);
-      await removeFromFav(userName, category, data, data.id);
-      setFavLoading(false);
-      await onRefresh();
-      fetchAllFav(userName);
-    } catch (err) {
-      setShowErrorModal(true);
-      setModalTitle('Error');
-      setModalBody(err.message);
-    }
-  };
-
-  const copyEmailClipboard = async (val) => {
-    try {
-      setEmailCopy(true);
-      await Clipboard.setStringAsync(val);
-      copyRef.current?.play();
-    } catch (err) {
-      setShowErrorModal(true);
-      setModalTitle('Copy Error');
-      setModalBody(err.message);
-    }
-  };
-  const copyPasswordClipboard = async (val) => {
-    try {
-      setPasswordCopy(true);
-      await Clipboard.setStringAsync(val);
-      copyRef.current?.play();
-    } catch (err) {
-      setShowErrorModal(true);
-      setModalTitle('Copy Error');
-      setModalBody(err.message);
     }
   };
 
@@ -366,161 +319,181 @@ const DetailsScreen = ({
 
       {/* ************ Main List ************ */}
 
-      <Animated.ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView showsVerticalScrollIndicator={false}>
         <View style={[tw`pb-20`, {}]}>
           {categoryData &&
             categoryData.map((item, index) => (
               <Animated.View
                 style={[tw`mb-2`, {}]}
-                layout={Layout}
-                entering={BounceInDown}
+                layout={Layout.delay(300)}
+                entering={ZoomInEasyDown}
+                exiting={ZoomOut}
                 key={item.id}
               >
-                <View
-                  style={[
-                    tw`px-5 py-3 rounded-xl`,
-                    {
-                      backgroundColor: theme.bgColor,
-                      elevation: elevation ? elevationValue : 0,
-                    },
-                  ]}
-                >
-                  {/* ******* Account Section ******* */}
-                  <View style={tw`flex-row items-center`}>
-                    <Text
-                      style={[tw`flex-1 text-lg font-semibold mr-2`, { color: theme.mainColor }]}
-                      numberOfLines={1}
-                    >
-                      {item?.account_name}
-                    </Text>
-                    <TouchableOpacity
-                      onPress={() => {
-                        setShowErrorModal(true);
-                        setModalTitle('Comming Soon');
-                        setModalBody('add to fav comming soon..');
-                        // item?.fav_icon == 'heart-outline'
-                        //   ? addToFavList(item?.category)
-                        //   : removeFromFavList(item?.category);
-                      }}
-                    >
-                      <MaterialCommunityIcons
-                        name={item?.fav_icon}
-                        color={theme.mainColor}
-                        size={23}
-                      />
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      onPress={() => {
-                        setSelectedItem({ ...item, id: item.id });
-                        setSelectedIndex(index);
-                        setShowAddModal(true);
-                        setText(item?.account_name, item?.email, item?.password);
-                      }}
-                    >
-                      <MaterialCommunityIcons
-                        name='square-edit-outline'
-                        color={theme.mainColor}
-                        size={23}
-                        style={tw`mx-2`}
-                      />
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      onPress={() => {
-                        deleteCategoryData(item?.category, item?.id);
-                      }}
-                    >
-                      <MaterialCommunityIcons name={'delete'} color={theme.mainColor} size={25} />
-                    </TouchableOpacity>
-                  </View>
-                  {/* ******* Hr underline ******* */}
-                  <View style={tw`border border-gray-200 mt-2 `}></View>
-
-                  {/* ******* Passwords Sections ******* */}
-                  <View style={tw`mt-4 `}>
-                    {/* ******* Email  ******* */}
-                    <View style={tw`flex-row items-center justify-between my-2`}>
-                      <MaterialCommunityIcons name='email' color={theme.mainColor} size={22} />
-                      <Text
-                        style={[tw`flex-1 mx-3`, { color: theme.mainTextColor }]}
-                        numberOfLines={1}
-                      >
-                        {item?.email}
-                      </Text>
-                      {!emailCopy && (
-                        <TouchableOpacity>
-                          <MaterialCommunityIcons
-                            style={tw`mx-1`}
-                            onPress={() => copyEmailClipboard(`${item?.email}`)}
-                            name='content-copy'
-                            color={theme.mainColor}
-                            size={22}
-                          />
-                        </TouchableOpacity>
-                      )}
-                      {emailCopy && (
-                        <LottieView
-                          autoPlay={false}
-                          loop={false}
-                          ref={copyRef}
-                          onAnimationFinish={async () => {
-                            setEmailCopy(false);
-                          }}
-                          style={[
-                            tw`ml-1 mr-2`,
-                            {
-                              width: 22,
-                              height: 22,
-                            },
-                          ]}
-                          source={require('../../assets/success.json')}
-                        />
-                      )}
-                    </View>
-                    {/* ******* Password  ******* */}
-                    <View style={tw`flex-row items-center justify-between my-2`}>
-                      <MaterialCommunityIcons name='key' color={theme.mainColor} size={22} />
-                      <Text
-                        style={[tw`flex-1 mx-3`, { color: theme.mainTextColor }]}
-                        numberOfLines={1}
-                      >
-                        {item?.password}
-                      </Text>
-                      {!passwordCopy && (
-                        <TouchableOpacity>
-                          <MaterialCommunityIcons
-                            style={tw`mx-1`}
-                            name='content-copy'
-                            onPress={() => copyPasswordClipboard(`${item?.password}`)}
-                            color={theme.mainColor}
-                            size={22}
-                          />
-                        </TouchableOpacity>
-                      )}
-                      {passwordCopy && (
-                        <LottieView
-                          autoPlay={false}
-                          loop={false}
-                          ref={copyRef}
-                          onAnimationFinish={async () => {
-                            setPasswordCopy(false);
-                          }}
-                          style={[
-                            tw`ml-1 mr-2`,
-                            {
-                              width: 22,
-                              height: 22,
-                            },
-                          ]}
-                          source={require('../../assets/success.json')}
-                        />
-                      )}
-                    </View>
-                  </View>
-                </View>
+                <CategoriesDetailsList
+                  categoryIndex={categoryIndex}
+                  item={item}
+                  index={index}
+                  setSelectedIndex={setSelectedIndex}
+                  categoryData={categoryData}
+                  setCategoryData={setCategoryData}
+                  setSelectedItem={setSelectedItem}
+                  setShowAddModal={setShowAddModal}
+                  setText={setText}
+                />
               </Animated.View>
+              // <Animated.View
+              //   style={[tw`mb-2`, {}]}
+              //   layout={Layout.delay(300)}
+              //   entering={ZoomInEasyDown}
+              //   exiting={ZoomOut}
+              //   key={item.id}
+              // >
+              //   <View
+              //     style={[
+              //       tw`px-5 py-3 rounded-xl`,
+              //       {
+              //         backgroundColor: theme.bgColor,
+              //         elevation: elevation ? elevationValue : 0,
+              //       },
+              //     ]}
+              //   >
+              //     {/* ******* Account Section ******* */}
+              //     <View style={tw`flex-row items-center`}>
+              //       <Text
+              //         style={[tw`flex-1 text-lg font-semibold mr-2`, { color: theme.mainColor }]}
+              //         numberOfLines={1}
+              //       >
+              //         {item?.account_name}
+              //       </Text>
+              //       <TouchableOpacity
+              //         onPress={() => {
+              //           setShowErrorModal(true);
+              //           setModalTitle('Comming Soon');
+              //           setModalBody('add to fav comming soon..');
+              //           // item?.fav_icon == 'heart-outline'
+              //           //   ? addToFavList(item?.category)
+              //           //   : removeFromFavList(item?.category);
+              //         }}
+              //       >
+              //         <MaterialCommunityIcons
+              //           name={item?.fav_icon}
+              //           color={theme.mainColor}
+              //           size={23}
+              //         />
+              //       </TouchableOpacity>
+              //       <TouchableOpacity
+              //         onPress={() => {
+              //           setSelectedItem({ ...item, id: item.id });
+              //           setSelectedIndex(index);
+              //           setShowAddModal(true);
+              //           setText(item?.account_name, item?.email, item?.password);
+              //         }}
+              //       >
+              //         <MaterialCommunityIcons
+              //           name='square-edit-outline'
+              //           color={theme.mainColor}
+              //           size={23}
+              //           style={tw`mx-2`}
+              //         />
+              //       </TouchableOpacity>
+              //       <TouchableOpacity
+              //         onPress={() => {
+              //           deleteCategoryData(item?.category, item?.id);
+              //         }}
+              //       >
+              //         <MaterialCommunityIcons name={'delete'} color={theme.mainColor} size={25} />
+              //       </TouchableOpacity>
+              //     </View>
+              //     {/* ******* Hr underline ******* */}
+              //     <View style={tw`border border-gray-200 mt-2 `}></View>
+
+              //     {/* ******* Passwords Sections ******* */}
+              //     <View style={tw`mt-4 `}>
+              //       {/* ******* Email  ******* */}
+              //       <View style={tw`flex-row items-center justify-between my-2`}>
+              //         <MaterialCommunityIcons name='email' color={theme.mainColor} size={22} />
+              //         <Text
+              //           style={[tw`flex-1 mx-3`, { color: theme.mainTextColor }]}
+              //           numberOfLines={1}
+              //         >
+              //           {item?.email}
+              //         </Text>
+              //         {!emailCopy && (
+              //           <TouchableOpacity>
+              //             <MaterialCommunityIcons
+              //               style={tw`mx-1`}
+              //               onPress={() => copyEmailClipboard(`${item?.email}`)}
+              //               name='content-copy'
+              //               color={theme.mainColor}
+              //               size={22}
+              //             />
+              //           </TouchableOpacity>
+              //         )}
+              //         {emailCopy && (
+              //           <LottieView
+              //             autoPlay={false}
+              //             loop={false}
+              //             ref={copyRef}
+              //             onAnimationFinish={async () => {
+              //               setEmailCopy(false);
+              //             }}
+              //             style={[
+              //               tw`ml-1 mr-2`,
+              //               {
+              //                 width: 22,
+              //                 height: 22,
+              //               },
+              //             ]}
+              //             source={require('../../assets/success.json')}
+              //           />
+              //         )}
+              //       </View>
+              //       {/* ******* Password  ******* */}
+              //       <View style={tw`flex-row items-center justify-between my-2`}>
+              //         <MaterialCommunityIcons name='key' color={theme.mainColor} size={22} />
+              //         <Text
+              //           style={[tw`flex-1 mx-3`, { color: theme.mainTextColor }]}
+              //           numberOfLines={1}
+              //         >
+              //           {item?.password}
+              //         </Text>
+              //         {!passwordCopy && (
+              //           <TouchableOpacity>
+              //             <MaterialCommunityIcons
+              //               style={tw`mx-1`}
+              //               name='content-copy'
+              //               onPress={() => copyPasswordClipboard(`${item?.password}`)}
+              //               color={theme.mainColor}
+              //               size={22}
+              //             />
+              //           </TouchableOpacity>
+              //         )}
+              //         {passwordCopy && (
+              //           <LottieView
+              //             autoPlay={false}
+              //             loop={false}
+              //             ref={copyRef}
+              //             onAnimationFinish={async () => {
+              //               setPasswordCopy(false);
+              //             }}
+              //             style={[
+              //               tw`ml-1 mr-2`,
+              //               {
+              //                 width: 22,
+              //                 height: 22,
+              //               },
+              //             ]}
+              //             source={require('../../assets/success.json')}
+              //           />
+              //         )}
+              //       </View>
+              //     </View>
+              //   </View>
+              // </Animated.View>
             ))}
         </View>
-      </Animated.ScrollView>
+      </ScrollView>
 
       {/* *********** ALL Models Below ************* */}
       <Modal

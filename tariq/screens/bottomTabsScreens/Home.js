@@ -112,7 +112,7 @@ const Home = ({ navigation: { navigate } }) => {
   const renderItem = useCallback(
     ({ item, index }) => (
       <CategoriesList
-        index={index}
+        categoryIndex={index}
         item={item}
         onRefresh={onRefresh}
         allCategory={allCategory}

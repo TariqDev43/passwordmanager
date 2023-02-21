@@ -9,7 +9,7 @@ import { removeCategory } from '../services/firebaseService';
 import ErrorModal from './ErrorModal';
 import useUser from '../Contexts/UserContext';
 
-const CategoriesList = ({ index, item, onRefresh, navigate }) => {
+const CategoriesList = ({ index, categoryIndex, item, onRefresh, navigate }) => {
   /*   ALL STATES
    ********************************************* */
   //  all contexts
@@ -57,6 +57,7 @@ const CategoriesList = ({ index, item, onRefresh, navigate }) => {
             navigate('Details', {
               item,
               index,
+              categoryIndex,
             });
           }}
           style={[

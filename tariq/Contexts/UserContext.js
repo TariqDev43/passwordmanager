@@ -50,9 +50,13 @@ export const UserProvider = memo(({ children }) => {
   }, []);
 
   const updateAllCategories = useCallback((index, val) => {
-    let test = allCategory;
-    test[index].items = val;
-    setAllCategory(test);
+    try {
+      let newArray = allCategory;
+      newArray[index].items = val;
+      setAllCategory(newArray);
+    } catch (err) {
+      throw err;
+    }
   });
 
   const fetchAllFav = useCallback(async (userName) => {

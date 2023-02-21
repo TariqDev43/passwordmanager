@@ -174,6 +174,8 @@ export const getAllCategories = async (username) => {
 
     return allCategories;
   } catch (err) {
+    console.log(data);
+
     throw err;
   }
 };

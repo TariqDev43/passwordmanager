@@ -1,6 +1,6 @@
 import React, { memo, useRef, useState } from 'react';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import Animated, { BounceInDown, Layout } from 'react-native-reanimated';
+import Animated, { BounceInDown, Layout, ZoomInEasyDown, ZoomOut } from 'react-native-reanimated';
 import tw from 'tailwind-react-native-classnames';
 import { Text, TouchableOpacity, ActivityIndicator, View } from 'react-native';
 import useSettings from '../Contexts/SettingContext';
@@ -11,13 +11,23 @@ import { addToFav, removeCategoryDetails, removeFromFav } from '../services/fire
 import LottieView from 'lottie-react-native';
 import * as Clipboard from 'expo-clipboard';
 
-const CategoriesDetailsList = ({ index, data, setSelectedItem, setShowAddModal, setText }) => {
+const CategoriesDetailsList = ({
+  categoryIndex,
+  item,
+  index,
+  setSelectedIndex,
+  categoryData,
+  setCategoryData,
+  setSelectedItem,
+  setShowAddModal,
+  setText,
+}) => {
   /*   ALL STATES
    ********************************************* */
   //  all Contexts
   const { theme } = useTheme();
   const { elevation, elevationValue } = useSettings();
-  const { userName, fetchAllCategory, fetchAllFav } = useUser();
+  const { userName, fetchAllCategory, fetchAllFav, updateAllCategories } = useUser();
 
   const [loading, setLoading] = useState(false);
   const [favLoading, setFavLoading] = useState(false);
@@ -35,25 +45,15 @@ const CategoriesDetailsList = ({ index, data, setSelectedItem, setShowAddModal, 
 
   const deleteCategoryData = async (category, id) => {
     try {
-      setLoading(true);
-      await removeCategoryDetails(userName, category, id);
-      await onRefresh();
+      let newArray = categoryData.filter((item) => item.id !== id);
+      setCategoryData(newArray);
+      updateAllCategories(categoryIndex, newArray);
+      removeCategoryDetails(userName, category, id);
     } catch (err) {
       setShowErrorModal(true);
       setModalTitle('Error');
       setModalBody(err.message);
       setLoading(false);
-    }
-  };
-
-  const onRefresh = async () => {
-    try {
-      await fetchAllCategory(userName);
-      return true;
-    } catch (err) {
-      setShowErrorModal(true);
-      setModalTitle('Error');
-      setModalBody(err.message.toString());
     }
   };
 
@@ -108,10 +108,14 @@ const CategoriesDetailsList = ({ index, data, setSelectedItem, setShowAddModal, 
   };
 
   return (
-    <Animated.View
-      layout={Layout}
-      entering={BounceInDown.delay((index + 1) * 50)}
-      style={[tw`flex-1 mx-1 `, { marginVertical: 5 }]}
+    <View
+      style={[
+        tw`px-5 py-3 rounded-xl`,
+        {
+          backgroundColor: theme.bgColor,
+          elevation: elevation ? elevationValue : 0,
+        },
+      ]}
     >
       <ErrorModal
         show={showErrorModal}
@@ -119,148 +123,128 @@ const CategoriesDetailsList = ({ index, data, setSelectedItem, setShowAddModal, 
         modalTitle={modalTitle}
         modalBody={modalBody}
       />
-      <View
-        style={[
-          tw`px-5 py-3 rounded-xl`,
-          {
-            backgroundColor: theme.bgColor,
-            elevation: elevation ? elevationValue : 0,
-          },
-        ]}
-      >
-        {/* ******* Account Section ******* */}
-        <View style={tw`flex-row items-center`}>
-          <Text
-            style={[tw`flex-1 text-lg font-semibold mr-2`, { color: theme.mainColor }]}
-            numberOfLines={1}
-          >
-            {data.value.account_name}
+      {/* ******* Account Section ******* */}
+      <View style={tw`flex-row items-center`}>
+        <Text
+          style={[tw`flex-1 text-lg font-semibold mr-2`, { color: theme.mainColor }]}
+          numberOfLines={1}
+        >
+          {item?.account_name}
+        </Text>
+        <TouchableOpacity
+          onPress={() => {
+            setShowErrorModal(true);
+            setModalTitle('Comming Soon');
+            setModalBody('add to fav comming soon..');
+            // item?.fav_icon == 'heart-outline'
+            //   ? addToFavList(item?.category)
+            //   : removeFromFavList(item?.category);
+          }}
+        >
+          <MaterialCommunityIcons name={item?.fav_icon} color={theme.mainColor} size={23} />
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => {
+            setSelectedItem({ ...item, id: item.id });
+            setSelectedIndex(index);
+            setShowAddModal(true);
+            setText(item?.account_name, item?.email, item?.password);
+          }}
+        >
+          <MaterialCommunityIcons
+            name='square-edit-outline'
+            color={theme.mainColor}
+            size={23}
+            style={tw`mx-2`}
+          />
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => {
+            deleteCategoryData(item?.category, item?.id);
+          }}
+        >
+          <MaterialCommunityIcons name={'delete'} color={theme.mainColor} size={25} />
+        </TouchableOpacity>
+      </View>
+      {/* ******* Hr underline ******* */}
+      <View style={tw`border border-gray-200 mt-2 `}></View>
+
+      {/* ******* Passwords Sections ******* */}
+      <View style={tw`mt-4 `}>
+        {/* ******* Email  ******* */}
+        <View style={tw`flex-row items-center justify-between my-2`}>
+          <MaterialCommunityIcons name='email' color={theme.mainColor} size={22} />
+          <Text style={[tw`flex-1 mx-3`, { color: theme.mainTextColor }]} numberOfLines={1}>
+            {item?.email}
           </Text>
-          <TouchableOpacity
-            onPress={() => {
-              // setShowErrorModal(true);
-              // setModalTitle('Comming Soon');
-              // setModalBody('add to fav comming soon..');
-              data.value.fav_icon == 'heart-outline'
-                ? addToFavList(data.value.category)
-                : removeFromFavList(data.value.category);
-            }}
-          >
-            {!favLoading && (
+          {!emailCopy && (
+            <TouchableOpacity>
               <MaterialCommunityIcons
-                name={data.value.fav_icon}
+                style={tw`mx-1`}
+                onPress={() => copyEmailClipboard(`${item?.email}`)}
+                name='content-copy'
                 color={theme.mainColor}
-                size={23}
+                size={22}
               />
-            )}
-            {favLoading && <ActivityIndicator />}
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setSelectedItem({ ...data.value, id: data.id });
-              setShowAddModal(true);
-              setText(data.value.account_name, data.value.email, data.value.password);
-            }}
-          >
-            <MaterialCommunityIcons
-              name='square-edit-outline'
-              color={theme.mainColor}
-              size={23}
-              style={tw`mx-2`}
+            </TouchableOpacity>
+          )}
+          {emailCopy && (
+            <LottieView
+              autoPlay={false}
+              loop={false}
+              ref={copyRef}
+              onAnimationFinish={async () => {
+                setEmailCopy(false);
+              }}
+              style={[
+                tw`ml-1 mr-2`,
+                {
+                  width: 22,
+                  height: 22,
+                },
+              ]}
+              source={require('../assets/success.json')}
             />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              deleteCategoryData(data.value.category, data.id);
-            }}
-          >
-            {!loading && (
-              <MaterialCommunityIcons name={'delete'} color={theme.mainColor} size={25} />
-            )}
-            {loading && <ActivityIndicator />}
-          </TouchableOpacity>
+          )}
         </View>
-
-        {/* ******* Hr underline ******* */}
-        <View style={tw`border border-gray-200 mt-2 `}></View>
-
-        {/* ******* Passwords Sections ******* */}
-        <View style={tw`mt-4 `}>
-          {/* ******* Email  ******* */}
-          <View style={tw`flex-row items-center justify-between my-2`}>
-            <MaterialCommunityIcons name='email' color={theme.mainColor} size={22} />
-            <Text style={[tw`flex-1 mx-3`, { color: theme.mainTextColor }]} numberOfLines={1}>
-              {data.value.email}
-            </Text>
-            {!emailCopy && (
-              <TouchableOpacity>
-                <MaterialCommunityIcons
-                  style={tw`mx-1`}
-                  onPress={() => copyEmailClipboard(`${data.value.email}`)}
-                  name='content-copy'
-                  color={theme.mainColor}
-                  size={22}
-                />
-              </TouchableOpacity>
-            )}
-            {emailCopy && (
-              <LottieView
-                autoPlay={false}
-                loop={false}
-                ref={copyRef}
-                onAnimationFinish={async () => {
-                  setEmailCopy(false);
-                }}
-                style={[
-                  tw`ml-1 mr-2`,
-                  {
-                    width: 22,
-                    height: 22,
-                  },
-                ]}
-                source={require('../assets/success.json')}
+        {/* ******* Password  ******* */}
+        <View style={tw`flex-row items-center justify-between my-2`}>
+          <MaterialCommunityIcons name='key' color={theme.mainColor} size={22} />
+          <Text style={[tw`flex-1 mx-3`, { color: theme.mainTextColor }]} numberOfLines={1}>
+            {item?.password}
+          </Text>
+          {!passwordCopy && (
+            <TouchableOpacity>
+              <MaterialCommunityIcons
+                style={tw`mx-1`}
+                name='content-copy'
+                onPress={() => copyPasswordClipboard(`${item?.password}`)}
+                color={theme.mainColor}
+                size={22}
               />
-            )}
-          </View>
-          {/* ******* Password  ******* */}
-          <View style={tw`flex-row items-center justify-between my-2`}>
-            <MaterialCommunityIcons name='key' color={theme.mainColor} size={22} />
-            <Text style={[tw`flex-1 mx-3`, { color: theme.mainTextColor }]} numberOfLines={1}>
-              {data.value.password}
-            </Text>
-            {!passwordCopy && (
-              <TouchableOpacity>
-                <MaterialCommunityIcons
-                  style={tw`mx-1`}
-                  name='content-copy'
-                  onPress={() => copyPasswordClipboard(`${data.value.password}`)}
-                  color={theme.mainColor}
-                  size={22}
-                />
-              </TouchableOpacity>
-            )}
-            {passwordCopy && (
-              <LottieView
-                autoPlay={false}
-                loop={false}
-                ref={copyRef}
-                onAnimationFinish={async () => {
-                  setPasswordCopy(false);
-                }}
-                style={[
-                  tw`ml-1 mr-2`,
-                  {
-                    width: 22,
-                    height: 22,
-                  },
-                ]}
-                source={require('../assets/success.json')}
-              />
-            )}
-          </View>
+            </TouchableOpacity>
+          )}
+          {passwordCopy && (
+            <LottieView
+              autoPlay={false}
+              loop={false}
+              ref={copyRef}
+              onAnimationFinish={async () => {
+                setPasswordCopy(false);
+              }}
+              style={[
+                tw`ml-1 mr-2`,
+                {
+                  width: 22,
+                  height: 22,
+                },
+              ]}
+              source={require('../assets/success.json')}
+            />
+          )}
         </View>
       </View>
-    </Animated.View>
+    </View>
   );
 };
 
