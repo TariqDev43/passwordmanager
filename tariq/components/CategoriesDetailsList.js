@@ -1,4 +1,4 @@
-import React, { memo, useRef, useState } from 'react';
+import React, { memo, useEffect, useRef, useState } from 'react';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Animated, { BounceInDown, Layout, ZoomInEasyDown, ZoomOut } from 'react-native-reanimated';
 import tw from 'tailwind-react-native-classnames';
@@ -15,6 +15,7 @@ const CategoriesDetailsList = ({
   categoryIndex,
   item,
   index,
+  addToFavList,
   setSelectedIndex,
   categoryData,
   setCategoryData,
@@ -27,10 +28,7 @@ const CategoriesDetailsList = ({
   //  all Contexts
   const { theme } = useTheme();
   const { elevation, elevationValue } = useSettings();
-  const { userName, fetchAllCategory, fetchAllFav, updateAllCategories } = useUser();
-
-  const [loading, setLoading] = useState(false);
-  const [favLoading, setFavLoading] = useState(false);
+  const { userName, allCategory, updateAllCategories } = useUser();
 
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [modalTitle, setModalTitle] = useState('');
@@ -48,39 +46,12 @@ const CategoriesDetailsList = ({
       let newArray = categoryData.filter((item) => item.id !== id);
       setCategoryData(newArray);
       updateAllCategories(categoryIndex, newArray);
-      removeCategoryDetails(userName, category, id);
+      await removeCategoryDetails(userName, category, id);
     } catch (err) {
       setShowErrorModal(true);
       setModalTitle('Error');
       setModalBody(err.message);
       setLoading(false);
-    }
-  };
-
-  const addToFavList = async (category) => {
-    try {
-      setFavLoading(true);
-      await addToFav(userName, category, data, data.id);
-      setFavLoading(false);
-      await onRefresh();
-      fetchAllFav(userName);
-    } catch (err) {
-      setShowErrorModal(true);
-      setModalTitle('Error');
-      setModalBody(err.message);
-    }
-  };
-  const removeFromFavList = async (category) => {
-    try {
-      setFavLoading(true);
-      await removeFromFav(userName, category, data, data.id);
-      setFavLoading(false);
-      await onRefresh();
-      fetchAllFav(userName);
-    } catch (err) {
-      setShowErrorModal(true);
-      setModalTitle('Error');
-      setModalBody(err.message);
     }
   };
 
@@ -133,12 +104,13 @@ const CategoriesDetailsList = ({
         </Text>
         <TouchableOpacity
           onPress={() => {
-            setShowErrorModal(true);
-            setModalTitle('Comming Soon');
-            setModalBody('add to fav comming soon..');
-            // item?.fav_icon == 'heart-outline'
-            //   ? addToFavList(item?.category)
-            //   : removeFromFavList(item?.category);
+            // setShowErrorModal(true);
+            // setModalTitle('Comming Soon');
+            // setModalBody('add to fav comming soon..');
+
+            item?.fav_icon == 'heart-outline'
+              ? addToFavList(index, item?.category, 'heart')
+              : addToFavList(index, item?.category, 'heart-outline');
           }}
         >
           <MaterialCommunityIcons name={item?.fav_icon} color={theme.mainColor} size={23} />
