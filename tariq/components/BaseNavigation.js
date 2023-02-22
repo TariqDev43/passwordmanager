@@ -1,20 +1,23 @@
-import { View, TouchableOpacity, StyleSheet } from 'react-native';
-import React, { memo, useState } from 'react';
+import { View, TouchableOpacity } from 'react-native';
+import React, { memo, useEffect, useState } from 'react';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import tw from 'tailwind-react-native-classnames';
 
 import { useNavigation } from '@react-navigation/native';
 import useTheme from '../Contexts/ThemeContext';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import useSettings from '../Contexts/SettingContext';
 
 const BaseNavigation = () => {
   /*   ALL STATES
    ********************************************* */
   //  all states
   const { theme } = useTheme();
+  const { selectedScreen, setSelectedScreen } = useSettings();
   const navigation = useNavigation();
-
-  const [selected, setSelected] = useState('home');
+  // selectedScreenScreen
+  // setSelectedScreenScreen
+  // const [selectedScreen, setSelectedScreen] = useState('home');
 
   // All animation
   const offset = useSharedValue(15);
@@ -24,9 +27,13 @@ const BaseNavigation = () => {
       transform: [{ translateX: withTiming(offset.value, { duration: 200 }) }],
     };
   });
+
+  useEffect(() => {
+    offset.value = selectedScreen == 'Home' ? 15 : selectedScreen == 'Fav' ? 93 : 168;
+  }, [selectedScreen]);
+
   /*   ALL FUNCTIONS
    ********************************************* */
-
   const nav = [
     {
       icon: 'home',
@@ -60,16 +67,16 @@ const BaseNavigation = () => {
         <TouchableOpacity
           onPress={() => {
             navigation.navigate(i.path);
-            setSelected(i.icon);
-            offset.value = i.icon == 'home' ? 15 : i.icon == 'heart' ? 93 : 168;
+            setSelectedScreen(i.path);
+            // offset.value = i.icon == 'home' ? 15 : i.icon == 'heart' ? 93 : 168;
           }}
           key={i.icon}
           style={[tw`my-2 flex-1 justify-center items-center`, {}]}
         >
           <MaterialCommunityIcons
-            name={i.icon == selected ? i.icon : `${i.icon}-outline`}
+            name={i.path == selectedScreen ? i.icon : `${i.icon}-outline`}
             size={30}
-            color={i.icon == selected ? theme.mainColor : 'white'}
+            color={i.path == selectedScreen ? theme.mainColor : 'white'}
           />
         </TouchableOpacity>
       ))}

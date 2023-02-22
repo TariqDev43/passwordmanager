@@ -211,35 +211,56 @@ const DetailsScreen = ({
       </View>
 
       {/* ************ Main List ************ */}
-
-      <ScrollView showsVerticalScrollIndicator={false}>
-        <View style={[tw`pb-20 px-2`, {}]}>
-          {categoryData &&
-            categoryData.map((item, index) => (
-              <Animated.View
-                style={[tw`mb-2`, {}]}
-                layout={Layout.delay(300)}
-                entering={ZoomInEasyDown}
-                exiting={ZoomOut}
-                key={item.id}
-              >
-                <CategoriesDetailsList
-                  categoryIndex={categoryIndex}
-                  item={item}
-                  index={index}
-                  addToFavList={addToFavList}
-                  setSelectedIndex={setSelectedIndex}
-                  categoryData={categoryData}
-                  setCategoryData={setCategoryData}
-                  setSelectedItem={setSelectedItem}
-                  setShowAddModal={setShowAddModal}
-                  setText={setText}
-                />
-              </Animated.View>
-            ))}
+      {categoryData.length > 0 && categoryData ? (
+        <ScrollView showsVerticalScrollIndicator={false}>
+          <View style={[tw`pb-20 px-2`, {}]}>
+            {categoryData &&
+              categoryData.map((item, index) => (
+                <Animated.View
+                  style={[tw`mb-2`, {}]}
+                  layout={Layout.delay(300)}
+                  entering={ZoomInEasyDown}
+                  exiting={ZoomOut}
+                  key={item.id}
+                >
+                  <CategoriesDetailsList
+                    categoryIndex={categoryIndex}
+                    item={item}
+                    index={index}
+                    addToFavList={addToFavList}
+                    setSelectedIndex={setSelectedIndex}
+                    categoryData={categoryData}
+                    setCategoryData={setCategoryData}
+                    setSelectedItem={setSelectedItem}
+                    setShowAddModal={setShowAddModal}
+                    setText={setText}
+                  />
+                </Animated.View>
+              ))}
+          </View>
+        </ScrollView>
+      ) : (
+        <View
+          style={[
+            tw`h-1/3 my-6 rounded-2xl justify-center items-center p-8`,
+            {
+              elevation: elevation ? elevationValue : 0,
+              backgroundColor: theme.bgColor,
+            },
+          ]}
+        >
+          <Text
+            style={[
+              tw`
+          text-lg font-semibold opacity-50 text-center
+          `,
+              { color: theme.mainTextColor },
+            ]}
+          >
+            You Don't have saved passwords in this category
+          </Text>
         </View>
-      </ScrollView>
-
+      )}
       {/* *********** ALL Models Below ************* */}
       <Modal
         visible={showAddModal}
@@ -268,7 +289,7 @@ const DetailsScreen = ({
                     style={[tw`flex-1 text-xl font-semibold`, { color: theme.mainColor }]}
                     numberOfLines={1}
                   >
-                    ADD INFO
+                    {seletedItem ? 'Update Info' : 'Add Info'}
                   </Text>
 
                   <View style={tw`flex-row justify-end items-center`}>
@@ -283,14 +304,7 @@ const DetailsScreen = ({
                         setFocusOff();
                       }}
                     >
-                      <MaterialCommunityIcons
-                        name='close'
-                        color={passwordFocus ? theme.mainColor : theme.grey}
-                        size={22}
-                      />
-                      {/* <Text style={[tw`font-bold text-xs m-1`, { color: theme.mainTextColor }]}>
-                      Close
-                    </Text> */}
+                      <MaterialCommunityIcons name='close' color={'white'} size={22} />
                     </TouchableOpacity>
 
                     {!seletedItem && (
@@ -334,11 +348,7 @@ const DetailsScreen = ({
                       >
                         {/* {!loading && <Text style={tw`font-bold text-xs m-1 text-white`}>UPDATE</Text>} */}
                         {!loading && (
-                          <MaterialCommunityIcons
-                            name='plus'
-                            color={passwordFocus ? theme.mainColor : theme.grey}
-                            size={22}
-                          />
+                          <MaterialCommunityIcons name='plus' color={'white'} size={22} />
                         )}
                         {loading && (
                           <View style={tw`m-1`}>

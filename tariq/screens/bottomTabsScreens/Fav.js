@@ -1,5 +1,5 @@
 import { memo, useEffect, useState } from 'react';
-import { Text, View } from 'react-native';
+import { Text, View, BackHandler } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import useSettings from '../../Contexts/SettingContext';
 import useTheme from '../../Contexts/ThemeContext';
@@ -8,15 +8,16 @@ import useUser from '../../Contexts/UserContext';
 import ErrorModal from '../../components/ErrorModal';
 import Animated from 'react-native-reanimated';
 import CategoriesFavList from '../../components/CategoriesFavList';
-import { RefreshControl } from 'react-native-gesture-handler';
+import { useNavigation } from '@react-navigation/native';
+// import { RefreshControl } from 'react-native-gesture-handler';
 
 const Fav = () => {
   /*   ALL STATES
    ********************************************* */
   //  all contexts
   const { theme } = useTheme();
-  const { elevation, elevationValue } = useSettings();
-  const { userName, allFav, updateAllFav } = useUser();
+  const { elevation, elevationValue, setSelectedScreen } = useSettings();
+  const { allFav } = useUser();
 
   //  Error Modal
   const [showErrorModal, setShowErrorModal] = useState(false);
@@ -25,9 +26,21 @@ const Fav = () => {
   const [modalBody, setModalBody] = useState('');
 
   const [refreshing, setRefreshing] = useState(false);
+  const navigation = useNavigation();
 
   /*   ALL FUNCTIONS
    ********************************************* */
+  function handleBackButtonClick() {
+    setSelectedScreen('Home');
+    navigation.goBack();
+    return true;
+  }
+  useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', handleBackButtonClick);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBackButtonClick);
+    };
+  }, []);
   useEffect(() => {
     setFavData(allFav);
   }, [allFav]);
@@ -67,7 +80,7 @@ const Fav = () => {
       {favData && favData.length == 0 && (
         <View
           style={[
-            tw`h-1/2 my-6 rounded-2xl justify-center items-center p-8`,
+            tw`h-1/3 my-6 rounded-2xl justify-center items-center p-8`,
             {
               elevation: elevation ? elevationValue : 0,
               backgroundColor: theme.bgColor,

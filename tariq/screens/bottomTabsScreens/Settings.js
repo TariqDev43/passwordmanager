@@ -1,25 +1,39 @@
-import { Keyboard, Pressable, Switch, Text, TouchableOpacity, View } from 'react-native';
+import {
+  Keyboard,
+  Pressable,
+  Switch,
+  Text,
+  TouchableOpacity,
+  View,
+  BackHandler,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
-import { memo, useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Modal } from 'react-native';
 import Slider from '@react-native-community/slider';
 import useTheme from '../../Contexts/ThemeContext';
 import useSettings from '../../Contexts/SettingContext';
 import tw from 'tailwind-react-native-classnames';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import LottieView from 'lottie-react-native';
+import useUser from '../../Contexts/UserContext';
+import { useNavigation } from '@react-navigation/native';
 
 const Settings = () => {
   /*   ALL STATES
    ********************************************* */
   //  all contexts
   const { theme, changeColor, themeMode, changeTheme } = useTheme();
-  const { elevation, elevationValue, changeElevation, changeElevationValue } = useSettings();
+  const { elevation, elevationValue, changeElevation, changeElevationValue, setSelectedScreen } =
+    useSettings();
+  const { userInfo } = useUser();
 
   const [settingsToggle, setSettingsToggle] = useState(elevation);
 
   const [slider, setSlider] = useState(parseInt(elevationValue));
   const [showColorModal, setShowColorModal] = useState(false);
+  const navigation = useNavigation();
 
   const colorList = [
     '#0abdbf',
@@ -53,6 +67,19 @@ const Settings = () => {
   /*   ALL FUNCTIONS
    ********************************************* */
 
+  function handleBackButtonClick() {
+    setSelectedScreen('Home');
+    navigation.goBack();
+    return true;
+  }
+
+  useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', handleBackButtonClick);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBackButtonClick);
+    };
+  }, []);
+
   const handleShadow = async () => {
     setSettingsToggle(!settingsToggle);
     changeElevation(!settingsToggle);
@@ -62,15 +89,42 @@ const Settings = () => {
   });
 
   return (
-    <SafeAreaView style={[tw`px-6 flex-1 `, { backgroundColor: theme.mainBgColor }]}>
+    <SafeAreaView style={[tw`px-6 flex-1  `, { backgroundColor: theme.mainBgColor }]}>
       {/* TopBar */}
-      <View style={tw`mb-5`}>
-        <Text style={[tw`text-3xl font-extrabold`, { color: theme.mainColor }]}>Settings</Text>
+      <View
+        style={[
+          tw`mb-5 flex-row rounded-xl mx-1 p-2`,
+          {
+            elevation: elevation ? elevationValue : 0,
+            // shadowColor: elevation ? theme.mainColor : theme.mainBgColor,
+            backgroundColor: theme.mainColor,
+          },
+        ]}
+      >
+        <View style={[tw``, {}]}>
+          <LottieView
+            loop
+            autoPlay
+            style={{ width: 130, height: 130, alignSelf: 'center' }}
+            source={require('../../assets/boySmiling.json')}
+          />
+        </View>
+        <View style={[tw`justify-center items-center`, {}]}>
+          <Text numberOfLines={1} style={[tw`font-semibold text-white `]}>
+            {userInfo.username.toUpperCase()}
+          </Text>
+          <Text numberOfLines={1} style={[tw`font-semibold   text-white`]}>
+            {userInfo.email}
+          </Text>
+        </View>
       </View>
+      {/* <View style={tw`mb-5 mt-4`}>
+        <Text style={[tw`text-3xl font-extrabold `, { color: theme.mainColor }]}>Settings</Text>
+      </View> */}
       {/* *********  Shadows *********** */}
       <View
         style={[
-          tw`py-6 px-4 m-1 rounded-lg`,
+          tw`py-3 px-4 m-1 rounded-lg`,
           {
             elevation: elevation ? elevationValue : 0,
             // shadowColor: elevation ? theme.mainColor : theme.mainBgColor,
@@ -115,7 +169,7 @@ const Settings = () => {
       <View
         className=''
         style={[
-          tw`py-6 px-4 m-1 my-2 rounded-lg flex-row items-center `,
+          tw`py-3 px-4 m-1 my-2 rounded-lg flex-row items-center `,
           {
             elevation: elevation ? elevationValue : 0,
             // shadowColor: elevation ? theme.mainColor : theme.mainBgColor,
@@ -134,13 +188,11 @@ const Settings = () => {
       </View>
       {/* *********  Theme Mode *********** */}
       <View
-        className=''
         style={[
           tw`py-2 px-4 m-1 my-2 rounded-lg flex-row items-center `,
           {
             elevation: elevation ? elevationValue : 0,
             // shadowColor: elevation ? theme.mainColor : theme.mainBgColor,
-
             backgroundColor: theme.bgColor,
           },
         ]}
@@ -176,7 +228,7 @@ const Settings = () => {
               offset.value = 5;
               changeTheme('light');
             }}
-            style={[tw`py-2 rounded-xl`]}
+            style={[tw`py-2 rounded-xl flex-1 items-center`]}
           >
             <Text style={[tw``, { color: theme.mainColor }]}>Light</Text>
           </TouchableOpacity>
@@ -185,7 +237,7 @@ const Settings = () => {
               offset.value = 61;
               changeTheme('dark');
             }}
-            style={[tw`py-2 mx-1 rounded-xl`]}
+            style={[tw`py-2 mx-1 rounded-xl flex-1 items-center`]}
           >
             <Text style={[tw``, { color: theme.mainColor }]}>Dark</Text>
           </TouchableOpacity>
@@ -194,7 +246,7 @@ const Settings = () => {
               offset.value = 115;
               changeTheme('gray');
             }}
-            style={[tw`py-2 rounded-xl`]}
+            style={[tw`py-2 rounded-xl flex-1  items-center`]}
           >
             <Text style={[tw``, { color: theme.mainColor }]}>Gray</Text>
           </TouchableOpacity>
@@ -245,4 +297,4 @@ const Settings = () => {
   );
 };
 
-export default memo(Settings);
+export default Settings;

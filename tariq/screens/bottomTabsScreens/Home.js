@@ -9,9 +9,10 @@ import {
   TextInput,
   SafeAreaView,
   ActivityIndicator,
+  BackHandler,
 } from 'react-native';
 
-import { memo, useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useMemo } from 'react';
 import useTheme from '../../Contexts/ThemeContext';
 import useUser from '../../Contexts/UserContext';
@@ -30,7 +31,7 @@ const Home = () => {
   const navigation = useNavigation();
   //  all contexts
   const { theme } = useTheme();
-  const { userName, allCategory, fetchAllCategory, addNewCategory } = useUser();
+  const { userName, allCategory, fetchAllCategory, addNewCategory, changeUser } = useUser();
   const { elevation, elevationValue } = useSettings();
 
   // All Modal
@@ -70,11 +71,13 @@ const Home = () => {
 
   /*   All Functions
    ********************************************* */
+
   useEffect(() => {
     navigation.addListener('beforeRemove', (e) => {
-      e.preventDefault();
+      changeUser(null);
     });
   }, [navigation]);
+
   // ADD CATEGORY
   const onAddCategory = () => {
     setLoading(true);
@@ -412,4 +415,4 @@ const Home = () => {
   );
 };
 
-export default memo(Home);
+export default Home;
