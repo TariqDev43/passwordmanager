@@ -88,14 +88,14 @@ const Login = () => {
   const loginFunc = async () => {
     // if (loginEmail == null) {
     //   setShowModal(true);
-    //   setModalTitle("Login Error");
-    //   setModalBody("Email Is Required");
+    //   setModalTitle('Login Error');
+    //   setModalBody('Email Is Required');
     //   return;
     // }
     // if (loginPassword == null) {
     //   setShowModal(true);
-    //   setModalTitle("Login Error");
-    //   setModalBody("Password Is Required");
+    //   setModalTitle('Login Error');
+    //   setModalBody('Password Is Required');
     //   return;
     // }
     setFocusOff();
@@ -132,40 +132,40 @@ const Login = () => {
   };
   const registerFunc = async () => {
     setFocusOff();
-    // if (username == null) {
-    //   setShowModal(true);
-    //   setModalTitle('Register Error');
-    //   setModalBody('Username Is Required');
-    //   return;
-    // }
-    // if (registerEmail == null) {
-    //   setShowModal(true);
-    //   setModalTitle('Register Error');
-    //   setModalBody('Email Is Required');
-    //   return;
-    // }
-    // if (registerPassword == null) {
-    //   setShowModal(true);
-    //   setModalTitle('Register Error');
-    //   setModalBody('Password Is Required');
-    //   return;
-    // }
-    // if (registerConfirmPassword == null) {
-    //   setShowModal(true);
-    //   setModalTitle('Register Error');
-    //   setModalBody('Confirm Password Is Required');
-    //   return;
-    // }
-    // if (registerPassword != registerConfirmPassword) {
-    //   setShowModal(true);
-    //   setModalTitle('Register Error');
-    //   setModalBody('Passwords Do Not Match');
-    //   return;
-    // }
+    if (username == null) {
+      setShowModal(true);
+      setModalTitle('Register Error');
+      setModalBody('Username Is Required');
+      return;
+    }
+    if (registerEmail == null) {
+      setShowModal(true);
+      setModalTitle('Register Error');
+      setModalBody('Email Is Required');
+      return;
+    }
+    if (registerPassword == null) {
+      setShowModal(true);
+      setModalTitle('Register Error');
+      setModalBody('Password Is Required');
+      return;
+    }
+    if (registerConfirmPassword == null) {
+      setShowModal(true);
+      setModalTitle('Register Error');
+      setModalBody('Confirm Password Is Required');
+      return;
+    }
+    if (registerPassword != registerConfirmPassword) {
+      setShowModal(true);
+      setModalTitle('Register Error');
+      setModalBody('Passwords Do Not Match');
+      return;
+    }
     try {
       setLoginLoading(true);
-      const user = await createUser('a@b.com', 'abc123', 'test');
-      // const user = await createUser(registerEmail, registerPassword, username);
+      // const user = await createUser('a@b.com', 'abc123', 'test');
+      const user = await createUser(registerEmail, registerPassword, username);
       if (user.error) {
         setShowModal(true);
         setModalTitle('Login Error');
@@ -297,7 +297,6 @@ const Login = () => {
                   {
                     backgroundColor: theme.bgColor,
                     elevation: 8,
-                    shadowColor: 'grey',
                   },
                 ]}
               >
@@ -457,7 +456,6 @@ const Login = () => {
                   {
                     backgroundColor: theme.bgColor,
                     elevation: 8,
-                    shadowColor: 'grey',
                   },
                 ]}
               >

@@ -16,7 +16,7 @@ const Settings = () => {
   const { theme, changeColor, themeMode, changeTheme } = useTheme();
   const { elevation, elevationValue, changeElevation, changeElevationValue } = useSettings();
 
-  const [settingsToggle, setSettingsToggle] = useState(elevation === 'true' ? true : false);
+  const [settingsToggle, setSettingsToggle] = useState(elevation);
 
   const [slider, setSlider] = useState(parseInt(elevationValue));
   const [showColorModal, setShowColorModal] = useState(false);
@@ -73,7 +73,7 @@ const Settings = () => {
           tw`py-6 px-4 m-1 rounded-lg`,
           {
             elevation: elevation ? elevationValue : 0,
-            shadowColor: elevation ? theme.mainColor : theme.mainBgColor,
+            // shadowColor: elevation ? theme.mainColor : theme.mainBgColor,
             backgroundColor: theme.bgColor,
           },
         ]}
@@ -118,7 +118,7 @@ const Settings = () => {
           tw`py-6 px-4 m-1 my-2 rounded-lg flex-row items-center `,
           {
             elevation: elevation ? elevationValue : 0,
-            shadowColor: elevation ? theme.mainColor : theme.mainBgColor,
+            // shadowColor: elevation ? theme.mainColor : theme.mainBgColor,
 
             backgroundColor: theme.bgColor,
           },
@@ -139,7 +139,7 @@ const Settings = () => {
           tw`py-2 px-4 m-1 my-2 rounded-lg flex-row items-center `,
           {
             elevation: elevation ? elevationValue : 0,
-            shadowColor: elevation ? theme.mainColor : theme.mainBgColor,
+            // shadowColor: elevation ? theme.mainColor : theme.mainBgColor,
 
             backgroundColor: theme.bgColor,
           },

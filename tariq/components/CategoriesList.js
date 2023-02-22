@@ -1,23 +1,22 @@
-import React, { memo, useState } from 'react';
+import React, { memo, useEffect, useState } from 'react';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Animated, { BounceInDown, Layout } from 'react-native-reanimated';
 import tw from 'tailwind-react-native-classnames';
 import { Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import useSettings from '../Contexts/SettingContext';
 import useTheme from '../Contexts/ThemeContext';
-import { removeCategory } from '../services/firebaseService';
 import ErrorModal from './ErrorModal';
-import useUser from '../Contexts/UserContext';
 
-const CategoriesList = ({ index, categoryIndex, item, onRefresh, navigate }) => {
+const CategoriesList = ({ categoryIndex, item, navigate, deleteCategory, updateCategory }) => {
   /*   ALL STATES
    ********************************************* */
   //  all contexts
   const { theme } = useTheme();
   const { elevation, elevationValue } = useSettings();
-  const { userName, allCategory } = useUser();
 
   const [loading, setLoading] = useState(false);
+
+  const [initialState, setInitialState] = useState(true);
 
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [modalTitle, setModalTitle] = useState('');
@@ -25,24 +24,15 @@ const CategoriesList = ({ index, categoryIndex, item, onRefresh, navigate }) => 
 
   /*   ALL FUCNTIONS
    ********************************************* */
-  const deleteCategory = async (category) => {
-    try {
-      setLoading(true);
-      await removeCategory(userName, category);
-      setLoading(false);
-      await onRefresh();
-    } catch (err) {
-      setShowErrorModal(true);
-      setModalTitle('Error');
-      setModalBody(err.message);
-      setLoading(false);
-    }
-  };
+
+  useEffect(() => {
+    setInitialState(false);
+  }, []);
 
   return (
     <Animated.View
-      layout={Layout}
-      entering={BounceInDown.delay(index + 1 * 100)}
+      layout={Layout.easing}
+      entering={initialState ? BounceInDown.delay(categoryIndex * 100) : BounceInDown}
       style={[tw`flex-1 mx-1 `, { marginVertical: 5 }]}
     >
       <ErrorModal
@@ -51,46 +41,42 @@ const CategoriesList = ({ index, categoryIndex, item, onRefresh, navigate }) => 
         modalTitle={modalTitle}
         modalBody={modalBody}
       />
-      {allCategory && (
+      <TouchableOpacity
+        style={[
+          tw`py-4 px-2 rounded-lg flex-row items-center`,
+
+          { backgroundColor: theme.bgColor, elevation: elevation ? elevationValue : 0 },
+        ]}
+        onLongPress={() => {
+          updateCategory(item, categoryIndex);
+        }}
+        onPress={() => {
+          navigate('Details', {
+            item,
+            categoryIndex,
+          });
+        }}
+      >
+        {/* ****** Icon  ******* */}
+        <MaterialCommunityIcons
+          name={item?.icon.icon.toLowerCase()}
+          color={theme.mainColor}
+          size={33}
+        />
+        {/* ******  Name  ******* */}
+        <Text numberOfLines={1} style={[tw`flex-1 text-xs mx-2`, { color: theme.mainTextColor }]}>
+          {item.category.toUpperCase()}
+        </Text>
+        {/* ******  3-Dots menu  ******* */}
         <TouchableOpacity
           onPress={() => {
-            navigate('Details', {
-              item,
-              index,
-              categoryIndex,
-            });
+            deleteCategory(item.category);
           }}
-          style={[
-            tw`py-4 px-2 rounded-lg flex-1 flex-row items-center`,
-            {
-              elevation: elevation ? elevationValue : 0,
-              backgroundColor: theme.bgColor,
-            },
-          ]}
         >
-          {/* ****** Icon  ******* */}
-          <MaterialCommunityIcons
-            name={item?.icon.icon.toLowerCase()}
-            color={theme.mainColor}
-            size={33}
-          />
-          {/* ******  Name  ******* */}
-          <Text numberOfLines={1} style={[tw`flex-1 text-xs mx-2`, { color: theme.mainTextColor }]}>
-            {item.category.toUpperCase()}
-          </Text>
-          {/* ******  3-Dots menu  ******* */}
-          <TouchableOpacity
-            onPress={() => {
-              deleteCategory(item.category);
-            }}
-          >
-            {!loading && (
-              <MaterialCommunityIcons name={'delete'} color={theme.mainColor} size={25} />
-            )}
-            {loading && <ActivityIndicator />}
-          </TouchableOpacity>
+          {!loading && <MaterialCommunityIcons name={'delete'} color={theme.mainColor} size={25} />}
+          {loading && <ActivityIndicator />}
         </TouchableOpacity>
-      )}
+      </TouchableOpacity>
     </Animated.View>
   );
 };

@@ -77,7 +77,7 @@ export const createUser = async (email, password, name) => {
           email: 'abc@example.com',
           account_name: 'example Account',
           password: 'examplepassword',
-          fav_icon: 'heart',
+          fav_icon: 'heart-outline',
           key: serverTimestamp(),
         },
       },
@@ -163,14 +163,12 @@ export const getAllCategories = async (username) => {
       allCategories.push({
         category: category.key,
         icon: category.val().info,
-        items: category.val().items && ArrayOfPasswords(category.val().items),
+        items: category.val().items ? ArrayOfPasswords(category.val().items) : [],
       });
     });
 
     return allCategories;
   } catch (err) {
-    console.log(data);
-
     throw err;
   }
 };
@@ -186,6 +184,32 @@ export const addCategory = async (username, categoryName, icon) => {
   const newCategoryRef = ref(db, `Users/${username}/Categories/${categoryName.toLowerCase()}`);
   try {
     await set(newCategoryRef, newCategoryData);
+    return 'Done';
+  } catch (err) {
+    throw err;
+  }
+};
+
+export const updateCategory = async (username, categoryData, categoryName, icon) => {
+  const oldCategoryRef = ref(
+    db,
+    `Users/${username}/Categories/${categoryData.category.toLowerCase()}`
+  );
+  const newCategoryRef = ref(db, `Users/${username}/Categories/${categoryName.toLowerCase()}`);
+
+  try {
+    // getting data of category to update
+    const data = await get(oldCategoryRef, categoryData);
+
+    let newCategoryData = {
+      info: {
+        icon: icon.toLowerCase(),
+      },
+      items: data.val().items ? data.val().items : [],
+    };
+    await removeCategory(username, categoryData.category);
+    await set(newCategoryRef, newCategoryData);
+
     return 'Done';
   } catch (err) {
     throw err;
@@ -263,8 +287,6 @@ export const getFavs = async (name) => {
 };
 
 export const addToFav = async (username, category, categoryData, id) => {
-  // console.log(categoryData);
-
   try {
     // set data to Favs
     const favRef = ref(db, `Users/${username}/Favs/${id}`);

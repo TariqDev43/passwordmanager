@@ -11,12 +11,12 @@ import * as Clipboard from 'expo-clipboard';
 import useUser from '../Contexts/UserContext';
 import { removeFromFav } from '../services/firebaseService';
 
-const CategoriesDetailsList = ({ item }) => {
+const CategoriesFavList = ({ item }) => {
   /*   ALL STATES
    ********************************************* */
   //  all contexts
   const { theme } = useTheme();
-  const { userName } = useUser();
+  const { userName, updateAllFav, allCategory, updateAllCategories } = useUser();
   const { elevation, elevationValue } = useSettings();
 
   const [showErrorModal, setShowErrorModal] = useState(false);
@@ -34,7 +34,25 @@ const CategoriesDetailsList = ({ item }) => {
   const deleteFromFavList = async (category, data) => {
     try {
       setLoading(true);
-      await removeFromFav(userName, category, data, data.id);
+      updateAllFav('remove', data);
+      removeFromFav(userName, category, data, data.id);
+      let newArrary = [...allCategory];
+      newArrary.map((item, mainIndex) => {
+        if (item.category === category) {
+          let updatedFav = item.items;
+          item.items.map((fav, index) => {
+            if (fav.id === data.id) {
+              updatedFav[index] = {
+                ...fav,
+                fav_icon: fav.fav_icon == 'heart' ? 'heart-outline' : 'heart',
+              };
+              updateAllCategories(mainIndex, updatedFav);
+              return;
+            }
+          });
+          return;
+        }
+      });
     } catch (err) {
       setShowErrorModal(true);
       setModalTitle('Copy Error');
@@ -99,15 +117,14 @@ const CategoriesDetailsList = ({ item }) => {
           {item?.category.toUpperCase()}
         </Text>
 
-        {/* <TouchableOpacity
+        <TouchableOpacity
           onPress={() => {
-            
-            deleteFromFavList(item?.category, data);
+            deleteFromFavList(item?.category, item);
           }}
         >
           {!loading && <MaterialCommunityIcons name={'delete'} color={theme.mainColor} size={25} />}
           {loading && <ActivityIndicator />}
-        </TouchableOpacity> */}
+        </TouchableOpacity>
       </View>
       {/* ******* Hr underline ******* */}
       <View style={tw`border border-gray-200 mt-2 `}></View>
@@ -197,4 +214,4 @@ const CategoriesDetailsList = ({ item }) => {
   );
 };
 
-export default memo(CategoriesDetailsList);
+export default memo(CategoriesFavList);

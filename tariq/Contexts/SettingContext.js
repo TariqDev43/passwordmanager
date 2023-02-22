@@ -13,8 +13,8 @@ const SettingContext = createContext({});
 export const SettingProvider = memo(({ children }) => {
   /*  All States
    ********************************************* */
-  const [elevation, setElevation] = useState(true);
-  const [elevationValue, setElevationValue] = useState(1);
+  const [elevation, setElevation] = useState(null);
+  const [elevationValue, setElevationValue] = useState(null);
 
   /*   Functions
    ********************************************* */

@@ -11,18 +11,17 @@ import {
   ActivityIndicator,
 } from 'react-native';
 
-import { memo, useCallback, useEffect, useState } from 'react';
+import { memo, useCallback, useState } from 'react';
 import { useMemo } from 'react';
 import useTheme from '../../Contexts/ThemeContext';
 import useUser from '../../Contexts/UserContext';
 import useSettings from '../../Contexts/SettingContext';
 import tw from 'tailwind-react-native-classnames';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { addCategory } from '../../services/firebaseService';
+import { addCategory, removeCategory, updateCategory } from '../../services/firebaseService';
 import { RefreshControl } from 'react-native-gesture-handler';
 import CategoriesList from '../../components/CategoriesList';
 import ErrorModal from '../../components/ErrorModal';
-import Animated, { Layout } from 'react-native-reanimated';
 
 const Home = ({ navigation: { navigate } }) => {
   /*   All States
@@ -30,7 +29,7 @@ const Home = ({ navigation: { navigate } }) => {
 
   //  all contexts
   const { theme } = useTheme();
-  const { userName, allCategory, fetchAllCategory } = useUser();
+  const { userName, allCategory, fetchAllCategory, addNewCategory } = useUser();
   const { elevation, elevationValue } = useSettings();
 
   // All Modal
@@ -43,9 +42,12 @@ const Home = ({ navigation: { navigate } }) => {
   const [modalBody, setModalBody] = useState('');
 
   // All Others
+  const [categoryList, setCategoryList] = useState(allCategory);
   const [isFocused, setIsFocused] = useState(false);
   const [icon, setIcon] = useState('heart');
   const [categoryText, setCategoryText] = useState('');
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [selectedIndex, setSelctedIndex] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -67,9 +69,8 @@ const Home = ({ navigation: { navigate } }) => {
 
   /*   All Functions
    ********************************************* */
-
   // ADD CATEGORY
-  const addNewCategory = async () => {
+  const onAddCategory = () => {
     setLoading(true);
     if (categoryText === '') {
       setShowErrorModal(true);
@@ -79,16 +80,19 @@ const Home = ({ navigation: { navigate } }) => {
       return;
     }
     try {
-      const data = await addCategory(userName, categoryText, icon);
+      const newCategoryData = {
+        category: categoryText.toLocaleLowerCase(),
+        icon: { icon: icon.toLocaleLowerCase() },
+        items: [],
+      };
+      let newArray = [...categoryList, newCategoryData];
+      setCategoryList(newArray);
+      addNewCategory(newArray);
+      addCategory(userName, categoryText, icon);
       setShowModal(false);
-      if (data) {
-        const done = await onRefresh();
-        if (done) {
-          setLoading(false);
-          setCategoryText('');
-          setIcon('heart');
-        }
-      }
+      setLoading(false);
+      setCategoryText('');
+      setIcon('heart');
     } catch (err) {
       setShowErrorModal(true);
       setModalTitle('Error');
@@ -96,10 +100,54 @@ const Home = ({ navigation: { navigate } }) => {
     }
   };
 
+  const onUpdateCategory = async () => {
+    try {
+      setLoading(true);
+      await updateCategory(userName, selectedItem, categoryText, icon);
+      let newArray = categoryList;
+      newArray[selectedIndex] = {
+        ...newArray[selectedIndex],
+        category: categoryText,
+        icon: { icon },
+      };
+      setCategoryList(newArray);
+      addNewCategory(newArray);
+      setCategoryText('');
+      setSelectedItem('');
+      setIcon('heart');
+      setLoading(false);
+      setShowModal(false);
+    } catch (err) {
+      setShowErrorModal(true);
+      setModalTitle('Update Error');
+      setModalBody(err.message);
+      setLoading(false);
+      setShowModal(false);
+    }
+  };
+
+  const updateCategoryClick = useCallback((item, index) => {
+    if (item) {
+      setSelectedItem(item);
+      setSelctedIndex(index);
+      setShowModal(true);
+      setCategoryText(item.category);
+      setIcon(item.icon.icon);
+    }
+  });
+
+  const deleteCategory = (category) => {
+    let newArray = categoryList.filter((item) => item.category != category);
+    removeCategory(userName, category);
+    setCategoryList(newArray);
+    addNewCategory(newArray);
+  };
+
   const onRefresh = async () => {
     try {
       setRefreshing(true);
-      await fetchAllCategory(userName);
+      const allCategoryNewData = await fetchAllCategory(userName);
+      setCategoryList(allCategoryNewData);
       setRefreshing(false);
       return true;
     } catch (err) {
@@ -109,24 +157,12 @@ const Home = ({ navigation: { navigate } }) => {
     }
   };
 
-  const renderItem = useCallback(
-    ({ item, index }) => (
-      <CategoriesList
-        categoryIndex={index}
-        item={item}
-        onRefresh={onRefresh}
-        allCategory={allCategory}
-        navigate={navigate}
-      />
-    ),
-    [allCategory]
-  );
   return (
     <SafeAreaView
       className={`flex-1 `}
       style={[tw`flex-1 `, { backgroundColor: theme.mainBgColor }]}
     >
-      {/* Error Modal */}
+      {/**************** ErrorModal ******************************/}
 
       <ErrorModal
         show={showErrorModal}
@@ -135,12 +171,32 @@ const Home = ({ navigation: { navigate } }) => {
         modalBody={modalBody}
       />
 
-      {/* Heading */}
+      {/* Heading --------------------- */}
       <View style={tw`flex-row px-6 mt-6 justify-between items-center mb-2`}>
         <Text style={[tw`text-3xl font-extrabold`, { color: theme.mainColor }]}>Categories</Text>
         <TouchableOpacity onPress={() => setShowModal(!showModal)}>
           <MaterialCommunityIcons name='plus-circle' size={40} color={theme.mainColor} />
         </TouchableOpacity>
+      </View>
+      {/**************** Main Scrollable Content ******************************/}
+      <View style={tw`pb-16 px-5 py-2`}>
+        <FlatList
+          contentContainerStyle={{ paddingBottom: 160 }}
+          data={categoryList}
+          showsVerticalScrollIndicator={false}
+          numColumns={2}
+          keyExtractor={(item) => item.category}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+          renderItem={({ item, index }) => (
+            <CategoriesList
+              categoryIndex={index}
+              item={item}
+              navigate={navigate}
+              updateCategory={updateCategoryClick}
+              deleteCategory={deleteCategory}
+            />
+          )}
+        />
       </View>
       {/**************** Category Modal ******************************/}
       <Modal
@@ -154,6 +210,9 @@ const Home = ({ navigation: { navigate } }) => {
           onPress={() => {
             Keyboard.dismiss();
             setShowModal(!showModal);
+            setCategoryText('');
+            setSelectedItem('');
+            setIcon('heart');
           }}
         >
           <Pressable onPress={() => setShowModal(true)}>
@@ -206,29 +265,55 @@ const Home = ({ navigation: { navigate } }) => {
                     tw`mx-2 p-1 px-2 rounded `,
                     { backgroundColor: theme.bgColor, elevation: 2 },
                   ]}
-                  onPress={() => setShowModal(!showModal)}
+                  onPress={() => {
+                    setShowModal(!showModal);
+                    setCategoryText('');
+                    setSelectedItem('');
+                    setIcon('heart');
+                  }}
                 >
                   <Text style={[tw`font-bold text-xs m-1`, { color: theme.mainTextColor }]}>
                     Close
                   </Text>
                 </TouchableOpacity>
-                <TouchableOpacity
-                  style={[
-                    tw`p-1 px-3 rounded`,
-                    {
-                      backgroundColor: theme.mainColor,
-                      elevation: 3,
-                    },
-                  ]}
-                  onPress={() => addNewCategory()}
-                >
-                  {!loading && <Text style={tw`font-bold text-xs m-1 text-white`}>ADD</Text>}
-                  {loading && (
-                    <View style={tw`m-1`}>
-                      <ActivityIndicator color={'white'} />
-                    </View>
-                  )}
-                </TouchableOpacity>
+                {!selectedItem && (
+                  <TouchableOpacity
+                    style={[
+                      tw`p-1 px-3 rounded`,
+                      {
+                        backgroundColor: theme.mainColor,
+                        elevation: 3,
+                      },
+                    ]}
+                    onPress={() => onAddCategory()}
+                  >
+                    {!loading && <Text style={tw`font-bold text-xs m-1 text-white`}>ADD</Text>}
+                    {loading && (
+                      <View style={tw`m-1`}>
+                        <ActivityIndicator color={'white'} />
+                      </View>
+                    )}
+                  </TouchableOpacity>
+                )}
+                {selectedItem && (
+                  <TouchableOpacity
+                    style={[
+                      tw`p-1 px-3 rounded`,
+                      {
+                        backgroundColor: theme.mainColor,
+                        elevation: 3,
+                      },
+                    ]}
+                    onPress={() => onUpdateCategory()}
+                  >
+                    {!loading && <Text style={tw`font-bold text-xs m-1 text-white`}>UPDATE</Text>}
+                    {loading && (
+                      <View style={tw`m-1`}>
+                        <ActivityIndicator color={'white'} />
+                      </View>
+                    )}
+                  </TouchableOpacity>
+                )}
               </View>
             </View>
           </Pressable>
@@ -315,19 +400,7 @@ const Home = ({ navigation: { navigate } }) => {
           </Pressable>
         </Pressable>
       </Modal>
-      {/**************** Main Scrollable Content ******************************/}
-      <View style={tw`pb-16 px-5 py-2`}>
-        <Animated.FlatList
-          contentContainerStyle={{ paddingBottom: 160 }}
-          data={allCategory}
-          layout={Layout}
-          showsVerticalScrollIndicator={false}
-          numColumns={2}
-          keyExtractor={(item) => item.category}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-          renderItem={renderItem}
-        />
-      </View>
+
       {/**************** Category Settings Modal ******************************/}
     </SafeAreaView>
   );
