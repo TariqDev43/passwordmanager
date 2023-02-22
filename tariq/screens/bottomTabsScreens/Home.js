@@ -11,7 +11,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 
-import { memo, useCallback, useState } from 'react';
+import { memo, useCallback, useEffect, useState } from 'react';
 import { useMemo } from 'react';
 import useTheme from '../../Contexts/ThemeContext';
 import useUser from '../../Contexts/UserContext';
@@ -22,11 +22,12 @@ import { addCategory, removeCategory, updateCategory } from '../../services/fire
 import { RefreshControl } from 'react-native-gesture-handler';
 import CategoriesList from '../../components/CategoriesList';
 import ErrorModal from '../../components/ErrorModal';
+import { useNavigation } from '@react-navigation/native';
 
-const Home = ({ navigation: { navigate } }) => {
+const Home = () => {
   /*   All States
    ********************************************* */
-
+  const navigation = useNavigation();
   //  all contexts
   const { theme } = useTheme();
   const { userName, allCategory, fetchAllCategory, addNewCategory } = useUser();
@@ -69,6 +70,11 @@ const Home = ({ navigation: { navigate } }) => {
 
   /*   All Functions
    ********************************************* */
+  useEffect(() => {
+    navigation.addListener('beforeRemove', (e) => {
+      e.preventDefault();
+    });
+  }, [navigation]);
   // ADD CATEGORY
   const onAddCategory = () => {
     setLoading(true);
@@ -191,7 +197,7 @@ const Home = ({ navigation: { navigate } }) => {
             <CategoriesList
               categoryIndex={index}
               item={item}
-              navigate={navigate}
+              navigate={navigation.navigate}
               updateCategory={updateCategoryClick}
               deleteCategory={deleteCategory}
             />
