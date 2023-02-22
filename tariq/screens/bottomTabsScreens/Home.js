@@ -103,7 +103,7 @@ const Home = ({ navigation: { navigate } }) => {
   const onUpdateCategory = async () => {
     try {
       setLoading(true);
-      await updateCategory(userName, selectedItem, categoryText, icon);
+      updateCategory(userName, selectedItem, categoryText, icon);
       let newArray = categoryList;
       newArray[selectedIndex] = {
         ...newArray[selectedIndex],
