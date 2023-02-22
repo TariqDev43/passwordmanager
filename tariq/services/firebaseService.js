@@ -38,7 +38,7 @@ export const createUser = async (email, password, name) => {
   const defaultCategories = {
     facebook: {
       info: {
-        icon: 'Facebook',
+        icon: 'facebook',
       },
       items: {
         '-N6dwzTiLPKzIT7gaAMi': {
@@ -53,7 +53,7 @@ export const createUser = async (email, password, name) => {
     },
     google: {
       info: {
-        icon: 'Google',
+        icon: 'google',
       },
       items: {
         '-N8nvwDXZms7DpuLjDuu': {
@@ -69,7 +69,7 @@ export const createUser = async (email, password, name) => {
     },
     instagram: {
       info: {
-        icon: 'Instagram',
+        icon: 'instagram',
       },
       items: {
         '-N6ibRGx4HG9kPyFakvK': {
