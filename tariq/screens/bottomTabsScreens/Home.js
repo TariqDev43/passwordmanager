@@ -74,6 +74,8 @@ const Home = () => {
 
   useEffect(() => {
     navigation.addListener('beforeRemove', (e) => {
+      // BackHandler.exitApp();
+      // e.preventDefault();
       changeUser(null);
     });
   }, [navigation]);
@@ -182,7 +184,7 @@ const Home = () => {
 
       {/* Heading --------------------- */}
       <View style={tw`flex-row px-6 mt-6 justify-between items-center mb-2`}>
-        <Text style={[tw`text-3xl font-extrabold`, { color: theme.mainColor }]}>Categories</Text>
+        <Text style={[tw`text-2xl font-extrabold`, { color: theme.mainColor }]}>Categories</Text>
         <TouchableOpacity onPress={() => setShowModal(!showModal)}>
           <MaterialCommunityIcons name='plus-circle' size={40} color={theme.mainColor} />
         </TouchableOpacity>

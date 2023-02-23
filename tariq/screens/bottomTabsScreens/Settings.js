@@ -93,7 +93,7 @@ const Settings = () => {
       {/* TopBar */}
       <View
         style={[
-          tw`mb-5 flex-row rounded-xl mx-1 p-2`,
+          tw`mb-5 flex-row items-center rounded-xl h-1/5 mx-1 pl-32`,
           {
             elevation: elevation ? elevationValue : 0,
             // shadowColor: elevation ? theme.mainColor : theme.mainBgColor,
@@ -101,15 +101,15 @@ const Settings = () => {
           },
         ]}
       >
-        <View style={[tw``, {}]}>
+        <View style={[tw`absolute -left-6 `, {}]}>
           <LottieView
             loop
             autoPlay
-            style={{ width: 130, height: 130, alignSelf: 'center' }}
+            style={{ width: 130, height: 130 }}
             source={require('../../assets/boySmiling.json')}
           />
         </View>
-        <View style={[tw`justify-center items-center`, {}]}>
+        <View style={[tw``, {}]}>
           <Text numberOfLines={1} style={[tw`font-semibold text-white `]}>
             {userInfo.username.toUpperCase()}
           </Text>
@@ -118,9 +118,7 @@ const Settings = () => {
           </Text>
         </View>
       </View>
-      {/* <View style={tw`mb-5 mt-4`}>
-        <Text style={[tw`text-3xl font-extrabold `, { color: theme.mainColor }]}>Settings</Text>
-      </View> */}
+
       {/* *********  Shadows *********** */}
       <View
         style={[

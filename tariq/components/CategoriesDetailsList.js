@@ -101,6 +101,14 @@ const CategoriesDetailsList = ({
         >
           {item?.account_name}
         </Text>
+        <TouchableOpacity>
+          <MaterialCommunityIcons
+            style={[tw`mr-1`, {}]}
+            name={'file-document-outline'}
+            color={theme.mainColor}
+            size={23}
+          />
+        </TouchableOpacity>
         <TouchableOpacity
           onPress={() => {
             item?.fav_icon == 'heart-outline'

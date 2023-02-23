@@ -76,6 +76,14 @@ const DetailsScreen = ({
     return uid;
   };
 
+  const resetFields = () => {
+    setEmail('');
+    setPassword('');
+    setAccount('');
+    setSelectedItem(null);
+    setSelectedIndex(null);
+  };
+
   const addCategoryData = () => {
     if (account == '') {
       setShowErrorModal(true);
@@ -112,6 +120,7 @@ const DetailsScreen = ({
       let newArray = [...categoryData, newPassword];
       setCategoryData(newArray);
       updateAllCategories(categoryIndex, newArray);
+      resetFields();
       // Adding in Firebase
       addCategoryDetails(userName, item.category.toLowerCase(), newPassword, uid);
       setShowAddModal(!showAddModal);
@@ -136,6 +145,7 @@ const DetailsScreen = ({
     setCategoryData(newArray);
     updateAllCategories(categoryIndex, newArray);
     updateCategoryDetails(userName, seletedItem.category, newPassord, seletedItem.id);
+    resetFields();
     setShowAddModal(false);
   };
   const setText = (accountText, emailText, passwordText) => {
@@ -174,11 +184,6 @@ const DetailsScreen = ({
         removeFromFav(userName, category, data, data.id);
         updateAllFav('remove', data);
       }
-      // updateAllFav()
-      // setFavLoading(true);
-      // setFavLoading(false);
-      // await onRefresh();
-      // fetchAllFav(userName);
     } catch (err) {
       setShowErrorModal(true);
       setModalTitle('Error');

@@ -48,7 +48,7 @@ const Fav = () => {
     <SafeAreaView style={[tw`px-6 flex-1 `, { backgroundColor: theme.mainBgColor }]}>
       {/* TopBar */}
       <View>
-        <Text style={[tw`text-3xl font-bold mb-5`, { color: theme.mainColor }]}>Favorites</Text>
+        <Text style={[tw`text-2xl font-bold mb-5`, { color: theme.mainColor }]}>Favorites</Text>
       </View>
 
       <ErrorModal
