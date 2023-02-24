@@ -42,10 +42,10 @@ export const createUser = async (email, password, name) => {
       },
       items: {
         '-N6dwzTiLPKzIT7gaAMi': {
-          category: 'facebook',
-          email: 'dddddadsfadsfsdf',
-          account_name: 'dsfadsa',
-          password: 'asdfasdfadsffffffdddd',
+          category: 'google',
+          email: 'abc@example.com',
+          account_name: 'example Account',
+          password: 'examplepassword',
           fav_icon: 'heart-outline',
           key: serverTimestamp(),
         },
@@ -62,7 +62,6 @@ export const createUser = async (email, password, name) => {
           account_name: 'example Account',
           password: 'examplepassword',
           fav_icon: 'heart-outline',
-
           key: serverTimestamp(),
         },
       },
