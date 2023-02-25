@@ -122,7 +122,7 @@ const CategoriesFavList = ({ item }) => {
             deleteFromFavList(item?.category, item);
           }}
         >
-          {!loading && <MaterialCommunityIcons name={'delete'} color={theme.mainColor} size={25} />}
+          {!loading && <MaterialCommunityIcons name={'heart'} color={theme.mainColor} size={25} />}
           {loading && <ActivityIndicator />}
         </TouchableOpacity>
       </View>

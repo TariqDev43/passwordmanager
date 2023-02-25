@@ -226,7 +226,7 @@ const Settings = () => {
               offset.value = 5;
               changeTheme('light');
             }}
-            style={[tw`py-2 rounded-xl flex-1 items-center`]}
+            style={[tw`py-2 rounded-xl flex-1 px-2  items-center`]}
           >
             <Text style={[tw``, { color: theme.mainColor }]}>Light</Text>
           </TouchableOpacity>
@@ -235,7 +235,7 @@ const Settings = () => {
               offset.value = 61;
               changeTheme('dark');
             }}
-            style={[tw`py-2 mx-1 rounded-xl flex-1 items-center`]}
+            style={[tw`py-2 mx-1 rounded-xl flex-1 px-2  items-center`]}
           >
             <Text style={[tw``, { color: theme.mainColor }]}>Dark</Text>
           </TouchableOpacity>
@@ -244,7 +244,7 @@ const Settings = () => {
               offset.value = 115;
               changeTheme('gray');
             }}
-            style={[tw`py-2 rounded-xl flex-1  items-center`]}
+            style={[tw`py-2  rounded-xl flex-1 px-2   items-center`]}
           >
             <Text style={[tw``, { color: theme.mainColor }]}>Gray</Text>
           </TouchableOpacity>

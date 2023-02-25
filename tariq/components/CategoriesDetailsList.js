@@ -1,7 +1,7 @@
 import React, { memo, useRef, useState } from 'react';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import tw from 'tailwind-react-native-classnames';
-import { Text, TouchableOpacity, ActivityIndicator, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 import useSettings from '../Contexts/SettingContext';
 import useTheme from '../Contexts/ThemeContext';
 import ErrorModal from './ErrorModal';
@@ -12,6 +12,8 @@ import * as Clipboard from 'expo-clipboard';
 
 const CategoriesDetailsList = ({
   categoryIndex,
+  setNotes,
+  setShowNotes,
   item,
   index,
   addToFavList,
@@ -101,7 +103,15 @@ const CategoriesDetailsList = ({
         >
           {item?.account_name}
         </Text>
-        <TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => {
+            setNotes(item.notes ? item.notes : '');
+            setSelectedItem({ ...item, id: item.id });
+            setSelectedIndex(index);
+            setShowNotes(true);
+            setText(item?.account_name, item?.email, item?.password);
+          }}
+        >
           <MaterialCommunityIcons
             style={[tw`mr-1`, {}]}
             name={'file-document-outline'}
