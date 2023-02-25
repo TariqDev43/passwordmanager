@@ -58,6 +58,7 @@ const Home = () => {
       { name: 'facebook', icon: 'facebook' },
       { name: 'instagram', icon: 'instagram' },
       { name: 'twitter', icon: 'twitter' },
+      { name: 'microsoft', icon: 'microsoft' },
       { name: 'netflix', icon: 'netflix' },
       { name: 'linkedin', icon: 'linkedin' },
       { name: 'google', icon: 'google' },

@@ -98,7 +98,7 @@ const CategoriesDetailsList = ({
       {/* ******* Account Section ******* */}
       <View style={tw`flex-row items-center`}>
         <Text
-          style={[tw`flex-1 text-lg font-semibold mr-2`, { color: theme.mainColor }]}
+          style={[tw`flex-1 text-xs font-semibold mr-2`, { color: theme.mainColor }]}
           numberOfLines={1}
         >
           {item?.account_name}
