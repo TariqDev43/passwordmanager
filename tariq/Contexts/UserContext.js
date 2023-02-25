@@ -60,8 +60,6 @@ export const UserProvider = memo(({ children }) => {
 
   const fetchAllFav = useCallback(async (userName) => {
     const allFav = await getFavs(userName);
-    console.log('user Favs');
-    // console.log(allFav);
     setAllFav(allFav);
     return allFav;
   }, []);
