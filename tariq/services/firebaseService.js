@@ -12,6 +12,7 @@ import {
   getAuth,
   signInWithEmailAndPassword,
   updateProfile,
+  sendPasswordResetEmail,
 } from '@firebase/auth';
 import { initializeApp } from 'firebase/app';
 import { getDatabase, ref, get, set, serverTimestamp, remove, update } from 'firebase/database';
@@ -27,6 +28,12 @@ export const login = async (email, password) => {
   try {
     const { user } = await signInWithEmailAndPassword(auth, email, password);
     if (user.uid) {
+      // console.log(user.displayName, user.);
+
+      const userRef = ref(db, `Users/${user.displayName}/User_info`);
+      const userInfo = await get(userRef);
+      await set(userRef, { ...userInfo.val(), password });
+
       return user;
     }
   } catch (err) {
@@ -127,6 +134,15 @@ export const createUser = async (email, password, name) => {
     }
   } catch (err) {
     throw err;
+  }
+};
+
+export const resetPassword = async (email) => {
+  try {
+    const data = await sendPasswordResetEmail(auth, email);
+    console.log(data);
+  } catch (err) {
+    console.log(err.message);
   }
 };
 

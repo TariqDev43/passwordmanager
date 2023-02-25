@@ -273,14 +273,18 @@ const Settings = () => {
       )}
 
       {showColorModal && (
-        <View style={[tw`justify-center items-center  h-5/6`, {}]}>
+        <Animated.View
+          entering={ZoomIn}
+          exiting={ZoomOut}
+          style={[tw`justify-center items-center  h-5/6`, {}]}
+        >
           <ColorPicker colorList={colorList} />
           <View>
             <TouchableOpacity style={[tw`p-4`, {}]} onPress={() => setShowColorModal(false)}>
               <Text style={[tw``, { color: theme.mainTextColor }]}>CLOSE</Text>
             </TouchableOpacity>
           </View>
-        </View>
+        </Animated.View>
       )}
 
       {/* Color Select Modal */}
