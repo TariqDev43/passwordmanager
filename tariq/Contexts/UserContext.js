@@ -14,14 +14,13 @@ export const UserProvider = memo(({ children }) => {
   /* *************  States  **************** */
   const [user, setUser] = useState(null);
   const [userInfo, setUserInfo] = useState(null);
-  const [allCategory, setAllCategory] = useState(null);
+  const [allCategory, setAllCategory] = useState([]);
   const [allFav, setAllFav] = useState(null);
   const [userName, setUserName] = useState(null);
 
   const changeUser = useCallback((val) => {
     val && setUserName(val.displayName);
     setUser(val);
-    console.log('changeUser');
   });
 
   const fetchUserInfo = useCallback(async (userName) => {
@@ -29,7 +28,6 @@ export const UserProvider = memo(({ children }) => {
       try {
         const userData = await getUserInfo(userName);
         setUserInfo(userData);
-        console.log('user info ran');
         return 'success';
       } catch (err) {
         throw err;
@@ -41,19 +39,44 @@ export const UserProvider = memo(({ children }) => {
 
   const fetchAllCategory = useCallback(async (userName) => {
     const allCategoriesData = await getAllCategories(userName);
-    console.log('user Categories');
-    setAllCategory(null);
+    // console.log(allCategoriesData);
     setAllCategory(allCategoriesData);
     return allCategoriesData;
+  }, []);
+
+  const updateAllCategories = useCallback((index, val) => {
+    try {
+      let newArray = allCategory;
+      newArray[index].items = val;
+      setAllCategory(newArray);
+    } catch (err) {
+      throw err;
+    }
+  });
+
+  const addNewCategory = useCallback((val) => {
+    setAllCategory(val);
   }, []);
 
   const fetchAllFav = useCallback(async (userName) => {
     const allFav = await getFavs(userName);
     console.log('user Favs');
-    setAllFav(null);
+    // console.log(allFav);
     setAllFav(allFav);
     return allFav;
   }, []);
+
+  const updateAllFav = (method, val) => {
+    try {
+      if (method == 'add') {
+        setAllFav([...allFav, val]);
+      } else {
+        setAllFav(allFav.filter((item) => item.id !== val.id));
+      }
+    } catch (err) {
+      throw err;
+    }
+  };
 
   const userValues = useMemo(() => ({
     user,
@@ -62,6 +85,9 @@ export const UserProvider = memo(({ children }) => {
     userInfo,
     allCategory,
     allFav,
+    updateAllCategories,
+    addNewCategory,
+    updateAllFav,
     fetchUserInfo,
     fetchAllCategory,
     fetchAllFav,

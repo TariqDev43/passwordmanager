@@ -2,7 +2,6 @@ import React from 'react';
 import { useState } from 'react';
 import { useCallback } from 'react';
 import { useMemo } from 'react';
-import { useEffect } from 'react';
 import { memo } from 'react';
 import { createContext } from 'react';
 import { useContext } from 'react';
@@ -13,8 +12,9 @@ const SettingContext = createContext({});
 export const SettingProvider = memo(({ children }) => {
   /*  All States
    ********************************************* */
-  const [elevation, setElevation] = useState(true);
-  const [elevationValue, setElevationValue] = useState(1);
+  const [elevation, setElevation] = useState(null);
+  const [elevationValue, setElevationValue] = useState(null);
+  const [selectedScreen, setSelectedScreen] = useState('Home');
 
   /*   Functions
    ********************************************* */
@@ -32,15 +32,14 @@ export const SettingProvider = memo(({ children }) => {
     setDataToStorage('elevationValue', `${value}`);
   }, []);
 
-  const settingValues = useMemo(
-    () => ({
-      elevation,
-      elevationValue,
-      changeElevation,
-      changeElevationValue,
-    }),
-    [elevation, elevationValue, changeElevation, changeElevationValue]
-  );
+  const settingValues = useMemo(() => ({
+    elevation,
+    elevationValue,
+    changeElevation,
+    selectedScreen,
+    changeElevationValue,
+    setSelectedScreen,
+  }));
   return <SettingContext.Provider value={settingValues}>{children}</SettingContext.Provider>;
 });
 

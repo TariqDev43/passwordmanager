@@ -9,28 +9,34 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Modal } from 'react-native';
-import { useEffect, useState } from 'react';
-import { FlatList, RefreshControl, TextInput } from 'react-native-gesture-handler';
+import { useEffect, useRef, useState } from 'react';
+import { ScrollView, TextInput } from 'react-native-gesture-handler';
 import { memo } from 'react';
 import useTheme from '../../Contexts/ThemeContext';
 import useUser from '../../Contexts/UserContext';
 import tw from 'tailwind-react-native-classnames';
 import ErrorModal from '../../components/ErrorModal';
 import { serverTimestamp } from 'firebase/database';
-import { addCategoryDetails, updateCategoryDetails } from '../../services/firebaseService';
+import {
+  addCategoryDetails,
+  updateCategoryDetails,
+  addToFav,
+  removeFromFav,
+} from '../../services/firebaseService';
 import CategoriesDetailsList from '../../components/CategoriesDetailsList';
-import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
+import Animated, { Layout, ZoomIn, ZoomInEasyDown, ZoomOut } from 'react-native-reanimated';
 import useSettings from '../../Contexts/SettingContext';
+import uuid from 'react-native-uuid';
 
 const DetailsScreen = ({
   route: {
-    params: { item, index },
+    params: { item, categoryIndex },
   },
 }) => {
   // ********** All states are shown here
   // All Contexts
   const { theme } = useTheme();
-  const { userName, allCategory, fetchAllCategory } = useUser();
+  const { userName, allCategory, updateAllFav, updateAllCategories } = useUser();
   const { elevation, elevationValue } = useSettings();
 
   //  All Modals
@@ -41,7 +47,7 @@ const DetailsScreen = ({
 
   // All animations
   const [loading, setLoading] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
+  const [showNotes, setShowNotes] = useState(false);
 
   // Focus States
   const [emailFocus, setEmailFocus] = useState(false);
@@ -52,14 +58,37 @@ const DetailsScreen = ({
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [account, setAccount] = useState('');
+  const [notes, setNotes] = useState(null);
+  const notesRef = useRef(null);
 
   // Update Selection
   const [seletedItem, setSelectedItem] = useState(null);
-  const [categoryData, setCategoryData] = useState(null);
+  const [seletedIndex, setSelectedIndex] = useState(null);
+  const [categoryData, setCategoryData] = useState(
+    allCategory[categoryIndex].items ? allCategory[categoryIndex].items : []
+  );
+
+  useEffect(() => {
+    setCategoryData(allCategory[categoryIndex].items ? allCategory[categoryIndex].items : []);
+  }, [allCategory]);
 
   // ********** Functions Below
+  const getUid = () => {
+    const uid = uuid.v1();
+    return uid;
+  };
 
-  const addCategoryData = async () => {
+  const resetFields = () => {
+    setEmail('');
+    setPassword('');
+    setAccount('');
+    setNotes(null);
+    setSelectedItem(null);
+    setSelectedIndex(null);
+    setShowNotes(null);
+  };
+
+  const addCategoryData = () => {
     if (account == '') {
       setShowErrorModal(true);
       setModalTitle('INPUT ERROR');
@@ -78,89 +107,56 @@ const DetailsScreen = ({
       setModalBody('Email is required');
       return;
     }
-    const categoryDta = {
-      category: item.category.toLowerCase(),
-      email: email,
-      account_name: account,
-      password: password,
-      fav_icon: 'heart-outline',
-      notes: 'test notes',
-      key: serverTimestamp(),
-    };
+
+    const uid = getUid();
     try {
-      setLoading(true);
-      await addCategoryDetails(userName, item.category, categoryDta);
-      setLoading(false);
+      // Locally Adding Category
+      let newPassword = {
+        category: item.category.toLowerCase(),
+        id: uid,
+        email: email,
+        account_name: account,
+        password: password,
+        fav_icon: 'heart-outline',
+        notes: notes ? notes : '',
+        key: serverTimestamp(),
+      };
+      let newArray = [...categoryData, newPassword];
+      setCategoryData(newArray);
+      updateAllCategories(categoryIndex, newArray);
+      resetFields();
+      // Adding in Firebase
+      addCategoryDetails(userName, item.category.toLowerCase(), newPassword, uid);
       setShowAddModal(!showAddModal);
-      await onRefresh();
     } catch (err) {
+      deleteCategoryData(id);
+      setShowAddModal(!showAddModal);
       setShowErrorModal(true);
       setModalTitle('Error');
       setModalBody(err.message);
     }
   };
 
-  const updateCategoryData = async () => {
-    if (account == '') {
-      setShowErrorModal(true);
-      setModalTitle('INPUT ERROR');
-      setModalBody('Account is required');
-      return;
-    }
-    if (password == '') {
-      setShowErrorModal(true);
-      setModalTitle('INPUT ERROR');
-      setModalBody('Password is required');
-      return;
-    }
-    if (email == '') {
-      setShowErrorModal(true);
-      setModalTitle('INPUT ERROR');
-      setModalBody('Email is required');
-      return;
-    }
-    const categoryDta = {
+  const updateCategoryData = () => {
+    let newPassord = {
+      ...seletedItem,
       email: email,
       account_name: account,
       password: password,
+      notes: notes ? notes : '',
     };
-
-    try {
-      setLoading(true);
-      const data = await updateCategoryDetails(
-        userName,
-        item.category,
-        categoryDta,
-        seletedItem.id
-      );
-      setLoading(false);
-      setShowAddModal(!showAddModal);
-      await onRefresh();
-    } catch (err) {
-      setShowErrorModal(true);
-      setModalTitle('Error');
-      setModalBody(err.message);
-    }
+    let newArray = categoryData;
+    newArray[seletedIndex] = newPassord;
+    setCategoryData(newArray);
+    updateAllCategories(categoryIndex, newArray);
+    updateCategoryDetails(userName, seletedItem.category, newPassord, seletedItem.id);
+    resetFields();
+    setShowAddModal(false);
   };
-  // Updates textFields to contains selected items text for updateing
   const setText = (accountText, emailText, passwordText) => {
     setAccount(accountText);
     setEmail(emailText);
     setPassword(passwordText);
-  };
-
-  const onRefresh = async () => {
-    try {
-      setRefreshing(true);
-      await fetchAllCategory(userName);
-      setRefreshing(false);
-      setText('', '', '');
-      setSelectedItem(null);
-    } catch (err) {
-      setShowErrorModal(true);
-      setModalTitle('Error');
-      setModalBody(err.message.toString());
-    }
   };
 
   // turning focus off
@@ -170,361 +166,349 @@ const DetailsScreen = ({
     setPasswordFocus(false);
   };
 
-  // getsThe category Data and makes a list of loopable items
-  // here receive the index of selected category from params
-  // then gets the selected item details list form ListOfAll categories
-  const categoryDetailsData = () => {
-    if (allCategory && allCategory[index].value?.items) {
-      const data = allCategory[index].value.items;
-      let i = [];
-      Object.keys(data).map((key) => {
-        i.push({ id: key, value: data[key] });
-      });
-      setCategoryData(i);
-      setLoading(false);
-    } else {
-      setCategoryData(null);
+  const deleteCategoryData = (category, id) => {
+    let newArray = categoryData.filter((item) => item.id !== id);
+    setCategoryData(newArray);
+    updateAllCategories(categoryIndex, newArray);
+  };
+
+  const addToFavList = (index, category, icon) => {
+    try {
+      let newArray = [...categoryData];
+      let data = {
+        ...newArray[index],
+        fav_icon: icon,
+      };
+      newArray[index] = data;
+      setCategoryData(newArray);
+      updateAllCategories(categoryIndex, newArray);
+      if (icon === 'heart') {
+        addToFav(userName, category, data, data.id);
+        updateAllFav('add', data);
+      } else {
+        removeFromFav(userName, category, data, data.id);
+        updateAllFav('remove', data);
+      }
+    } catch (err) {
+      setShowErrorModal(true);
+      setModalTitle('Error');
+      setModalBody(err.message);
     }
   };
 
-  useEffect(() => {
-    categoryDetailsData();
-  }, [allCategory]);
-
   return (
-    <SafeAreaView style={[tw`flex-1 px-6`, { backgroundColor: theme.mainBgColor }]}>
-      {/* Error Modal */}
-
-      <ErrorModal
-        show={showErrorModal}
-        setShow={setShowErrorModal}
-        modalTitle={modalTitle}
-        modalBody={modalBody}
-      />
-
-      {/* ************ Top Heading ************ */}
-      <View style={tw`my-5 flex-row justify-between items-center`}>
-        <Text
-          style={[tw`text-2xl flex-1 font-extrabold mr-3`, { color: theme.mainColor }]}
-          numberOfLines={1}
-        >
-          {item.category.toUpperCase()}
-        </Text>
-        <TouchableOpacity onPress={() => setShowAddModal(!showAddModal)}>
-          <MaterialCommunityIcons name='plus-box-outline' color={theme.mainColor} size={35} />
-        </TouchableOpacity>
-      </View>
-
-      {/* ************ Main List ************ */}
-
-      {categoryData && (
-        <FlatList
-          contentContainerStyle={{ paddingBottom: 160 }}
-          data={categoryData}
-          // extraData={categoryData}
-          showsVerticalScrollIndicator={false}
-          numColumns={1}
-          keyExtractor={(item) => item?.id}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-          renderItem={({ item: data, index }) => {
-            return (
-              // *******************  Main Div  *********************************
-
-              <View>
-                {categoryData && allCategory && (
-                  <CategoriesDetailsList
-                    index={index}
-                    data={data}
-                    setText={setText}
-                    setSelectedItem={setSelectedItem}
-                    setShowAddModal={setShowAddModal}
-                    onRefresh={onRefresh}
-                  />
-                )}
-              </View>
-            );
-          }}
+    <Pressable
+      style={[tw`flex-1 px-4`, { backgroundColor: theme.mainBgColor }]}
+      onPress={() => Keyboard.dismiss()}
+    >
+      <SafeAreaView style={[tw`flex-1 `]}>
+        {/* Error Modal */}
+        <ErrorModal
+          show={showErrorModal}
+          setShow={setShowErrorModal}
+          modalTitle={modalTitle}
+          modalBody={modalBody}
         />
-      )}
-      {!categoryData && (
-        <Animated.View
-          entering={FadeIn.duration(500)}
-          style={[
-            tw`h-1/3 my-6 rounded-2xl justify-center items-center p-8`,
-            {
-              elevation: elevation ? elevationValue : 0,
-              backgroundColor: theme.bgColor,
-            },
-          ]}
-        >
+
+        {/* ************ Top Heading ************ */}
+        <View style={tw`my-5 px-2 flex-row justify-between items-center`}>
           <Text
+            style={[tw`text-2xl flex-1 font-extrabold mr-3`, { color: theme.mainColor }]}
+            numberOfLines={1}
+          >
+            {item.category.toUpperCase()}
+          </Text>
+          <TouchableOpacity onPress={() => setShowAddModal(!showAddModal)}>
+            <MaterialCommunityIcons name='plus-box-outline' color={theme.mainColor} size={35} />
+          </TouchableOpacity>
+        </View>
+
+        {/* ************ Main List ************ */}
+        {categoryData.length > 0 && categoryData && !showNotes && (
+          <ScrollView showsVerticalScrollIndicator={false}>
+            <View style={[tw`pb-20 px-2`, {}]}>
+              {categoryData &&
+                categoryData.map((item, index) => (
+                  <Animated.View
+                    style={[tw`mb-2`, {}]}
+                    layout={Layout.delay(300)}
+                    entering={ZoomInEasyDown}
+                    exiting={ZoomOut}
+                    key={item.id}
+                  >
+                    <CategoriesDetailsList
+                      categoryIndex={categoryIndex}
+                      setNotes={setNotes}
+                      setShowNotes={setShowNotes}
+                      item={item}
+                      index={index}
+                      addToFavList={addToFavList}
+                      setSelectedIndex={setSelectedIndex}
+                      categoryData={categoryData}
+                      setCategoryData={setCategoryData}
+                      setSelectedItem={setSelectedItem}
+                      setShowAddModal={setShowAddModal}
+                      setText={setText}
+                    />
+                  </Animated.View>
+                ))}
+            </View>
+          </ScrollView>
+        )}
+        {!showNotes && categoryData.length === 0 && (
+          <View
             style={[
-              tw`
-          text-lg font-semibold opacity-50 text-center
-          `,
-              { color: theme.mainTextColor },
+              tw`h-1/3 my-6 rounded-2xl justify-center items-center p-8`,
+              {
+                elevation: elevation ? elevationValue : 0,
+                backgroundColor: theme.bgColor,
+              },
             ]}
           >
-            Your don'nt have any passwords in this category
-          </Text>
-        </Animated.View>
-      )}
-
-      {/* *********** ALL Models Below ************* */}
-      <Modal
-        visible={showAddModal}
-        transparent
-        onRequestClose={() => setShowAddModal(!showAddModal)}
-      >
-        {/* ************  Modal Background Container  */}
-        <Pressable
-          style={[tw`justify-center items-center flex-1`]}
-          onPress={() => {
-            Keyboard.dismiss();
-            setShowAddModal(false);
-            setFocusOff();
-          }}
-        >
-          <Pressable
-            onPress={() => setShowAddModal(true)}
-            style={[tw`p-5 rounded-xl w-4/5`, { backgroundColor: theme.modalBg, elevation: 15 }]}
+            <Text
+              style={[
+                tw`
+              text-lg font-semibold opacity-50 text-center
+              `,
+                { color: theme.mainTextColor },
+              ]}
+            >
+              You Don't have saved passwords in this category
+            </Text>
+          </View>
+        )}
+        {showNotes && (
+          <Animated.View
+            entering={ZoomIn}
+            exiting={ZoomOut}
+            style={[tw`justify-start flex-1 pb-32`, {}]}
           >
-            {/* ************  Modal main Container  */}
-            <View onPress={() => setShowAddModal(true)}>
-              {/* ************  Main Content *********************  */}
-              <View>
-                <View style={tw`flex-row items-center`}>
-                  <Text
-                    style={[tw`flex-1 text-xl font-semibold`, { color: theme.mainColor }]}
-                    numberOfLines={1}
-                  >
-                    ADD INFO
-                  </Text>
-
-                  <View style={tw`flex-row justify-end items-center`}>
-                    <TouchableOpacity
-                      style={[
-                        tw`mx-2 p-1 px-2 rounded `,
-                        { backgroundColor: theme.bgColor, elevation: 2 },
-                      ]}
-                      onPress={() => {
-                        setShowAddModal(!showAddModal);
-                        setSelectedItem(null);
-                        setFocusOff();
-                      }}
+            <TextInput
+              style={[
+                tw`my-6 rounded-2xl py-3 p-4`,
+                {
+                  elevation: elevation ? elevationValue : 0,
+                  backgroundColor: theme.bgColor,
+                  color: theme.mainTextColor,
+                },
+              ]}
+              ref={notesRef}
+              editable
+              multiline
+              numberOfLines={4}
+              onChangeText={setNotes}
+              value={notes}
+            />
+            <View style={[tw`justify-end flex-row`, {}]}>
+              <TouchableOpacity
+                onPress={() => setShowNotes(false)}
+                style={[
+                  tw`px-3 py-2  rounded-md mx-1 justify-center items-center`,
+                  { backgroundColor: theme.bgColor, elevation: 2 },
+                ]}
+              >
+                <Text
+                  style={[tw`text-center font-semibold text-xs`, { color: theme.mainTextColor }]}
+                >
+                  CLOSE
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => updateCategoryData()}
+                style={[
+                  tw`px-3 py-2 justify-center items-center rounded-md mx-1`,
+                  { backgroundColor: theme.mainColor, elevation: elevation ? elevationValue : 0 },
+                ]}
+              >
+                <Text style={[tw`text-white text-center font-semibold text-xs`, {}]}>UPDATE</Text>
+              </TouchableOpacity>
+            </View>
+          </Animated.View>
+        )}
+        {/* *********** ALL Models Below ************* */}
+        <Modal
+          visible={showAddModal}
+          transparent
+          onRequestClose={() => setShowAddModal(!showAddModal)}
+        >
+          {/* ************  Modal Background Container  */}
+          <Pressable
+            style={[tw`justify-center items-center flex-1`]}
+            onPress={() => {
+              Keyboard.dismiss();
+              setShowAddModal(false);
+              setFocusOff();
+            }}
+          >
+            <Pressable
+              onPress={() => setShowAddModal(true)}
+              style={[tw`p-5 rounded-xl w-4/5`, { backgroundColor: theme.modalBg, elevation: 15 }]}
+            >
+              {/* ************  Modal main Container  */}
+              <View onPress={() => setShowAddModal(true)}>
+                {/* ************  Main Content *********************  */}
+                <View>
+                  <View style={tw`flex-row items-center`}>
+                    <Text
+                      style={[tw`flex-1 text-xl font-semibold`, { color: theme.mainColor }]}
+                      numberOfLines={1}
                     >
+                      {seletedItem ? 'Update Info' : 'Add Info'}
+                    </Text>
+
+                    <View style={tw`flex-row justify-end items-center`}>
+                      <TouchableOpacity
+                        style={[
+                          tw`mx-2 p-1 px-2 rounded `,
+                          { backgroundColor: theme.bgColor, elevation: 2 },
+                        ]}
+                        onPress={() => {
+                          setShowAddModal(!showAddModal);
+                          setSelectedItem(null);
+                          setFocusOff();
+                        }}
+                      >
+                        <MaterialCommunityIcons
+                          name='close'
+                          color={theme.mainTextColor}
+                          size={22}
+                        />
+                      </TouchableOpacity>
+
+                      {!seletedItem && (
+                        <TouchableOpacity
+                          style={[
+                            tw` p-1 px-3 rounded`,
+                            {
+                              backgroundColor: theme.mainColor,
+                              elevation: 3,
+                            },
+                          ]}
+                          onPress={() => {
+                            addCategoryData();
+                            setFocusOff();
+                          }}
+                        >
+                          {!loading && (
+                            <MaterialCommunityIcons name='plus' color={'white'} size={22} />
+                          )}
+                          {loading && (
+                            <View style={tw`m-1`}>
+                              <ActivityIndicator color={'white'} />
+                            </View>
+                          )}
+                        </TouchableOpacity>
+                      )}
+                      {seletedItem && (
+                        <TouchableOpacity
+                          style={[
+                            tw` p-1 px-3 rounded`,
+                            {
+                              backgroundColor: theme.mainColor,
+                              elevation: 3,
+                            },
+                          ]}
+                          onPress={() => {
+                            updateCategoryData();
+                            setFocusOff();
+                          }}
+                        >
+                          {!loading && (
+                            <MaterialCommunityIcons name='plus' color={'white'} size={22} />
+                          )}
+                          {loading && (
+                            <View style={tw`m-1`}>
+                              <ActivityIndicator color={'white'} />
+                            </View>
+                          )}
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                  </View>
+
+                  {/* ***********  Passwords Sections  ************** */}
+                  <View style={tw`my-4 mt-3 `}>
+                    {/* ******* Account Section  ******* */}
+                    <View style={tw`flex-row items-center justify-between mb-2 `}>
                       <MaterialCommunityIcons
-                        name='close'
+                        name='account'
+                        color={accountFocus ? theme.mainColor : theme.grey}
+                        size={22}
+                      />
+                      <TextInput
+                        placeholder='Account Name'
+                        defaultValue={seletedItem?.account_name}
+                        onChangeText={setAccount}
+                        placeholderTextColor={theme.themeMode == 'dark' ? theme.grey : 'darkgray'}
+                        style={[
+                          tw`flex-1 mx-3 border-b-2
+                  `,
+                          {
+                            borderBottomColor: accountFocus ? theme.mainColor : theme.grey,
+                            color: theme.mainTextColor,
+                          },
+                        ]}
+                        onFocus={() => setAccountFocus(true)}
+                        onBlur={() => setAccountFocus(false)}
+                      />
+                    </View>
+                    {/* ******* Email  ******* */}
+                    <View style={tw`flex-row items-center justify-between my-3 `}>
+                      <MaterialCommunityIcons
+                        name='email'
+                        color={emailFocus ? theme.mainColor : theme.grey}
+                        size={22}
+                      />
+                      <TextInput
+                        className=''
+                        placeholder='Enter Email'
+                        defaultValue={seletedItem?.email}
+                        onChangeText={setEmail}
+                        placeholderTextColor={theme.themeMode == 'dark' ? theme.grey : 'darkgray'}
+                        style={[
+                          tw`flex-1 mx-3 border-b-2
+                  `,
+                          {
+                            borderBottomColor: emailFocus ? theme.mainColor : theme.grey,
+                            color: theme.mainTextColor,
+                          },
+                        ]}
+                        onFocus={() => setEmailFocus(true)}
+                        onBlur={() => setEmailFocus(false)}
+                      />
+                    </View>
+                    {/* ******* Password  ******* */}
+                    <View style={tw`flex-row items-center justify-between my-3 mb-2 `}>
+                      <MaterialCommunityIcons
+                        name='key'
                         color={passwordFocus ? theme.mainColor : theme.grey}
                         size={22}
                       />
-                      {/* <Text style={[tw`font-bold text-xs m-1`, { color: theme.mainTextColor }]}>
-                      Close
-                    </Text> */}
-                    </TouchableOpacity>
-
-                    {!seletedItem && (
-                      <TouchableOpacity
+                      <TextInput
+                        placeholder='Enter Password'
+                        defaultValue={seletedItem?.password}
+                        onChangeText={setPassword}
+                        placeholderTextColor={theme.themeMode == 'dark' ? theme.grey : 'darkgray'}
                         style={[
-                          tw` p-1 px-3 rounded`,
+                          tw`flex-1 mx-3 border-b-2
+                  `,
                           {
-                            backgroundColor: theme.mainColor,
-                            elevation: 3,
+                            borderBottomColor: passwordFocus ? theme.mainColor : theme.grey,
+                            color: theme.mainTextColor,
                           },
                         ]}
-                        onPress={() => {
-                          addCategoryData();
-                          setFocusOff();
-                        }}
-                      >
-                        {!loading && (
-                          <MaterialCommunityIcons name='plus' color={'white'} size={22} />
-                        )}
-                        {/* {!loading && <Text style={tw`font-bold text-xs m-1 text-white`}>ADD</Text>} */}
-                        {loading && (
-                          <View style={tw`m-1`}>
-                            <ActivityIndicator color={'white'} />
-                          </View>
-                        )}
-                      </TouchableOpacity>
-                    )}
-                    {seletedItem && (
-                      <TouchableOpacity
-                        style={[
-                          tw` p-1 px-3 rounded`,
-                          {
-                            backgroundColor: theme.mainColor,
-                            elevation: 3,
-                          },
-                        ]}
-                        onPress={() => {
-                          updateCategoryData();
-                          setFocusOff();
-                        }}
-                      >
-                        {/* {!loading && <Text style={tw`font-bold text-xs m-1 text-white`}>UPDATE</Text>} */}
-                        {!loading && (
-                          <MaterialCommunityIcons
-                            name='plus'
-                            color={passwordFocus ? theme.mainColor : theme.grey}
-                            size={22}
-                          />
-                        )}
-                        {loading && (
-                          <View style={tw`m-1`}>
-                            <ActivityIndicator color={'white'} />
-                          </View>
-                        )}
-                      </TouchableOpacity>
-                    )}
-                  </View>
-                </View>
-
-                {/* ***********  Passwords Sections  ************** */}
-                <View style={tw`my-4 mt-3 `}>
-                  {/* ******* Account Section  ******* */}
-                  <View style={tw`flex-row items-center justify-between mb-2 `}>
-                    <MaterialCommunityIcons
-                      name='account'
-                      color={accountFocus ? theme.mainColor : theme.grey}
-                      size={22}
-                    />
-                    <TextInput
-                      placeholder='Account Name'
-                      defaultValue={seletedItem?.account_name}
-                      onChangeText={setAccount}
-                      placeholderTextColor={theme.themeMode == 'dark' ? theme.grey : 'darkgray'}
-                      style={[
-                        tw`flex-1 mx-3 border-b-2
-                  `,
-                        {
-                          borderBottomColor: accountFocus ? theme.mainColor : theme.grey,
-                          color: theme.mainTextColor,
-                        },
-                      ]}
-                      onFocus={() => setAccountFocus(true)}
-                      onBlur={() => setAccountFocus(false)}
-                    />
-                  </View>
-                  {/* ******* Email  ******* */}
-                  <View style={tw`flex-row items-center justify-between my-3 `}>
-                    <MaterialCommunityIcons
-                      name='email'
-                      color={emailFocus ? theme.mainColor : theme.grey}
-                      size={22}
-                    />
-                    <TextInput
-                      className=''
-                      placeholder='Enter Email'
-                      defaultValue={seletedItem?.email}
-                      onChangeText={setEmail}
-                      placeholderTextColor={theme.themeMode == 'dark' ? theme.grey : 'darkgray'}
-                      style={[
-                        tw`flex-1 mx-3 border-b-2
-                  `,
-                        {
-                          borderBottomColor: emailFocus ? theme.mainColor : theme.grey,
-                          color: theme.mainTextColor,
-                        },
-                      ]}
-                      onFocus={() => setEmailFocus(true)}
-                      onBlur={() => setEmailFocus(false)}
-                    />
-                  </View>
-                  {/* ******* Password  ******* */}
-                  <View style={tw`flex-row items-center justify-between my-3 mb-2 `}>
-                    <MaterialCommunityIcons
-                      name='key'
-                      color={passwordFocus ? theme.mainColor : theme.grey}
-                      size={22}
-                    />
-                    <TextInput
-                      placeholder='Enter Password'
-                      defaultValue={seletedItem?.password}
-                      onChangeText={setPassword}
-                      placeholderTextColor={theme.themeMode == 'dark' ? theme.grey : 'darkgray'}
-                      style={[
-                        tw`flex-1 mx-3 border-b-2
-                  `,
-                        {
-                          borderBottomColor: passwordFocus ? theme.mainColor : theme.grey,
-                          color: theme.mainTextColor,
-                        },
-                      ]}
-                      onFocus={() => setPasswordFocus(true)}
-                      onBlur={() => setPasswordFocus(false)}
-                    />
+                        onFocus={() => setPasswordFocus(true)}
+                        onBlur={() => setPasswordFocus(false)}
+                      />
+                    </View>
                   </View>
                 </View>
               </View>
-              {/**************** Buttons ***********************/}
-              {/* <View style={tw`flex-row justify-end items-center mt-2`}>
-              <TouchableOpacity
-                style={[
-                  tw`mx-2 p-1 px-2 rounded `,
-                  { backgroundColor: theme.bgColor, elevation: 2 },
-                ]}
-                onPress={() => {
-                  setShowAddModal(!showAddModal);
-                  setSelectedItem(null);
-                  setFocusOff();
-                }}
-              >
-                <Text style={[tw`font-bold text-xs m-1`, { color: theme.mainTextColor }]}>
-                  Close
-                </Text>
-              </TouchableOpacity>
-
-              {!seletedItem && (
-                <TouchableOpacity
-                  style={[
-                    tw` p-1 px-3 rounded`,
-                    {
-                      backgroundColor: theme.mainColor,
-                      elevation: 3,
-                    },
-                  ]}
-                  onPress={() => {
-                    addCategoryData();
-                    setFocusOff();
-                  }}
-                >
-                  {!loading && <Text style={tw`font-bold text-xs m-1 text-white`}>ADD</Text>}
-                  {loading && (
-                    <View style={tw`m-1`}>
-                      <ActivityIndicator color={'white'} />
-                    </View>
-                  )}
-                </TouchableOpacity>
-              )}
-              {seletedItem && (
-                <TouchableOpacity
-                  style={[
-                    tw` p-1 px-3 rounded`,
-                    {
-                      backgroundColor: theme.mainColor,
-                      elevation: 3,
-                    },
-                  ]}
-                  onPress={() => {
-                    updateCategoryData();
-                    setFocusOff();
-                  }}
-                >
-                  {!loading && <Text style={tw`font-bold text-xs m-1 text-white`}>UPDATE</Text>}
-                  {loading && (
-                    <View style={tw`m-1`}>
-                      <ActivityIndicator color={'white'} />
-                    </View>
-                  )}
-                </TouchableOpacity>
-              )}
-            </View> */}
-            </View>
+            </Pressable>
           </Pressable>
-        </Pressable>
-      </Modal>
-    </SafeAreaView>
+        </Modal>
+      </SafeAreaView>
+    </Pressable>
   );
 };
 

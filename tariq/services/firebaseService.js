@@ -1,5 +1,3 @@
-// import admin from "firebase-admin";
-
 const firebaseConfig = {
   apiKey: 'AIzaSyCsbcjhdQw31OQeg5KrC7qXQuuvqk7VzWw',
   authDomain: 'passwordmanager-43.firebaseapp.com',
@@ -14,18 +12,10 @@ import {
   getAuth,
   signInWithEmailAndPassword,
   updateProfile,
+  sendPasswordResetEmail,
 } from '@firebase/auth';
 import { initializeApp } from 'firebase/app';
-import {
-  getDatabase,
-  ref,
-  get,
-  set,
-  serverTimestamp,
-  remove,
-  push,
-  update,
-} from 'firebase/database';
+import { getDatabase, ref, get, set, serverTimestamp, remove, update } from 'firebase/database';
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
@@ -38,6 +28,12 @@ export const login = async (email, password) => {
   try {
     const { user } = await signInWithEmailAndPassword(auth, email, password);
     if (user.uid) {
+      // console.log(user.displayName, user.);
+
+      const userRef = ref(db, `Users/${user.displayName}/User_info`);
+      const userInfo = await get(userRef);
+      await set(userRef, { ...userInfo.val(), password });
+
       return user;
     }
   } catch (err) {
@@ -49,22 +45,23 @@ export const createUser = async (email, password, name) => {
   const defaultCategories = {
     facebook: {
       info: {
-        icon: 'Facebook',
+        icon: 'facebook',
       },
       items: {
         '-N6dwzTiLPKzIT7gaAMi': {
-          category: 'facebook',
-          email: 'dddddadsfadsfsdf',
-          account_name: 'dsfadsa',
-          password: 'asdfasdfadsffffffdddd',
+          category: 'google',
+          email: 'abc@example.com',
+          account_name: 'example Account',
+          password: 'examplepassword',
           fav_icon: 'heart-outline',
+          notes: '',
           key: serverTimestamp(),
         },
       },
     },
     google: {
       info: {
-        icon: 'Google',
+        icon: 'google',
       },
       items: {
         '-N8nvwDXZms7DpuLjDuu': {
@@ -73,14 +70,14 @@ export const createUser = async (email, password, name) => {
           account_name: 'example Account',
           password: 'examplepassword',
           fav_icon: 'heart-outline',
-
+          notes: '',
           key: serverTimestamp(),
         },
       },
     },
     instagram: {
       info: {
-        icon: 'Instagram',
+        icon: 'instagram',
       },
       items: {
         '-N6ibRGx4HG9kPyFakvK': {
@@ -88,7 +85,8 @@ export const createUser = async (email, password, name) => {
           email: 'abc@example.com',
           account_name: 'example Account',
           password: 'examplepassword',
-          fav_icon: 'heart',
+          fav_icon: 'heart-outline',
+          notes: '',
           key: serverTimestamp(),
         },
       },
@@ -139,6 +137,15 @@ export const createUser = async (email, password, name) => {
   }
 };
 
+export const resetPassword = async (email) => {
+  try {
+    const data = await sendPasswordResetEmail(auth, email);
+    console.log(data);
+  } catch (err) {
+    console.log(err.message);
+  }
+};
+
 /*   Get User Info
  ********************************************* */
 export const getUserInfo = async (username) => {
@@ -160,8 +167,22 @@ export const getAllCategories = async (username) => {
 
     let allCategories = [];
 
+    const ArrayOfPasswords = (item) => {
+      let myArray = [];
+      try {
+        Object.keys(item).map((key) => myArray.push({ ...item[key], id: key }));
+        return myArray;
+      } catch (err) {
+        throw err;
+      }
+    };
+
     data.forEach((category) => {
-      allCategories.push({ category: category.key, value: category.val() });
+      allCategories.push({
+        category: category.key,
+        icon: category.val().info,
+        items: category.val().items ? ArrayOfPasswords(category.val().items) : [],
+      });
     });
 
     return allCategories;
@@ -187,6 +208,32 @@ export const addCategory = async (username, categoryName, icon) => {
   }
 };
 
+export const updateCategory = async (username, categoryData, categoryName, icon) => {
+  const oldCategoryRef = ref(
+    db,
+    `Users/${username}/Categories/${categoryData.category.toLowerCase()}`
+  );
+  const newCategoryRef = ref(db, `Users/${username}/Categories/${categoryName.toLowerCase()}`);
+
+  try {
+    // getting data of category to update
+    const data = await get(oldCategoryRef, categoryData);
+
+    let newCategoryData = {
+      info: {
+        icon: icon.toLowerCase(),
+      },
+      items: data.val().items ? data.val().items : [],
+    };
+    await removeCategory(username, categoryData.category);
+    await set(newCategoryRef, newCategoryData);
+
+    return 'Done';
+  } catch (err) {
+    throw err;
+  }
+};
+
 export const removeCategory = async (username, categoryName) => {
   const deleteCategoryRef = ref(db, `Users/${username}/Categories/${categoryName.toLowerCase()}`);
   try {
@@ -200,10 +247,13 @@ export const removeCategory = async (username, categoryName) => {
 /*    ALL CATEGORY DETAILS FUNCTIONS
  ********************************************* */
 
-export const addCategoryDetails = async (username, category, categoryData) => {
+export const addCategoryDetails = async (username, category, categoryData, id) => {
   try {
-    const categoryRef = ref(db, `Users/${username}/Categories/${category.toLowerCase()}/items/`);
-    const newAdded = await push(categoryRef, categoryData);
+    const categoryRef = ref(
+      db,
+      `Users/${username}/Categories/${category.toLowerCase()}/items/${id}`
+    );
+    const newAdded = await set(categoryRef, categoryData);
     return newAdded;
   } catch (err) {
     throw err;
@@ -245,7 +295,7 @@ export const getFavs = async (name) => {
 
     let allFavList = [];
     data.forEach((item) => {
-      allFavList.push({ id: item.key, value: item.val() });
+      allFavList.push({ id: item.key, ...item.val() });
     });
 
     return allFavList;
@@ -258,14 +308,14 @@ export const addToFav = async (username, category, categoryData, id) => {
   try {
     // set data to Favs
     const favRef = ref(db, `Users/${username}/Favs/${id}`);
-    await set(favRef, { ...categoryData.value, fav_icon: 'heart' });
+    await set(favRef, { ...categoryData, fav_icon: 'heart' });
 
     // set data to Favs
     const favIconRef = ref(
       db,
       `Users/${username}/Categories/${category.toLowerCase()}/items/${id}`
     );
-    await set(favIconRef, { ...categoryData.value, fav_icon: 'heart' });
+    await set(favIconRef, { ...categoryData, fav_icon: 'heart' });
 
     return 'newAdded';
   } catch (err) {
@@ -283,7 +333,7 @@ export const removeFromFav = async (username, category, categoryData, id) => {
       db,
       `Users/${username}/Categories/${category.toLowerCase()}/items/${id}`
     );
-    await set(favIconRef, { ...categoryData.value, fav_icon: 'heart-outline' });
+    await set(favIconRef, { ...categoryData, fav_icon: 'heart-outline' });
 
     return 'newAdded';
   } catch (err) {

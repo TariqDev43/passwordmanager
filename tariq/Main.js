@@ -3,8 +3,10 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Login from './screens/authScreens/Login.js';
 import InitializeScreen from './screens/authScreens/InitializeScreen';
 import BottomNav from './Navigators/bottomNav.js';
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
+import LottieView from 'lottie-react-native';
+import tw from 'tailwind-react-native-classnames';
 
 import {
   deleteAllStorageKeys,
@@ -13,71 +15,81 @@ import {
   setDataToStorage,
 } from './services/storageService';
 
-import { useLayoutEffect } from 'react';
-import { Text } from 'react-native';
+import { View } from 'react-native';
 import useTheme from './Contexts/ThemeContext.js';
 import useSettings from './Contexts/SettingContext.js';
 import useUser from './Contexts/UserContext.js';
 
 const Main = () => {
   const Stack = createNativeStackNavigator();
-  const [themeMode, setThemeMode] = useState(null);
-  const { changeColor, themeMode: theme, changeTheme } = useTheme();
-  const { changeElevationValue, changeElevation } = useSettings();
+  const [check, setCheck] = useState(null);
+  const { changeColor, themeMode, mainColor, changeTheme } = useTheme();
+  const { elevation, elevationValue, changeElevationValue, changeElevation } = useSettings();
 
   const { user } = useUser();
 
-  useLayoutEffect(() => {
+  const checkMainColor = useCallback(async () => {
+    const mainColor = await getDataFromStorage('mainColor');
+    if (mainColor) {
+      changeColor(mainColor);
+    } else {
+      await setDataToStorage('mainColor', '#0abdbf');
+      changeColor('#0abdbf');
+    }
+  }, []);
+  const checkThemeMode = useCallback(async () => {
+    const themeMode = await getDataFromStorage('themeMode');
+    if (themeMode) {
+      changeTheme(themeMode);
+    } else {
+      await setDataToStorage('themeMode', 'light');
+      changeTheme('light');
+    }
+  }, []);
+  const checkElevation = useCallback(async () => {
+    const elevation = await getDataFromStorage('elevation');
+    if (elevation) {
+      changeElevation(elevation === 'true' ? true : false);
+    } else {
+      await setDataToStorage('elevation', 'true');
+      changeElevation(true);
+    }
+  }, []);
+  const checkElevationValue = useCallback(async () => {
+    const elevationValue = await getDataFromStorage('elevationValue');
+    if (elevationValue) {
+      changeElevationValue(parseInt(elevationValue));
+    } else {
+      await setDataToStorage('elevationValue', '2');
+      changeElevationValue(2);
+    }
+  }, []);
+
+  useEffect(() => {
+    // deleteAllStorageKeys();
     const keys = async () => {
-      // await deleteAllStorageKeys();
-      const keys = await getAllStorageKeys();
-      if (keys.length == 0) {
-        await setDataToStorage('themeMode', 'light');
-        await setDataToStorage('mainColor', '#0abdbf');
-        await setDataToStorage('elevation', 'true');
-        await setDataToStorage('elevationValue', '1');
-        changeColor('#0abdbf');
-        changeElevation(true);
-        changeElevationValue(1);
-        setThemeMode('light');
-        changeTheme('light');
-      } else {
-        const storageTheme = await getDataFromStorage('themeMode');
-
-        const mainColor = await getDataFromStorage('mainColor');
-        const elevation = await getDataFromStorage('elevation');
-        const elevationValue = await getDataFromStorage('elevationValue');
-
-        try {
-          storageTheme == 'light'
-            ? setThemeMode('light')
-            : storageTheme == 'dark'
-            ? setThemeMode('dark')
-            : setThemeMode('gray');
-        } catch (error) {
-          console.log(error.message);
-        }
-        try {
-          storageTheme == 'light'
-            ? changeTheme('light')
-            : storageTheme == 'dark'
-            ? changeTheme('dark')
-            : changeTheme('gray');
-        } catch (error) {
-          console.log(error.message);
-        }
-        changeColor(mainColor);
-        changeElevation(elevation);
-        changeElevationValue(elevationValue);
+      try {
+        await checkMainColor();
+        await checkThemeMode();
+        await checkElevation();
+        await checkElevationValue();
+      } catch (err) {
+        console.log(err.message);
       }
     };
-
     keys();
   }, []);
+
+  useEffect(() => {
+    if (themeMode && mainColor && elevation && elevationValue) {
+      setCheck(true);
+    }
+  }, [themeMode, mainColor, elevation, elevationValue]);
+
   const userExits = user;
   return (
     <NavigationContainer>
-      {themeMode != null ? (
+      {check != null ? (
         <Stack.Navigator initialRouteName='Login' screenOptions={{ headerShown: false }}>
           {!userExits ? (
             <Stack.Screen name='Login' component={Login} />
@@ -89,10 +101,26 @@ const Main = () => {
           )}
         </Stack.Navigator>
       ) : (
-        <Text className='text-center'>Loading...</Text>
+        <View style={[tw`flex-1 justify-center items-center`, {}]}>
+          <LottieView
+            autoPlay
+            loop
+            onAnimationFinish={async () => {
+              setEmailCopy(false);
+            }}
+            style={[
+              tw`ml-1 mr-2`,
+              {
+                width: 500,
+                height: 500,
+              },
+            ]}
+            source={require('./assets/loading.json')}
+          />
+        </View>
       )}
 
-      <StatusBar style={theme == 'light' ? 'dark' : 'light'} />
+      <StatusBar style={themeMode == 'light' ? 'dark' : 'light'} />
     </NavigationContainer>
   );
 };

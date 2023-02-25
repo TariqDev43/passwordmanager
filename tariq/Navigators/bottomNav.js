@@ -10,6 +10,7 @@ import useTheme from '../Contexts/ThemeContext.js';
 import tw from 'tailwind-react-native-classnames';
 import useUser from '../Contexts/UserContext.js';
 import { useNavigation } from '@react-navigation/native';
+import { useEffect } from 'react';
 
 const BottomNav = () => {
   /*  ALL STATES
@@ -19,9 +20,10 @@ const BottomNav = () => {
   const { changeUser } = useUser();
 
   const Tabs = createBottomTabNavigator();
-  // const navigation = useNavigation();
+  const navigation = useNavigation();
   /*   ALL FUNCTIONS
    ********************************************* */
+
   const UpdateTheme = async () => {
     // navigation.goBack();
     themeMode == 'light' ? changeTheme('dark') : changeTheme('light');

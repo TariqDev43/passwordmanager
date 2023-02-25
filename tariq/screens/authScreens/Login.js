@@ -24,7 +24,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AntDesign } from '@expo/vector-icons';
 import useUser from '../../Contexts/UserContext';
-import { createUser, login } from '../../services/firebaseService';
+import { createUser, login, resetPassword } from '../../services/firebaseService';
 import ErrorModal from '../../components/ErrorModal';
 
 const Login = () => {
@@ -35,6 +35,7 @@ const Login = () => {
   const [registerPasswordShow, setRegisterPasswordShow] = useState(true);
   const [registerConfirmPasswordShow, setRegisterConfirmPasswordShow] = useState(true);
 
+  const [resetPage, setResetPage] = useState(true);
   const [loginPage, setLoginPage] = useState(true);
   const [loginLoading, setLoginLoading] = useState(false);
   const [successLogin, setSuccessLogin] = useState(false);
@@ -86,23 +87,24 @@ const Login = () => {
    ********************************************* */
 
   const loginFunc = async () => {
-    // if (loginEmail == null) {
-    //   setShowModal(true);
-    //   setModalTitle("Login Error");
-    //   setModalBody("Email Is Required");
-    //   return;
-    // }
-    // if (loginPassword == null) {
-    //   setShowModal(true);
-    //   setModalTitle("Login Error");
-    //   setModalBody("Password Is Required");
-    //   return;
-    // }
+    if (loginEmail == null) {
+      setShowModal(true);
+      setModalTitle('Login Error');
+      setModalBody('Email Is Required');
+      return;
+    }
+    if (loginPassword == null) {
+      setShowModal(true);
+      setModalTitle('Login Error');
+      setModalBody('Password Is Required');
+      return;
+    }
     setFocusOff();
     try {
       setLoginLoading(true);
-      const user = await login('a@b.com', 'abc123');
-      // const user = await login(loginEmail, loginPassword);
+      // await resetPassword('tariqtahir43@gmail.com');
+      // const user = await login('a@b.com', 'abc123');
+      const user = await login(loginEmail.trim(), loginPassword.trim());
       if (user.uid) {
         setLoginLoading(false);
         setSuccessLogin(true);
@@ -132,40 +134,53 @@ const Login = () => {
   };
   const registerFunc = async () => {
     setFocusOff();
-    // if (username == null) {
-    //   setShowModal(true);
-    //   setModalTitle('Register Error');
-    //   setModalBody('Username Is Required');
-    //   return;
-    // }
-    // if (registerEmail == null) {
-    //   setShowModal(true);
-    //   setModalTitle('Register Error');
-    //   setModalBody('Email Is Required');
-    //   return;
-    // }
-    // if (registerPassword == null) {
-    //   setShowModal(true);
-    //   setModalTitle('Register Error');
-    //   setModalBody('Password Is Required');
-    //   return;
-    // }
-    // if (registerConfirmPassword == null) {
-    //   setShowModal(true);
-    //   setModalTitle('Register Error');
-    //   setModalBody('Confirm Password Is Required');
-    //   return;
-    // }
-    // if (registerPassword != registerConfirmPassword) {
-    //   setShowModal(true);
-    //   setModalTitle('Register Error');
-    //   setModalBody('Passwords Do Not Match');
-    //   return;
-    // }
+    if (username == null) {
+      setShowModal(true);
+      setModalTitle('Register Error');
+      setModalBody('Username Is Required');
+      return;
+    }
+    if (username.trim().includes(' ')) {
+      setShowModal(true);
+      setModalTitle('Register Error');
+      setModalBody('No spaces allowed in username');
+      return;
+    }
+
+    if (registerEmail == null) {
+      setShowModal(true);
+      setModalTitle('Register Error');
+      setModalBody('Email Is Required');
+      return;
+    }
+    if (registerPassword == null) {
+      setShowModal(true);
+      setModalTitle('Register Error');
+      setModalBody('Password Is Required');
+      return;
+    }
+    if (registerPassword.includes(' ')) {
+      setShowModal(true);
+      setModalTitle('Register Error');
+      setModalBody('No spaces allowed in Password');
+      return;
+    }
+    if (registerConfirmPassword == null) {
+      setShowModal(true);
+      setModalTitle('Register Error');
+      setModalBody('Confirm Password Is Required');
+      return;
+    }
+    if (registerPassword != registerConfirmPassword) {
+      setShowModal(true);
+      setModalTitle('Register Error');
+      setModalBody('Passwords Do Not Match');
+      return;
+    }
     try {
       setLoginLoading(true);
-      const user = await createUser('a@b.com', 'abc123', 'test');
-      // const user = await createUser(registerEmail, registerPassword, username);
+      // const user = await createUser('a@b.com', 'abc123', 'test');
+      const user = await createUser(registerEmail.trim(), registerPassword.trim(), username.trim());
       if (user.error) {
         setShowModal(true);
         setModalTitle('Login Error');
@@ -250,7 +265,7 @@ const Login = () => {
                   elevation: successLogin ? 0 : 5,
                 },
               ]}
-              onPress={loginFunc}
+              onPress={() => (resetPage ? setResetPage(false) : loginFunc())}
             >
               <LinearGradient
                 style={[tw`${successLogin ? 'p-0' : 'p-4'} rounded-full `, {}]}
@@ -297,71 +312,101 @@ const Login = () => {
                   {
                     backgroundColor: theme.bgColor,
                     elevation: 8,
-                    shadowColor: 'grey',
                   },
                 ]}
               >
-                <View style={tw` ml-4 my-5 mr-12`}>
-                  {/* ******* Email  ******* */}
-                  <View style={tw`flex-row items-center justify-between mt-3 mb-2 `}>
-                    <MaterialCommunityIcons
-                      name='email'
-                      color={emailFocus ? theme.mainColor : theme.grey}
-                      size={22}
-                    />
-                    <TextInput
-                      placeholder='Enter Email'
-                      value={loginEmail}
-                      onChangeText={setLoginEmail}
-                      placeholderTextColor={theme.themeMode == 'dark' ? theme.grey : 'darkgray'}
-                      style={[
-                        tw`flex-1 mx-3 border-b-2 `,
-                        {
-                          borderBottomColor: emailFocus ? theme.mainColor : theme.grey,
-                          color: theme.mainTextColor,
-                        },
-                      ]}
-                      onFocus={() => setEmailFocus(true)}
-                      onBlur={() => setEmailFocus(false)}
-                    />
+                {resetPage && (
+                  <View style={tw` ml-4 my-12 mr-12`}>
+                    <Text style={[tw``, { color: theme.mainTextColor }]}>Enter Your Email</Text>
+                    {/* ******* Email  ******* */}
+                    <View style={tw`flex-row items-center justify-between mt-3 mb-2 `}>
+                      <MaterialCommunityIcons
+                        name='email'
+                        color={emailFocus ? theme.mainColor : theme.grey}
+                        size={22}
+                      />
+                      <TextInput
+                        placeholder='Enter Email'
+                        value={loginEmail}
+                        onChangeText={setLoginEmail}
+                        placeholderTextColor={theme.themeMode == 'dark' ? theme.grey : 'darkgray'}
+                        style={[
+                          tw`flex-1 mx-3 border-b-2 `,
+                          {
+                            borderBottomColor: emailFocus ? theme.mainColor : theme.grey,
+                            color: theme.mainTextColor,
+                          },
+                        ]}
+                        onFocus={() => setEmailFocus(true)}
+                        onBlur={() => setEmailFocus(false)}
+                      />
+                    </View>
                   </View>
-                  {/* ******* Password  ******* */}
-                  <View style={tw`flex-row items-center justify-between mt-4 mb-5 `}>
-                    <MaterialCommunityIcons
-                      name='key'
-                      color={passwordFocus ? theme.mainColor : theme.grey}
-                      size={22}
-                    />
-                    <TextInput
-                      value={loginPassword}
-                      onChangeText={setLoginPassword}
-                      placeholder='Enter Password'
-                      placeholderTextColor={theme.themeMode == 'dark' ? theme.grey : 'darkgray'}
-                      style={[
-                        tw`flex-1 mx-3 border-b-2`,
-                        {
-                          borderBottomColor: passwordFocus ? theme.mainColor : theme.grey,
-                          color: theme.mainTextColor,
-                        },
-                      ]}
-                      secureTextEntry={passowrdShow ? true : false}
-                      onFocus={() => setPasswordFocus(true)}
-                      onBlur={() => setPasswordFocus(false)}
-                    />
-                    <MaterialCommunityIcons
-                      onPress={() => {
-                        setPasswordShow(!passowrdShow);
-                      }}
-                      name={passowrdShow ? 'eye-off' : 'eye'}
-                      color={passwordFocus ? theme.mainColor : theme.grey}
-                      size={22}
-                    />
+                )}
+                {!resetPage && (
+                  <View style={tw` ml-4 my-5 mr-12`}>
+                    {/* ******* Email  ******* */}
+                    <View style={tw`flex-row items-center justify-between mt-3 mb-2 `}>
+                      <MaterialCommunityIcons
+                        name='email'
+                        color={emailFocus ? theme.mainColor : theme.grey}
+                        size={22}
+                      />
+                      <TextInput
+                        placeholder='Enter Email'
+                        value={loginEmail}
+                        onChangeText={setLoginEmail}
+                        placeholderTextColor={theme.themeMode == 'dark' ? theme.grey : 'darkgray'}
+                        style={[
+                          tw`flex-1 mx-3 border-b-2 `,
+                          {
+                            borderBottomColor: emailFocus ? theme.mainColor : theme.grey,
+                            color: theme.mainTextColor,
+                          },
+                        ]}
+                        onFocus={() => setEmailFocus(true)}
+                        onBlur={() => setEmailFocus(false)}
+                      />
+                    </View>
+                    {/* ******* Password  ******* */}
+                    <View style={tw`flex-row items-center justify-between mt-4 mb-5 `}>
+                      <MaterialCommunityIcons
+                        name='key'
+                        color={passwordFocus ? theme.mainColor : theme.grey}
+                        size={22}
+                      />
+                      <TextInput
+                        value={loginPassword}
+                        onChangeText={setLoginPassword}
+                        placeholder='Enter Password'
+                        placeholderTextColor={theme.themeMode == 'dark' ? theme.grey : 'darkgray'}
+                        style={[
+                          tw`flex-1 mx-3 border-b-2`,
+                          {
+                            borderBottomColor: passwordFocus ? theme.mainColor : theme.grey,
+                            color: theme.mainTextColor,
+                          },
+                        ]}
+                        secureTextEntry={passowrdShow ? true : false}
+                        onFocus={() => setPasswordFocus(true)}
+                        onBlur={() => setPasswordFocus(false)}
+                      />
+                      <MaterialCommunityIcons
+                        onPress={() => {
+                          setPasswordShow(!passowrdShow);
+                        }}
+                        name={passowrdShow ? 'eye-off' : 'eye'}
+                        color={passwordFocus ? theme.mainColor : theme.grey}
+                        size={22}
+                      />
+                    </View>
                   </View>
-                </View>
+                )}
               </View>
             </Animated.View>
           </Animated.View>
         )}
+        {/* resetPage */}
         {/*  Buttons
          *********************************************  */}
         {loginPage && (
@@ -457,7 +502,6 @@ const Login = () => {
                   {
                     backgroundColor: theme.bgColor,
                     elevation: 8,
-                    shadowColor: 'grey',
                   },
                 ]}
               >

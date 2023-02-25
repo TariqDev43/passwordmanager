@@ -1,33 +1,51 @@
-import { Keyboard, Pressable, Switch, Text, TouchableOpacity, View } from 'react-native';
+import {
+  Keyboard,
+  Pressable,
+  Switch,
+  Text,
+  TouchableOpacity,
+  View,
+  BackHandler,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
-import { memo, useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Modal } from 'react-native';
 import Slider from '@react-native-community/slider';
 import useTheme from '../../Contexts/ThemeContext';
 import useSettings from '../../Contexts/SettingContext';
 import tw from 'tailwind-react-native-classnames';
 import Animated, {
+  FadeIn,
+  FadeOut,
   useAnimatedStyle,
   useSharedValue,
-  withSpring,
   withTiming,
+  ZoomIn,
+  ZoomOut,
 } from 'react-native-reanimated';
+import LottieView from 'lottie-react-native';
+import useUser from '../../Contexts/UserContext';
+import { useNavigation } from '@react-navigation/native';
+import ColorPicker from '../../components/ColorPicker';
 
 const Settings = () => {
   /*   ALL STATES
    ********************************************* */
   //  all contexts
-  const { theme, changeColor, themeMode, changeTheme } = useTheme();
-  const { elevation, elevationValue, changeElevation, changeElevationValue } = useSettings();
+  const { theme, themeMode, changeTheme } = useTheme();
+  const { elevation, elevationValue, changeElevation, changeElevationValue, setSelectedScreen } =
+    useSettings();
+  const { userInfo } = useUser();
 
-  const [settingsToggle, setSettingsToggle] = useState(elevation === 'true' ? true : false);
+  const [settingsToggle, setSettingsToggle] = useState(elevation);
 
   const [slider, setSlider] = useState(parseInt(elevationValue));
   const [showColorModal, setShowColorModal] = useState(false);
 
+  const navigation = useNavigation();
+
   const colorList = [
-    '#0abdbf',
     '#AA00FF',
 
     '#FF6D00',
@@ -58,6 +76,19 @@ const Settings = () => {
   /*   ALL FUNCTIONS
    ********************************************* */
 
+  function handleBackButtonClick() {
+    setSelectedScreen('Home');
+    navigation.goBack();
+    return true;
+  }
+
+  useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', handleBackButtonClick);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBackButtonClick);
+    };
+  }, []);
+
   const handleShadow = async () => {
     setSettingsToggle(!settingsToggle);
     changeElevation(!settingsToggle);
@@ -67,187 +98,198 @@ const Settings = () => {
   });
 
   return (
-    <SafeAreaView style={[tw`px-6 flex-1 `, { backgroundColor: theme.mainBgColor }]}>
+    <SafeAreaView style={[tw`px-6 flex-1  `, { backgroundColor: theme.mainBgColor }]}>
       {/* TopBar */}
-      <View style={tw`mb-5`}>
-        <Text style={[tw`text-3xl font-extrabold`, { color: theme.mainColor }]}>Settings</Text>
-      </View>
-      {/* *********  Shadows *********** */}
-      <View
-        style={[
-          tw`py-6 px-4 m-1 rounded-lg`,
-          {
-            elevation: elevation ? elevationValue : 0,
-            shadowColor: elevation ? theme.mainColor : theme.mainBgColor,
-            backgroundColor: theme.bgColor,
-          },
-        ]}
-      >
-        <View style={tw`flex-row  items-center`}>
-          <MaterialCommunityIcons name={'box-shadow'} color={theme.mainColor} size={35} />
-          <Text style={[tw`text-lg font-extrabold flex-1 mx-2 `, { color: theme.mainTextColor }]}>
-            Shadow
-          </Text>
-          <Switch
-            trackColor={{ false: theme.mainBgColor, true: theme.mainColor }}
-            ios_backgroundColor='#3e3e3e'
-            thumbColor={theme.grey}
-            onValueChange={() => {
-              handleShadow();
-            }}
-            value={settingsToggle}
-          />
-        </View>
-        <View style={tw`flex-row items-center`}>
-          <MaterialCommunityIcons name={'box-shadow'} color={theme.mainColor} size={35} />
-          <Text style={[tw`text-lg font-extrabold flex-1 mx-2`, { color: theme.mainTextColor }]}>
-            Value
-          </Text>
-          <Slider
-            style={{ width: 150, height: 40 }}
-            minimumValue={1}
-            maximumValue={5}
-            minimumTrackTintColor={theme.mainColor}
-            maximumTrackTintColor={theme.mainColor}
-            onValueChange={handleSlider}
-            value={slider}
-            thumbTintColor={theme.mainColor}
-          />
-        </View>
-      </View>
-
-      {/* *********  Theme color *********** */}
-      <View
-        className=''
-        style={[
-          tw`py-6 px-4 m-1 my-2 rounded-lg flex-row items-center `,
-          {
-            elevation: elevation ? elevationValue : 0,
-            shadowColor: elevation ? theme.mainColor : theme.mainBgColor,
-
-            backgroundColor: theme.bgColor,
-          },
-        ]}
-      >
-        <Ionicons name={'color-palette-outline'} color={theme.mainColor} size={35} />
-        <Text style={[tw`text-lg font-extrabold flex-1 mx-2`, { color: theme.mainTextColor }]}>
-          Theme Color
-        </Text>
-        <TouchableOpacity onPress={() => setShowColorModal(!showColorModal)}>
-          <MaterialCommunityIcons name={'circle'} color={theme.mainColor} size={35} />
-        </TouchableOpacity>
-      </View>
-      {/* *********  Theme Mode *********** */}
-      <View
-        className=''
-        style={[
-          tw`py-2 px-4 m-1 my-2 rounded-lg flex-row items-center `,
-          {
-            elevation: elevation ? elevationValue : 0,
-            shadowColor: elevation ? theme.mainColor : theme.mainBgColor,
-
-            backgroundColor: theme.bgColor,
-          },
-        ]}
-      >
-        <Ionicons
-          name={themeMode == 'light' ? 'moon' : 'sunny'}
-          size={28}
-          color={theme.mainColor}
-        />
-        <Text style={[tw`text-lg font-extrabold flex-1 mx-2`, { color: theme.mainTextColor }]}>
-          Theme
-        </Text>
-        <View
-          style={[
-            tw`py-1 rounded-xl flex-row justify-evenly items-center`,
-            { backgroundColor: theme.mainBgColor, width: 180 },
-          ]}
-        >
-          <Animated.View
-            style={[
-              tw`absolute  py-5 rounded-xl `,
-              {
-                width: 60,
-                left: 0,
-                backgroundColor: theme.bgColor,
-                transform: [{ translateX: offset.value }],
-              },
-              themeStyles,
-            ]}
-          ></Animated.View>
-          <TouchableOpacity
-            onPress={() => {
-              offset.value = 5;
-              changeTheme('light');
-            }}
-            style={[tw`py-2 rounded-xl`]}
-          >
-            <Text style={[tw``, { color: theme.mainColor }]}>Light</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              offset.value = 61;
-              changeTheme('dark');
-            }}
-            style={[tw`py-2 mx-1 rounded-xl`]}
-          >
-            <Text style={[tw``, { color: theme.mainColor }]}>Dark</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              offset.value = 115;
-              changeTheme('gray');
-            }}
-            style={[tw`py-2 rounded-xl`]}
-          >
-            <Text style={[tw``, { color: theme.mainColor }]}>Gray</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-      {/* Color Select Modal */}
-      <Modal
-        visible={showColorModal}
-        onRequestClose={() => setShowColorModal(!showColorModal)}
-        animationType='fade'
-        transparent={true}
-      >
-        <Pressable
-          style={tw`justify-center flex-1 items-center`}
-          onPress={() => Keyboard.dismiss()}
-        >
+      {!showColorModal && (
+        <Animated.View entering={ZoomIn} exiting={ZoomOut} style={[tw`flex-1`, {}]}>
           <View
             style={[
-              tw`pt-2 pb-5 px-4 rounded-xl w-64 justify-between `,
-              { elevation: 36, backgroundColor: theme.mainBgColor },
+              tw`mb-5 flex-row items-center rounded-xl h-1/5 mx-1 pl-32`,
+              {
+                elevation: elevation ? elevationValue : 0,
+                // shadowColor: elevation ? theme.mainColor : theme.mainBgColor,
+                backgroundColor: theme.mainColor,
+              },
             ]}
           >
-            <View className='flex-row justify-between items-center'>
-              <Text style={[tw`font-bold  text-lg `, { color: theme.mainColor }]}>Colors</Text>
+            <View style={[tw`absolute -left-6 `, {}]}>
+              <LottieView
+                loop
+                autoPlay
+                style={{ width: 130, height: 130 }}
+                source={require('../../assets/boySmiling.json')}
+              />
             </View>
-            {/* *******  Lopping icons here *********** */}
-            <View style={tw`flex-row flex-wrap my-2 justify-center`}>
-              {colorList.map((i) => {
-                return (
-                  <TouchableOpacity onPressIn={() => changeColor(i)} key={i}>
-                    <MaterialCommunityIcons name={'circle'} size={62} color={i} />
-                  </TouchableOpacity>
-                );
-              })}
+            <View style={[tw``, {}]}>
+              <Text numberOfLines={1} style={[tw`font-semibold text-white `]}>
+                {userInfo.username.toUpperCase()}
+              </Text>
+              <Text numberOfLines={1} style={[tw`font-semibold   text-white`]}>
+                {userInfo.email}
+              </Text>
             </View>
-            {/**************** Buttons ***********************/}
-            <View style={tw`flex-row justify-end mt-2 px-5 items-center `}>
-              <TouchableOpacity onPress={() => setShowColorModal(!showColorModal)}>
-                <Text style={[tw`font-bold text-xs`, { color: theme.mainColor }]}>
-                  SELECT COLOR
-                </Text>
+          </View>
+
+          {/* *********  Shadows *********** */}
+
+          <View
+            style={[
+              tw`py-3 px-4 m-1 rounded-lg`,
+              {
+                elevation: elevation ? elevationValue : 0,
+                // shadowColor: elevation ? theme.mainColor : theme.mainBgColor,
+                backgroundColor: theme.bgColor,
+              },
+            ]}
+          >
+            <View style={tw`flex-row  items-center`}>
+              <MaterialCommunityIcons name={'box-shadow'} color={theme.mainColor} size={35} />
+              <Text
+                style={[tw`text-lg font-extrabold flex-1 mx-2 `, { color: theme.mainTextColor }]}
+              >
+                Shadow
+              </Text>
+              <Switch
+                trackColor={{ false: theme.mainBgColor, true: theme.mainColor }}
+                ios_backgroundColor='#3e3e3e'
+                thumbColor={theme.grey}
+                onValueChange={() => {
+                  handleShadow();
+                }}
+                value={settingsToggle}
+              />
+            </View>
+            <View style={tw`flex-row items-center`}>
+              <MaterialCommunityIcons name={'box-shadow'} color={theme.mainColor} size={35} />
+              <Text
+                style={[tw`text-lg font-extrabold flex-1 mx-2`, { color: theme.mainTextColor }]}
+              >
+                Value
+              </Text>
+              <Slider
+                style={{ width: 150, height: 40 }}
+                minimumValue={1}
+                maximumValue={5}
+                minimumTrackTintColor={theme.mainColor}
+                maximumTrackTintColor={theme.mainColor}
+                onValueChange={handleSlider}
+                value={slider}
+                thumbTintColor={theme.mainColor}
+              />
+            </View>
+          </View>
+
+          {/* *********  Theme color *********** */}
+
+          <View
+            className=''
+            style={[
+              tw`py-3 px-4 m-1 my-2 rounded-lg flex-row items-center `,
+              {
+                elevation: elevation ? elevationValue : 0,
+                // shadowColor: elevation ? theme.mainColor : theme.mainBgColor,
+
+                backgroundColor: theme.bgColor,
+              },
+            ]}
+          >
+            <Ionicons name={'color-palette-outline'} color={theme.mainColor} size={35} />
+            <Text style={[tw`text-lg font-extrabold flex-1 mx-2`, { color: theme.mainTextColor }]}>
+              Theme Color
+            </Text>
+            <TouchableOpacity onPress={() => setShowColorModal(!showColorModal)}>
+              <MaterialCommunityIcons name={'circle'} color={theme.mainColor} size={35} />
+            </TouchableOpacity>
+          </View>
+
+          {/* *********  Theme Mode *********** */}
+
+          <View
+            style={[
+              tw`py-2 px-4 m-1 my-2 rounded-lg flex-row items-center `,
+              {
+                elevation: elevation ? elevationValue : 0,
+                // shadowColor: elevation ? theme.mainColor : theme.mainBgColor,
+                backgroundColor: theme.bgColor,
+              },
+            ]}
+          >
+            <Ionicons
+              name={themeMode == 'light' ? 'moon' : 'sunny'}
+              size={28}
+              color={theme.mainColor}
+            />
+            <Text style={[tw`text-lg font-extrabold flex-1 mx-2`, { color: theme.mainTextColor }]}>
+              Theme
+            </Text>
+            <View
+              style={[
+                tw`py-1 rounded-xl flex-row justify-evenly items-center`,
+                { backgroundColor: theme.mainBgColor, width: 180 },
+              ]}
+            >
+              <Animated.View
+                style={[
+                  tw`absolute  py-5 rounded-xl `,
+                  {
+                    width: 60,
+                    left: 0,
+                    backgroundColor: theme.bgColor,
+                    transform: [{ translateX: offset.value }],
+                  },
+                  themeStyles,
+                ]}
+              ></Animated.View>
+              <TouchableOpacity
+                onPress={() => {
+                  offset.value = 5;
+                  changeTheme('light');
+                }}
+                style={[tw`py-2 rounded-xl flex-1 px-2  items-center`]}
+              >
+                <Text style={[tw``, { color: theme.mainColor }]}>Light</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => {
+                  offset.value = 61;
+                  changeTheme('dark');
+                }}
+                style={[tw`py-2 mx-1 rounded-xl flex-1 px-2  items-center`]}
+              >
+                <Text style={[tw``, { color: theme.mainColor }]}>Dark</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => {
+                  offset.value = 115;
+                  changeTheme('gray');
+                }}
+                style={[tw`py-2  rounded-xl flex-1 px-2   items-center`]}
+              >
+                <Text style={[tw``, { color: theme.mainColor }]}>Gray</Text>
               </TouchableOpacity>
             </View>
           </View>
-        </Pressable>
-      </Modal>
+        </Animated.View>
+      )}
+
+      {showColorModal && (
+        <Animated.View
+          entering={ZoomIn}
+          exiting={ZoomOut}
+          style={[tw`justify-center items-center  h-5/6`, {}]}
+        >
+          <ColorPicker colorList={colorList} />
+          <View>
+            <TouchableOpacity style={[tw`p-4`, {}]} onPress={() => setShowColorModal(false)}>
+              <Text style={[tw``, { color: theme.mainTextColor }]}>CLOSE</Text>
+            </TouchableOpacity>
+          </View>
+        </Animated.View>
+      )}
+
+      {/* Color Select Modal */}
     </SafeAreaView>
   );
 };
 
-export default memo(Settings);
+export default Settings;

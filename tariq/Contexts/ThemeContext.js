@@ -11,8 +11,8 @@ const ThemeContext = createContext({});
 
 export const ThemeProvider = memo(({ children }) => {
   /* *************  States  **************** */
-  const [themeMode, setThemeMode] = useState('light');
-  const [mainColor, setMainColor] = useState('#0abdbf');
+  const [themeMode, setThemeMode] = useState(null);
+  const [mainColor, setMainColor] = useState(null);
   const [selected, setSelected] = useState('Home');
   const LightTheme = {
     mainColor: mainColor,
@@ -45,9 +45,6 @@ export const ThemeProvider = memo(({ children }) => {
   const theme = themeMode == 'light' ? LightTheme : themeMode == 'dark' ? DarkTheme : GreyTheme;
 
   const changeTheme = useCallback((value) => {
-    console.log(themeMode);
-    console.log(value);
-
     setThemeMode(value);
     setDataToStorage('themeMode', value);
   });
@@ -61,6 +58,7 @@ export const ThemeProvider = memo(({ children }) => {
   const themeValues = useMemo(
     () => ({
       theme,
+      mainColor,
       setThemeMode,
       changeTheme,
       themeMode,
