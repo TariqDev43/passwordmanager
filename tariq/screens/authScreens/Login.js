@@ -35,7 +35,7 @@ const Login = () => {
   const [registerPasswordShow, setRegisterPasswordShow] = useState(true);
   const [registerConfirmPasswordShow, setRegisterConfirmPasswordShow] = useState(true);
 
-  const [resetPage, setResetPage] = useState(true);
+  const [resetPage, setResetPage] = useState(false);
   const [loginPage, setLoginPage] = useState(true);
   const [loginLoading, setLoginLoading] = useState(false);
   const [successLogin, setSuccessLogin] = useState(false);
@@ -132,6 +132,29 @@ const Login = () => {
       setModalBody(loginErrMsg);
     }
   };
+
+  const sendResetCode = async () => {
+    if (loginEmail == null) {
+      setShowModal(true);
+      setModalTitle('Login Error');
+      setModalBody('Email Is Required');
+      return;
+    }
+    setFocusOff();
+    try {
+      setLoginLoading(true);
+      await resetPassword(loginEmail.trim());
+      setLoginLoading(false);
+      setSuccessLogin(true);
+      loginSuccess.current?.play();
+    } catch (err) {
+      setLoginLoading(false);
+      setShowModal(true);
+      setModalTitle('Reset Error');
+      setModalBody(err.message);
+    }
+  };
+
   const registerFunc = async () => {
     setFocusOff();
     if (username == null) {
@@ -260,12 +283,14 @@ const Login = () => {
           >
             <Pressable
               style={[
-                tw` rounded-full absolute  bottom-12 right-10 z-50 self-center`,
+                tw` rounded-full absolute  bottom-12 right-10 z-50 ${
+                  resetPage ? 'bottom-14' : 'bottom-16'
+                } self-center`,
                 {
                   elevation: successLogin ? 0 : 5,
                 },
               ]}
-              onPress={() => (resetPage ? setResetPage(false) : loginFunc())}
+              onPress={() => (resetPage ? sendResetCode() : loginFunc())}
             >
               <LinearGradient
                 style={[tw`${successLogin ? 'p-0' : 'p-4'} rounded-full `, {}]}
@@ -290,8 +315,19 @@ const Login = () => {
                       loop={false}
                       ref={loginSuccess}
                       onAnimationFinish={async () => {
-                        setSuccessLogin(false);
-                        changeUser(userInfo);
+                        if (!resetPage) {
+                          setSuccessLogin(false);
+                          changeUser(userInfo);
+                        } else {
+                          setShowModal(true);
+                          setModalTitle('Success');
+                          setModalBody('Please check your email for password reset instructions');
+                          setResetPage(false);
+                          setFocusOff();
+                          setLoginEmail(null);
+
+                          setSuccessLogin(false);
+                        }
                       }}
                       style={[
                         {
@@ -316,10 +352,10 @@ const Login = () => {
                 ]}
               >
                 {resetPage && (
-                  <View style={tw` ml-4 my-12 mr-12`}>
+                  <View style={tw` ml-4 mt-10 mb-4 mr-12`}>
                     <Text style={[tw``, { color: theme.mainTextColor }]}>Enter Your Email</Text>
                     {/* ******* Email  ******* */}
-                    <View style={tw`flex-row items-center justify-between mt-3 mb-2 `}>
+                    <View style={tw`flex-row items-center justify-between mt-3 mb-5 `}>
                       <MaterialCommunityIcons
                         name='email'
                         color={emailFocus ? theme.mainColor : theme.grey}
@@ -341,12 +377,19 @@ const Login = () => {
                         onBlur={() => setEmailFocus(false)}
                       />
                     </View>
+                    <View>
+                      <TouchableOpacity onPress={() => setResetPage(false)}>
+                        <Text style={[tw`text-right mr-5`, { color: theme.mainTextColor }]}>
+                          Back
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
                   </View>
                 )}
                 {!resetPage && (
-                  <View style={tw` ml-4 my-5 mr-12`}>
+                  <View style={tw` ml-4 mt-5 mb-6 mr-12`}>
                     {/* ******* Email  ******* */}
-                    <View style={tw`flex-row items-center justify-between mt-3 mb-2 `}>
+                    <View style={tw`flex-row items-center justify-between mt-3 mb-3 `}>
                       <MaterialCommunityIcons
                         name='email'
                         color={emailFocus ? theme.mainColor : theme.grey}
@@ -369,7 +412,7 @@ const Login = () => {
                       />
                     </View>
                     {/* ******* Password  ******* */}
-                    <View style={tw`flex-row items-center justify-between mt-4 mb-5 `}>
+                    <View style={tw`flex-row items-center justify-between mt-4 mb-3 `}>
                       <MaterialCommunityIcons
                         name='key'
                         color={passwordFocus ? theme.mainColor : theme.grey}
@@ -399,6 +442,14 @@ const Login = () => {
                         color={passwordFocus ? theme.mainColor : theme.grey}
                         size={22}
                       />
+                    </View>
+                    {/* ******* forgot  ******* */}
+                    <View>
+                      <TouchableOpacity onPress={() => setResetPage(true)}>
+                        <Text style={[tw`text-right`, { color: theme.mainTextColor }]}>
+                          Forgot Password?
+                        </Text>
+                      </TouchableOpacity>
                     </View>
                   </View>
                 )}

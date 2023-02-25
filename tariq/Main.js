@@ -8,12 +8,7 @@ import { StatusBar } from 'expo-status-bar';
 import LottieView from 'lottie-react-native';
 import tw from 'tailwind-react-native-classnames';
 
-import {
-  deleteAllStorageKeys,
-  getAllStorageKeys,
-  getDataFromStorage,
-  setDataToStorage,
-} from './services/storageService';
+import { getDataFromStorage, setDataToStorage } from './services/storageService';
 
 import { View } from 'react-native';
 import useTheme from './Contexts/ThemeContext.js';
@@ -81,7 +76,7 @@ const Main = () => {
   }, []);
 
   useEffect(() => {
-    if (themeMode && mainColor && elevation && elevationValue) {
+    if (!themeMode && !mainColor && !elevation && !elevationValue) {
       setCheck(true);
     }
   }, [themeMode, mainColor, elevation, elevationValue]);
