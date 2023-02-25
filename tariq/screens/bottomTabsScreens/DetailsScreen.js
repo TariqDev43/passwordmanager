@@ -285,13 +285,11 @@ const DetailsScreen = ({
           >
             <TextInput
               style={[
-                tw`my-6 rounded-2xl  p-2`,
+                tw`my-6 rounded-2xl py-3 p-4`,
                 {
                   elevation: elevation ? elevationValue : 0,
                   backgroundColor: theme.bgColor,
                   color: theme.mainTextColor,
-                  borderColor: theme.mainColor,
-                  borderWidth: 2,
                 },
               ]}
               ref={notesRef}
@@ -309,7 +307,11 @@ const DetailsScreen = ({
                   { backgroundColor: theme.bgColor, elevation: 2 },
                 ]}
               >
-                <Text style={[tw`text-white text-center font-semibold text-xs`, {}]}>CLOSE</Text>
+                <Text
+                  style={[tw`text-center font-semibold text-xs`, { color: theme.mainTextColor }]}
+                >
+                  CLOSE
+                </Text>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => updateCategoryData()}
