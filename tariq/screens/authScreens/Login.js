@@ -87,25 +87,25 @@ const Login = () => {
    ********************************************* */
 
   const loginFunc = async () => {
-    //   if (loginEmail == null) {
-    //     setShowModal(true);
-    //     setModalTitle('Login Error');
-    //     setModalBody('Email Is Required');
-    //     return;
-    //   }
-    //   if (loginPassword == null) {
-    //     setShowModal(true);
-    //     setModalTitle('Login Error');
-    //     setModalBody('Password Is Required');
-    //     return;
-    //   }
+    if (loginEmail == null) {
+      setShowModal(true);
+      setModalTitle('Login Error');
+      setModalBody('Email Is Required');
+      return;
+    }
+    if (loginPassword == null) {
+      setShowModal(true);
+      setModalTitle('Login Error');
+      setModalBody('Password Is Required');
+      return;
+    }
     setFocusOff();
     try {
       setLoginLoading(true);
       // await resetPassword('tariqtahir43@gmail.com');
-      const user = await login('a@b.com', 'abc123');
+      // const user = await login('a@b.com', 'abc123');
       // const user = await login('gamejamer215@gmail.com', 'blahblah@6492');
-      // const user = await login(loginEmail.trim(), loginPassword.trim());
+      const user = await login(loginEmail.trim(), loginPassword.trim());
       if (user.uid) {
         setLoginLoading(false);
         setSuccessLogin(true);
@@ -170,11 +170,23 @@ const Login = () => {
       setModalBody('No spaces allowed in username');
       return;
     }
+    if (username.trim().includes('chutiya')) {
+      setShowModal(true);
+      setModalTitle('Benchod Error');
+      setModalBody('Tu hoga chutiya');
+      return;
+    }
 
     if (registerEmail == null) {
       setShowModal(true);
       setModalTitle('Register Error');
       setModalBody('Email Is Required');
+      return;
+    }
+    if (registerEmail.trim().includes('chutiya')) {
+      setShowModal(true);
+      setModalTitle('Benchod Error');
+      setModalBody('Tu hoga chutiya');
       return;
     }
     if (registerPassword == null) {
@@ -183,16 +195,29 @@ const Login = () => {
       setModalBody('Password Is Required');
       return;
     }
+    if (registerPassword.trim().includes('chutiya')) {
+      setShowModal(true);
+      setModalTitle('Benchod Error');
+      setModalBody('Tu hoga chutiya');
+      return;
+    }
     if (registerPassword.includes(' ')) {
       setShowModal(true);
       setModalTitle('Register Error');
       setModalBody('No spaces allowed in Password');
       return;
     }
+
     if (registerConfirmPassword == null) {
       setShowModal(true);
       setModalTitle('Register Error');
       setModalBody('Confirm Password Is Required');
+      return;
+    }
+    if (registerConfirmPassword.trim().includes('chutiya')) {
+      setShowModal(true);
+      setModalTitle('Benchod Error');
+      setModalBody('Tu hoga chutiya');
       return;
     }
     if (registerPassword != registerConfirmPassword) {

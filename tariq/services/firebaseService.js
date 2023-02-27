@@ -15,7 +15,16 @@ import {
   sendPasswordResetEmail,
 } from '@firebase/auth';
 import { initializeApp } from 'firebase/app';
-import { getDatabase, ref, get, set, serverTimestamp, remove, update } from 'firebase/database';
+import {
+  getDatabase,
+  ref,
+  get,
+  set,
+  serverTimestamp,
+  remove,
+  update,
+  push,
+} from 'firebase/database';
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
@@ -126,9 +135,7 @@ export const createUser = async (email, password, name) => {
       });
 
       // Entering UserName to list Of Usernames
-      let UserNameList = {};
-      UserNameList[user.uid] = { username: name, uid: user.uid };
-      await set(ref(db, 'Users/UsersList/'), UserNameList);
+      await push(ref(db, 'Users/UsersList/'), { username: name, uid: user.uid });
 
       return user;
     }
