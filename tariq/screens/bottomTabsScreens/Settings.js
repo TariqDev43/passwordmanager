@@ -1,23 +1,12 @@
-import {
-  Keyboard,
-  Pressable,
-  Switch,
-  Text,
-  TouchableOpacity,
-  View,
-  BackHandler,
-} from 'react-native';
+import { Switch, Text, TouchableOpacity, View, BackHandler } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import { useCallback, useEffect, useState } from 'react';
-import { Modal } from 'react-native';
 import Slider from '@react-native-community/slider';
 import useTheme from '../../Contexts/ThemeContext';
 import useSettings from '../../Contexts/SettingContext';
 import tw from 'tailwind-react-native-classnames';
 import Animated, {
-  FadeIn,
-  FadeOut,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
@@ -159,24 +148,26 @@ const Settings = () => {
                 value={settingsToggle}
               />
             </View>
-            <View style={tw`flex-row items-center`}>
-              <MaterialCommunityIcons name={'box-shadow'} color={theme.mainColor} size={35} />
-              <Text
-                style={[tw`text-lg font-extrabold flex-1 mx-2`, { color: theme.mainTextColor }]}
-              >
-                Value
-              </Text>
-              <Slider
-                style={{ width: 150, height: 40 }}
-                minimumValue={1}
-                maximumValue={5}
-                minimumTrackTintColor={theme.mainColor}
-                maximumTrackTintColor={theme.mainColor}
-                onValueChange={handleSlider}
-                value={slider}
-                thumbTintColor={theme.mainColor}
-              />
-            </View>
+            {elevation && (
+              <View style={tw`flex-row items-center`}>
+                <MaterialCommunityIcons name={'box-shadow'} color={theme.mainColor} size={35} />
+                <Text
+                  style={[tw`text-lg font-extrabold flex-1 mx-2`, { color: theme.mainTextColor }]}
+                >
+                  Value
+                </Text>
+                <Slider
+                  style={{ width: 150, height: 40 }}
+                  minimumValue={1}
+                  maximumValue={5}
+                  minimumTrackTintColor={theme.mainColor}
+                  maximumTrackTintColor={theme.mainColor}
+                  onValueChange={handleSlider}
+                  value={slider}
+                  thumbTintColor={theme.mainColor}
+                />
+              </View>
+            )}
           </View>
 
           {/* *********  Theme color *********** */}
