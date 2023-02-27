@@ -211,19 +211,22 @@ export const addCategory = async (username, categoryName, icon) => {
 export const updateCategory = async (username, categoryData, categoryName, icon) => {
   const oldCategoryRef = ref(
     db,
-    `Users/${username}/Categories/${categoryData.category.toLowerCase()}`
+    `Users/${username}/Categories/${categoryData.category.toLowerCase()}/items`
   );
   const newCategoryRef = ref(db, `Users/${username}/Categories/${categoryName.toLowerCase()}`);
 
   try {
     // getting data of category to update
-    const data = await get(oldCategoryRef, categoryData);
-
+    const data = await get(oldCategoryRef);
+    let newArray = {};
+    data.forEach((item) => {
+      newArray[item.key] = { ...item.val(), category: categoryName };
+    });
     let newCategoryData = {
       info: {
         icon: icon.toLowerCase(),
       },
-      items: data.val().items ? data.val().items : [],
+      items: newArray ? newArray : [],
     };
     await removeCategory(username, categoryData.category);
     await set(newCategoryRef, newCategoryData);

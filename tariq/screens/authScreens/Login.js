@@ -87,24 +87,25 @@ const Login = () => {
    ********************************************* */
 
   const loginFunc = async () => {
-    if (loginEmail == null) {
-      setShowModal(true);
-      setModalTitle('Login Error');
-      setModalBody('Email Is Required');
-      return;
-    }
-    if (loginPassword == null) {
-      setShowModal(true);
-      setModalTitle('Login Error');
-      setModalBody('Password Is Required');
-      return;
-    }
+    //   if (loginEmail == null) {
+    //     setShowModal(true);
+    //     setModalTitle('Login Error');
+    //     setModalBody('Email Is Required');
+    //     return;
+    //   }
+    //   if (loginPassword == null) {
+    //     setShowModal(true);
+    //     setModalTitle('Login Error');
+    //     setModalBody('Password Is Required');
+    //     return;
+    //   }
     setFocusOff();
     try {
       setLoginLoading(true);
       // await resetPassword('tariqtahir43@gmail.com');
-      // const user = await login('a@b.com', 'abc123');
-      const user = await login(loginEmail.trim(), loginPassword.trim());
+      const user = await login('a@b.com', 'abc123');
+      // const user = await login('gamejamer215@gmail.com', 'blahblah@6492');
+      // const user = await login(loginEmail.trim(), loginPassword.trim());
       if (user.uid) {
         setLoginLoading(false);
         setSuccessLogin(true);

@@ -117,8 +117,10 @@ const Home = () => {
       setLoading(true);
       updateCategory(userName, selectedItem, categoryText, icon);
       let newArray = categoryList;
+      let data = newArray[selectedIndex];
+      data.items.map((item) => (item.category = categoryText));
       newArray[selectedIndex] = {
-        ...newArray[selectedIndex],
+        ...data,
         category: categoryText,
         icon: { icon },
       };
