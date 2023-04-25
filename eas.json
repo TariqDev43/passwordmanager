@@ -10,6 +10,11 @@
         "resourceClass": "m1-medium"
       }
     },
+    "preview": {
+      "android": {
+        "buildType": "apk"
+      }
+    },
     "apk": {
       "distribution": "internal",
       "ios": {

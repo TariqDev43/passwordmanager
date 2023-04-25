@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "new-PasswordManager-expo",
+    "name": "Password Manager",
     "slug": "new-PasswordManager-expo",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -14,9 +14,7 @@
     "updates": {
       "fallbackToCacheTimeout": 0
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true
     },
@@ -34,6 +32,25 @@
       "eas": {
         "projectId": "1370ea89-6178-4cc9-bd0e-a35cb03fcc3b"
       }
-    }
+    },
+
+    "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 31,
+            "targetSdkVersion": 31,
+            "buildToolsVersion": "31.0.0"
+          },
+          "ios": {
+            "deploymentTarget": "13.0"
+          }
+        }
+      ]
+    ]
+  },
+  "react-native-google-mobile-ads": {
+    "android_app_id": "ca-app-pub-4261270135055578~9387791815"
   }
 }
